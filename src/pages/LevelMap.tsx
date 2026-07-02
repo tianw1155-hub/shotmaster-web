@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Check, ChevronDown } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel } from '../services/levelService';
-import { TopBar, BottomNav } from '../components/game/GameComponents';
+import { PageLayout } from '../components/layout/PageLayout';
 
 type LessonStatus = 'locked' | 'available' | 'completed';
 
@@ -17,11 +17,11 @@ interface LevelNode {
 }
 
 const CHAPTERS = [
-  { key: 'composition', name: '构图基础篇', color: '#4ECDC4', light: '#DFF5F2', dark: '#3BB5AC' },
-  { key: 'light', name: '光线运用篇', color: '#FFE66D', light: '#FFF9DB', dark: '#E5CE56' },
-  { key: 'color', name: '色彩搭配篇', color: '#A78BFA', light: '#EDE6FF', dark: '#8F72E0' },
-  { key: 'narrative', name: '叙事技巧篇', color: '#6C9ECA', light: '#E3EEF8', dark: '#5A87B0' },
-  { key: 'master', name: '综合大师篇', color: '#F472B6', light: '#FDF2F8', dark: '#DB2777' },
+  { key: 'composition', name: '构图基础篇', color: '#6B8E7F', light: '#E8F0EC', dark: '#4F6E61' },
+  { key: 'light', name: '光线运用篇', color: '#C9A24A', light: '#F4ECD6', dark: '#9A7A36' },
+  { key: 'color', name: '色彩搭配篇', color: '#9B6B8A', light: '#ECE2EC', dark: '#735066' },
+  { key: 'narrative', name: '叙事技巧篇', color: '#6B7B95', light: '#E5E9EF', dark: '#525F73' },
+  { key: 'master', name: '综合大师篇', color: '#A56B5A', light: '#F0E4DE', dark: '#7C5043' },
 ];
 
 const LEVELS_PER_CHAPTER = 10;
@@ -110,45 +110,42 @@ export function LevelMapPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface pb-20">
+    <PageLayout>
       {/* 游客提示 */}
       {user.isGuest && (
-        <div className="fixed top-0 left-0 right-0 bg-amber-500 text-white px-4 py-3 text-center text-sm font-medium shadow-lg z-50 animate-fade-in">
-          ⚠️ 您正在使用游客模式，游戏记录不会保存，关闭页面后需重新登录
+        <div className="fixed top-0 inset-x-0 bg-warning text-white px-4 py-3 text-center text-sm font-medium z-50">
+          ⚠️ 游客模式，记录不会保存
         </div>
       )}
-      <TopBar />
 
-      <main className="max-w-lg mx-auto px-4 pt-2 pb-6 space-y-5">
+      <div className="max-w-lg mx-auto pt-2 pb-6 space-y-5">
         {/* 欢迎区 */}
-        <section className="animate-fade-in pl-1">
-          <h1 className="font-display text-[28px] font-bold tracking-tight text-ink">
-            摄影之路
-          </h1>
+        <section className="pl-1">
+          <h1 className="font-display text-3xl font-semibold tracking-tight">摄影之路</h1>
         </section>
 
         {/* 数据概览 */}
-        <section className="animate-slide-up flex gap-3">
-          <div className="flex-1 bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-50">
-            <p className="text-2xl font-bold text-primary">{totalCompleted}</p>
+        <section className="flex gap-3">
+          <div className="flex-1 bg-surface-card rounded-md border border-line p-4 text-center">
+            <p className="text-2xl font-mono font-bold text-accent">{totalCompleted}</p>
             <p className="text-xs text-ink-muted mt-0.5">已通关</p>
           </div>
-          <div className="flex-1 bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-50">
-            <p className="text-2xl font-bold text-yellow-500">{totalStars}</p>
+          <div className="flex-1 bg-surface-card rounded-md border border-line p-4 text-center">
+            <p className="text-2xl font-mono font-bold text-gold">{totalStars}</p>
             <p className="text-xs text-ink-muted mt-0.5">总星数</p>
           </div>
-          <div className="flex-1 bg-white rounded-2xl p-4 text-center shadow-sm border border-gray-50">
-            <p className="text-2xl font-bold text-mint">Lv.{user.level}</p>
+          <div className="flex-1 bg-surface-card rounded-md border border-line p-4 text-center">
+            <p className="text-2xl font-mono font-bold text-ink">Lv.{user.level}</p>
             <p className="text-xs text-ink-muted mt-0.5">等级</p>
           </div>
         </section>
 
         {/* 章节关卡列表 */}
-        <section className="animate-slide-up space-y-4">
+        <section className="space-y-4">
           {chapters.map(chapter => {
             const chapterInfo = CHAPTERS.find(c => c.key === chapter.chapterKey)!;
             return (
-              <div key={chapter.key} className="bg-white rounded-3xl shadow-sm border border-gray-50 overflow-hidden">
+              <div key={chapter.key} className="bg-surface-card rounded-md border border-line overflow-hidden">
                 {/* 章节标题栏 */}
                 <div
                   className="px-5 py-3 flex items-center justify-between"
@@ -206,16 +203,14 @@ export function LevelMapPage() {
 
           {/* 底部无限提示 */}
           <div className="text-center py-2">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-primary bg-primary/5 px-4 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-accent bg-accent/8 px-4 py-1.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
               完成50关后解锁随机挑战
             </span>
           </div>
         </section>
-      </main>
-
-      <BottomNav active="levels" />
-    </div>
+      </div>
+    </PageLayout>
   );
 }
 
@@ -233,8 +228,8 @@ function MapNode({
   if (node.status === 'locked') {
     return (
       <div className="relative" style={{ width: size, height: size }}>
-        <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center">
-          <Lock className="w-4 h-4 text-gray-300" />
+        <div className="w-full h-full rounded-full bg-surface-muted flex items-center justify-center">
+          <Lock className="w-4 h-4 text-ink-muted" />
         </div>
       </div>
     );
@@ -256,7 +251,7 @@ function MapNode({
           <Check className="w-5 h-5 text-white" strokeWidth={3} />
         </div>
         {node.stars > 0 && (
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5 bg-white rounded-full px-1.5 py-0.5 shadow-sm">
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5 bg-surface-card rounded-full px-1.5 py-0.5 shadow-sm">
             {[1, 2, 3].map(i => (
               <span key={i} className="text-[10px]" style={{ color: i <= node.stars ? '#FBBF24' : '#E5E7EB' }}>★</span>
             ))}
@@ -281,7 +276,7 @@ function MapNode({
         </>
       )}
       <div
-        className="relative w-full h-full rounded-full flex items-center justify-center shadow-md bg-white"
+        className="relative w-full h-full rounded-full flex items-center justify-center shadow-md bg-surface-card"
         style={{
           border: `3px solid ${theme.color}`,
         }}
