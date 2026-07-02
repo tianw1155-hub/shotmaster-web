@@ -35,7 +35,7 @@ export function ScoreResultView({ score, capturedImage, referenceImage, fromComm
       <motion.section variants={variants.fadeUp} initial="hidden" animate="show" className="text-center">
         <div className="flex justify-center gap-3 mb-3">
           {[1, 2, 3].map((i) => (
-            <svg key={i} className={`w-16 h-16 ${i <= score.stars ? 'text-gold animate-star-pop' : 'text-line'}`} style={{ animationDelay: `${i * 200}ms` }} fill="currentColor" viewBox=" 0 24 24">
+            <svg key={i} className={`w-16 h-16 ${i <= score.stars ? 'text-gold animate-star-pop' : 'text-line'}`} style={{ animationDelay: `${i * 200}ms` }} fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
             </svg>
           ))}
@@ -50,7 +50,7 @@ export function ScoreResultView({ score, capturedImage, referenceImage, fromComm
             <div className="grid grid-cols-2 gap-px bg-line">
               <div className="relative">
                 <img src={referenceImage.url} alt="参考" className="w-full aspect-square object-cover" />
-                <span className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 text-white text-xs rounded-sm">参考图</span>
+                <span className="absolute bottom-2 left-2 px-2 py-1 bg-ink/60 text-white text-xs rounded-sm">参考图</span>
               </div>
               <div className="relative">
                 <img src={capturedImage} alt="作品" className="w-full aspect-square object-cover" />
