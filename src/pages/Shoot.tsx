@@ -5,6 +5,7 @@ import { useGameStore } from '../stores/useGameStore';
 import { getLevel, chapterInfo } from '../services/levelService';
 import { CompositionOverlay } from '../components/game/GameComponents';
 import { inferCompositionRule, compositionRuleLabels } from '../utils/compositionUtils';
+import { PageLayout } from '../components/layout/PageLayout';
 
 type CameraError = null | 'denied' | 'unavailable' | 'notsecure';
 
@@ -160,22 +161,23 @@ export function ShootPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black relative">
+    <PageLayout immersive>
+      <div className="relative min-h-screen">
       {/* 模式切换 */}
-      <div className="absolute top-0 left-0 right-0 z-30 p-4 bg-gradient-to-b from-black/60 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-30 p-4 bg-gradient-to-b from-ink/60 to-transparent">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-black/30 backdrop-blur flex items-center justify-center text-white"
+            className="w-10 h-10 rounded-full bg-ink/30 backdrop-blur flex items-center justify-center text-surface"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex bg-black/30 backdrop-blur rounded-full p-1">
+          <div className="flex bg-ink/30 backdrop-blur rounded-full p-1">
             <button
               onClick={() => setMode('camera')}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                mode === 'camera' ? 'bg-primary text-white' : 'text-white/70'
+                mode === 'camera' ? 'bg-accent text-surface' : 'text-surface/70'
               }`}
             >
               拍摄
@@ -183,7 +185,7 @@ export function ShootPage() {
             <button
               onClick={() => setMode('upload')}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                mode === 'upload' ? 'bg-primary text-white' : 'text-white/70'
+                mode === 'upload' ? 'bg-accent text-surface' : 'text-surface/70'
               }`}
             >
               上传
@@ -194,21 +196,21 @@ export function ShootPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowGrid(!showGrid)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${showGrid ? 'bg-primary' : 'bg-black/30 backdrop-blur'} text-white`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${showGrid ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
                 title="构图网格"
               >
                 <Grid3X3 className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setShowGuideLines(!showGuideLines)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${showGuideLines ? 'bg-primary' : 'bg-black/30 backdrop-blur'} text-white`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${showGuideLines ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
                 title="参考线"
               >
                 <Layers className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setShowReference(!showReference)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${showReference ? 'bg-primary' : 'bg-black/30 backdrop-blur'} text-white`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${showReference ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
                 title="参考图"
               >
                 <ImageIcon className="w-5 h-5" />
@@ -227,12 +229,12 @@ export function ShootPage() {
                 <AlertCircle className="w-10 h-10 text-red-400" />
               </div>
 
-              <h2 className="font-display text-xl font-bold text-white mb-2">
+              <h2 className="font-display text-xl font-bold text-surface mb-2">
                 {cameraError === 'denied' ? '摄像头权限被拒绝' :
                  cameraError === 'notsecure' ? '需要安全连接' : '摄像头不可用'}
               </h2>
 
-              <p className="text-white/60 text-sm mb-6 leading-relaxed">
+              <p className="text-surface/60 text-sm mb-6 leading-relaxed">
                 {cameraError === 'denied'
                   ? '请在浏览器设置中允许访问摄像头，然后重试。或者使用上传图片方式完成本关。'
                   : cameraError === 'notsecure'
@@ -245,7 +247,7 @@ export function ShootPage() {
                   <button
                     onClick={handleRetryCamera}
                     disabled={isRetrying}
-                    className="w-full px-6 py-3.5 rounded-2xl bg-primary text-white font-medium shadow-lg shadow-primary/30 hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full px-6 py-3.5 rounded-2xl bg-accent text-surface font-medium shadow-lg shadow-accent/30 hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     <RefreshCw className={`w-5 h-5 ${isRetrying ? 'animate-spin' : ''}`} />
                     {isRetrying ? '正在重试...' : '重新获取权限'}
@@ -253,18 +255,18 @@ export function ShootPage() {
                 )}
                 <button
                   onClick={handleSwitchToUpload}
-                  className="w-full px-6 py-3.5 rounded-2xl bg-white/10 text-white font-medium hover:bg-white/15 transition-all flex items-center justify-center gap-2"
+                  className="w-full px-6 py-3.5 rounded-2xl bg-surface-card/10 text-surface font-medium hover:bg-surface-card/15 transition-all flex items-center justify-center gap-2"
                 >
                   <Upload className="w-5 h-5" />
                   改用上传图片
                 </button>
               </div>
 
-              <div className="mt-6 bg-white/5 rounded-2xl p-4 text-left">
-                <p className="text-white/80 text-sm mb-2">📌 本关要求</p>
-                <p className="text-white/60 text-sm mb-1">参考图：{level.referenceImage.title}</p>
+              <div className="mt-6 bg-surface-card/5 rounded-2xl p-4 text-left">
+                <p className="text-surface/80 text-sm mb-2">📌 本关要求</p>
+                <p className="text-surface/60 text-sm mb-1">参考图：{level.referenceImage.title}</p>
                 {level.constraints?.map((c, i) => (
-                  <p key={i} className="text-primary/80 text-sm">🎯 {c}</p>
+                  <p key={i} className="text-accent/80 text-sm">🎯 {c}</p>
                 ))}
               </div>
             </div>
@@ -283,7 +285,7 @@ export function ShootPage() {
                 ))}
               </div>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="w-6 h-6 border-2 border-primary rounded-full" />
+                <div className="w-6 h-6 border-2 border-accent rounded-full" />
               </div>
             </div>
           )}
@@ -298,14 +300,14 @@ export function ShootPage() {
                 {showGuideLines && (
                   <CompositionOverlay rule={compositionRule} showLabel={false} />
                 )}
-                <div className="absolute top-1 right-1 w-6 h-6 bg-black/50 rounded-full flex items-center justify-center">
-                  <Maximize2 className="w-3.5 h-3.5 text-white" />
+                <div className="absolute top-1 right-1 w-6 h-6 bg-ink/50 rounded-full flex items-center justify-center">
+                  <Maximize2 className="w-3.5 h-3.5 text-surface" />
                 </div>
               </div>
-              <div className="bg-black/60 backdrop-blur px-2 py-1">
-                <p className="text-white text-xs truncate">{referenceImage.title}</p>
+              <div className="bg-ink/60 backdrop-blur px-2 py-1">
+                <p className="text-surface text-xs truncate">{referenceImage.title}</p>
                 {showGuideLines && (
-                  <p className="text-primary-200 text-xs">{compositionRuleLabels[compositionRule]}</p>
+                  <p className="text-accent-soft text-xs">{compositionRuleLabels[compositionRule]}</p>
                 )}
               </div>
             </div>
@@ -314,24 +316,24 @@ export function ShootPage() {
           {/* 参考图放大弹窗 */}
           {referenceExpanded && showReference && (
             <div
-              className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+              className="fixed inset-0 z-50 bg-ink/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
               onClick={() => setReferenceExpanded(false)}
             >
               <div className="relative max-w-lg w-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
                 <div className="relative rounded-2xl overflow-hidden">
-                  <img src={referenceImage.url} alt="参考图" className="w-full h-auto max-h-[70vh] object-contain bg-black" />
+                  <img src={referenceImage.url} alt="参考图" className="w-full h-auto max-h-[70vh] object-contain bg-ink" />
                   {showGuideLines && (
                     <CompositionOverlay rule={compositionRule} showLabel={true} />
                   )}
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <div>
-                    <h3 className="text-white font-medium">{referenceImage.title}</h3>
-                    <p className="text-white/60 text-sm">{compositionRuleLabels[compositionRule]} · {info.label}</p>
+                    <h3 className="text-surface font-medium">{referenceImage.title}</h3>
+                    <p className="text-surface/60 text-sm">{compositionRuleLabels[compositionRule]} · {info.label}</p>
                   </div>
                   <button
                     onClick={() => setReferenceExpanded(false)}
-                    className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20"
+                    className="w-10 h-10 rounded-full bg-surface-card/10 flex items-center justify-center text-surface hover:bg-surface-card/20"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -339,7 +341,7 @@ export function ShootPage() {
                 {level.constraints && !fromGallery && (
                   <div className="mt-3 space-y-1">
                     {level.constraints.map((c, i) => (
-                      <p key={i} className="text-primary/90 text-sm">🎯 {c}</p>
+                      <p key={i} className="text-accent/90 text-sm">🎯 {c}</p>
                     ))}
                   </div>
                 )}
@@ -349,37 +351,37 @@ export function ShootPage() {
 
           {/* AI 提示 */}
           <div className="absolute top-32 left-4 right-32 space-y-2">
-            <div className="bg-black/40 backdrop-blur rounded-xl px-3 py-2">
-              <p className="text-white text-sm">📷 {info.label} · {level.title}</p>
+            <div className="bg-ink/40 backdrop-blur rounded-xl px-3 py-2">
+              <p className="text-surface text-sm">📷 {info.label} · {level.title}</p>
             </div>
             {level.constraints?.map((c, i) => (
-              <div key={i} className="bg-primary/30 backdrop-blur rounded-xl px-3 py-2">
-                <p className="text-white text-sm">🎯 {c}</p>
+              <div key={i} className="bg-accent/30 backdrop-blur rounded-xl px-3 py-2">
+                <p className="text-surface text-sm">🎯 {c}</p>
               </div>
             ))}
           </div>
 
           {/* 底部控制 */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-ink/80 to-transparent">
             <div className="flex items-center justify-center gap-8">
               <div className="w-14 h-14" />
               <button
                 onClick={handleCapture}
                 disabled={isCapturing}
-                className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="w-20 h-20 rounded-full bg-surface flex items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
               >
-                <div className={`w-16 h-16 rounded-full border-4 border-black/10 flex items-center justify-center ${isCapturing ? 'bg-primary animate-pulse' : ''}`}>
+                <div className={`w-16 h-16 rounded-full border-4 border-ink/10 flex items-center justify-center ${isCapturing ? 'bg-accent animate-pulse' : ''}`}>
                   {!isCapturing && <Camera className="w-7 h-7 text-ink" />}
                 </div>
               </button>
               <button
                 onClick={() => setFacingMode(prev => prev === 'environment' ? 'user' : 'environment')}
-                className="w-14 h-14 rounded-full bg-black/30 backdrop-blur flex items-center justify-center text-white"
+                className="w-14 h-14 rounded-full bg-ink/30 backdrop-blur flex items-center justify-center text-surface"
               >
                 <SwitchCamera className="w-6 h-6" />
               </button>
             </div>
-            <p className="text-center text-white/60 text-sm mt-3">点击拍摄完成本关</p>
+            <p className="text-center text-surface/60 text-sm mt-3">点击拍摄完成本关</p>
           </div>
         </>
         )
@@ -388,27 +390,27 @@ export function ShootPage() {
         <div className="min-h-screen flex flex-col items-center justify-center p-8">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full max-w-sm border-2 border-dashed border-white/20 rounded-3xl p-12 text-center hover:border-primary/50 transition-colors"
+            className="w-full max-w-sm border-2 border-dashed border-surface-card/20 rounded-3xl p-12 text-center hover:border-accent/50 transition-colors"
           >
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
-            <div className="w-16 h-16 mx-auto rounded-full bg-white/10 flex items-center justify-center mb-4">
-              <Upload className="w-8 h-8 text-primary" />
+            <div className="w-16 h-16 mx-auto rounded-full bg-surface-card/10 flex items-center justify-center mb-4">
+              <Upload className="w-8 h-8 text-accent" />
             </div>
-            <p className="text-white font-medium mb-1">点击上传你的作品</p>
-            <p className="text-white/40 text-sm">支持 JPG / PNG</p>
+            <p className="text-surface font-medium mb-1">点击上传你的作品</p>
+            <p className="text-surface/40 text-sm">支持 JPG / PNG</p>
           </button>
 
-          <div className="mt-6 max-w-sm w-full bg-white/5 rounded-2xl p-4">
-            <p className="text-white/80 text-sm mb-2">📌 本关要求</p>
-            <p className="text-white/60 text-sm mb-1">参考图：{level.referenceImage.title}</p>
+          <div className="mt-6 max-w-sm w-full bg-surface-card/5 rounded-2xl p-4">
+            <p className="text-surface/80 text-sm mb-2">📌 本关要求</p>
+            <p className="text-surface/60 text-sm mb-1">参考图：{level.referenceImage.title}</p>
             {level.constraints?.map((c, i) => (
-              <p key={i} className="text-primary/80 text-sm">🎯 {c}</p>
+              <p key={i} className="text-accent/80 text-sm">🎯 {c}</p>
             ))}
           </div>
 
           <button
             onClick={() => setMode('camera')}
-            className="mt-6 text-white/60 text-sm hover:text-white flex items-center gap-1"
+            className="mt-6 text-surface/60 text-sm hover:text-surface flex items-center gap-1"
           >
             <Camera className="w-4 h-4" />
             切换到拍摄模式
@@ -416,5 +418,6 @@ export function ShootPage() {
         </div>
       )}
     </div>
+    </PageLayout>
   );
 }
