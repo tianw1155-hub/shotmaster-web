@@ -15,8 +15,10 @@ describe('motion', () => {
     expect(variants.fadeUp.show).toHaveProperty('y', 0);
   });
   it('stagger scales delay by index', () => {
-    expect(variants.stagger(0).show.transition.delay).toBe(0);
-    expect(variants.stagger(2).show.transition.delay).toBe(0.08);
+    // `Variant` is a framer-motion union incl. TargetResolver (no .transition); narrow to the transition shape.
+    const show = (i: number) => variants.stagger(i).show as { transition: { delay: number } };
+    expect(show(0).transition.delay).toBe(0);
+    expect(show(2).transition.delay).toBe(0.08);
   });
   it('spring has stiffness and damping', () => {
     expect(spring).toHaveProperty('stiffness', 320);
