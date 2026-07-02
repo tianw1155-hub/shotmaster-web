@@ -35,7 +35,7 @@ function ScoreDetailCard({
       {/* 关闭按钮 */}
       <button
         onClick={onClose}
-        className="absolute top-3 right-3 w-8 h-8 rounded-md bg-surface-muted flex items-center justify-center text-ink-secondary hover:bg-surface-muted/80 transition-colors z-10"
+        className="absolute top-3 right-3 w-8 h-8 rounded-md bg-surface-muted flex items-center justify-center text-ink-secondary hover:bg-surface transition-colors z-10"
       >
         <X className="w-4 h-4" />
       </button>
@@ -371,7 +371,7 @@ export function LevelDetailPage() {
                             className={`w-7 h-7 rounded-full flex items-center justify-center transition ${
                               dimFeedback.liked
                                 ? 'bg-success/12 text-success'
-                                : 'bg-surface-muted text-ink-light hover:bg-surface-muted/80'
+                                : 'bg-surface-muted text-ink-muted hover:bg-surface'
                             }`}
                             title="这部分建议有用"
                           >
@@ -382,7 +382,7 @@ export function LevelDetailPage() {
                             className={`w-7 h-7 rounded-full flex items-center justify-center transition ${
                               dimFeedback.disliked
                                 ? 'bg-danger/12 text-danger'
-                                : 'bg-surface-muted text-ink-light hover:bg-surface-muted/80'
+                                : 'bg-surface-muted text-ink-muted hover:bg-surface'
                             }`}
                             title="这部分建议没用"
                           >

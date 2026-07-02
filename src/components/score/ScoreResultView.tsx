@@ -103,10 +103,14 @@ export function ScoreResultView({ score, capturedImage, referenceImage, fromComm
         </Card>
       </motion.div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button variant="secondary" onClick={onRetake}><RefreshCw className="w-4 h-4" />重新拍摄</Button>
-        <Button variant="accent" onClick={onNext}><ChevronRight className="w-4 h-4" />{fromCommunity ? '返回社区' : '下一关'}</Button>
-      </div>
+      {fromCommunity || score.overall >= 60 ? (
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="secondary" onClick={onRetake}><RefreshCw className="w-4 h-4" />重新拍摄</Button>
+          <Button variant="accent" onClick={onNext}><ChevronRight className="w-4 h-4" />{fromCommunity ? '返回社区' : '下一关'}</Button>
+        </div>
+      ) : (
+        <Button variant="accent" onClick={onRetake}><RefreshCw className="w-4 h-4" />再试一次</Button>
+      )}
       <Button variant="ghost" className="w-full" onClick={onHome}><Home className="w-4 h-4" />返回关卡地图</Button>
     </div>
   );
