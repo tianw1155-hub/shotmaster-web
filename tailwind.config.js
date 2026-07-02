@@ -1,108 +1,57 @@
 /** @type {import('tailwindcss').Config} */
-
 export default {
-  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    container: {
-      center: true,
-    },
+    container: { center: true },
     extend: {
       colors: {
-        primary: {
-          DEFAULT: '#FF6B6B',
-          light: '#FF8E8E',
-          dark: '#E05555',
+        surface: { DEFAULT: '#F2F2EF', card: '#FFFFFF', muted: '#EDEDEA' },
+        ink: { DEFAULT: '#14161A', secondary: '#3A3D44', muted: '#6B6E76' },
+        accent: { DEFAULT: '#6E2233', soft: '#9A4A55' },
+        line: '#E2E2DE',
+        success: '#2D784B',
+        warning: '#A05014',
+        danger: '#9A2A2A',
+        gold: '#B8954A',
+        chapter: {
+          composition: '#6B8E7F',
+          light: '#C9A24A',
+          color: '#9B6B8A',
+          narrative: '#6B7B95',
+          master: '#A56B5A',
         },
-        mint: {
-          DEFAULT: '#4ECDC4',
-          light: '#7DDDD5',
-          dark: '#3BB5AC',
-        },
-        sun: {
-          DEFAULT: '#FFE66D',
-          light: '#FFF099',
-          dark: '#E5CE56',
-        },
-        sky: {
-          DEFAULT: '#6C9ECA',
-          light: '#8FB5D9',
-          dark: '#5A87B0',
-        },
-        grape: {
-          DEFAULT: '#A78BFA',
-          light: '#BDA5FB',
-          dark: '#8F72E0',
-        },
-        surface: {
-          DEFAULT: '#F8F9FA',
-          card: '#FFFFFF',
-          muted: '#F0F1F3',
-          dark: '#2D3142',
-        },
-        ink: {
-          DEFAULT: '#2D3142',
-          secondary: '#6B7280',
-          muted: '#9CA3AF',
-        },
+        // 兼容旧令牌名 → 重映射到新色值，避免未迁移页面失色（阶段 2 替换为新令牌后删除）
+        primary: { DEFAULT: '#6E2233', light: '#9A4A55', dark: '#4A1622' },
+        mint: { DEFAULT: '#6B8E7F', light: '#9DB5A8', dark: '#4F6E61' },
+        sun: { DEFAULT: '#C9A24A', light: '#DDB968', dark: '#9A7A36' },
+        sky: { DEFAULT: '#6B7B95', light: '#949FB2', dark: '#525F73' },
+        grape: { DEFAULT: '#9B6B8A', light: '#B893A8', dark: '#735066' },
       },
       fontFamily: {
-        display: ['Outfit', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
+        display: ['"Bodoni Moda"', 'Georgia', 'serif'],
+        body: ['"Inter"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
       borderRadius: {
-        'xl': '12px',
-        '2xl': '16px',
-        '3xl': '20px',
-        '4xl': '28px',
+        sm: '4px', DEFAULT: '6px', md: '8px', lg: '12px', xl: '16px', '2xl': '20px',
       },
-      animation: {
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'scale-in': 'scaleIn 0.2s ease-out',
-        'bounce-in': 'bounceIn 0.5s ease-out',
-        'pulse-ring': 'pulseRing 2s ease-out infinite',
-        'flame': 'flame 1.5s ease-in-out infinite',
-        'star-pop': 'starPop 0.4s ease-out',
-        'confetti': 'confetti 1s ease-out',
+      boxShadow: {
+        hairline: 'inset 0 0 0 1px #E2E2DE',
+        elevated: '0 1px 2px rgba(20,22,26,.04), 0 8px 24px rgba(20,22,26,.06)',
+        focus: '0 0 0 3px rgba(110,34,51,.28)',
+      },
+      transitionDuration: { fast: '140ms', base: '220ms', slow: '380ms', scenic: '600ms' },
+      transitionTimingFunction: {
+        editorial: 'cubic-bezier(.22,1,.36,1)',
+        soft: 'cubic-bezier(.65,0,.35,1)',
       },
       keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.9)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
-        },
-        bounceIn: {
-          '0%': { opacity: '0', transform: 'scale(0.3)' },
-          '50%': { opacity: '1', transform: 'scale(1.05)' },
-          '70%': { transform: 'scale(0.95)' },
-          '100%': { transform: 'scale(1)' },
-        },
-        pulseRing: {
-          '0%': { transform: 'scale(0.95)', opacity: '0.8' },
-          '70%': { transform: 'scale(1.3)', opacity: '0' },
-          '100%': { transform: 'scale(0.95)', opacity: '0' },
-        },
-        flame: {
-          '0%, 100%': { transform: 'scale(1) rotate(-2deg)' },
-          '50%': { transform: 'scale(1.1) rotate(2deg)' },
-        },
-        starPop: {
-          '0%': { transform: 'scale(0) rotate(-45deg)', opacity: '0' },
-          '60%': { transform: 'scale(1.3) rotate(5deg)', opacity: '1' },
-          '100%': { transform: 'scale(1) rotate(0)', opacity: '1' },
-        },
-        confetti: {
-          '0%': { transform: 'translateY(0) rotate(0)', opacity: '1' },
-          '100%': { transform: 'translateY(200px) rotate(360deg)', opacity: '0' },
-        },
+        pulseRing: { '0%': { transform: 'scale(.95)', opacity: '.8' }, '70%': { transform: 'scale(1.3)', opacity: '0' }, '100%': { transform: 'scale(.95)', opacity: '0' } },
+        starPop: { '0%': { transform: 'scale(0) rotate(-45deg)', opacity: '0' }, '60%': { transform: 'scale(1.3) rotate(5deg)', opacity: '1' }, '100%': { transform: 'scale(1) rotate(0)', opacity: '1' } },
+      },
+      animation: {
+        'pulse-ring': 'pulseRing 2s ease-out infinite',
+        'star-pop': 'starPop .4s ease-out',
       },
     },
   },

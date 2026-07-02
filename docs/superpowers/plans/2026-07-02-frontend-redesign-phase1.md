@@ -196,6 +196,12 @@ export default {
           narrative: '#6B7B95',
           master: '#A56B5A',
         },
+        // 兼容旧令牌名 → 重映射到新色值，避免未迁移页面失色（阶段 2 替换为新令牌后删除）
+        primary: { DEFAULT: '#6E2233', light: '#9A4A55', dark: '#4A1622' },
+        mint: { DEFAULT: '#6B8E7F', light: '#9DB5A8', dark: '#4F6E61' },
+        sun: { DEFAULT: '#C9A24A', light: '#DDB968', dark: '#9A7A36' },
+        sky: { DEFAULT: '#6B7B95', light: '#949FB2', dark: '#525F73' },
+        grape: { DEFAULT: '#9B6B8A', light: '#B893A8', dark: '#735066' },
       },
       fontFamily: {
         display: ['"Bodoni Moda"', 'Georgia', 'serif'],
@@ -229,7 +235,7 @@ export default {
 };
 ```
 
-> 注：删除原有 `primary/mint/sun/sky/grape` 鲜艳令牌——它们被新令牌取代。现有代码引用这些旧令牌的任务 5–13 会逐步替换。`darkMode` 字段移除。
+> 注：保留旧令牌名（`primary/mint/sun/sky/grape`）但重映射到新色值，未迁移页面（图库/社区等，阶段 2 处理）不失色；`darkMode` 字段移除。阶段 2 全站替换为新令牌后可删兼容项。
 
 - [ ] **Step 2: 重写 index.css**
 
