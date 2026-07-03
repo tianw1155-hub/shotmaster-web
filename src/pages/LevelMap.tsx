@@ -1,288 +1,139 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Check, ChevronDown } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Lock, Check, Camera, Sliders, ChevronRight, Aperture } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel } from '../services/levelService';
 import { PageLayout } from '../components/layout/PageLayout';
+import { variants } from '../lib/motion';
 
 type LessonStatus = 'locked' | 'available' | 'completed';
-
-interface LevelNode {
-  id: number;
-  status: LessonStatus;
-  stars: number;
-  title: string;
-  chapterKey: string;
-  chapterName: string;
-}
+interface LevelNode { id: number; status: LessonStatus; stars: number; title: string; chapterKey: string; chapterName: string; }
 
 const CHAPTERS = [
-  { key: 'composition', name: '构图基础篇', color: '#6B8E7F', light: '#E8F0EC', dark: '#4F6E61' },
-  { key: 'light', name: '光线运用篇', color: '#C9A24A', light: '#F4ECD6', dark: '#9A7A36' },
-  { key: 'color', name: '色彩搭配篇', color: '#9B6B8A', light: '#ECE2EC', dark: '#735066' },
-  { key: 'narrative', name: '叙事技巧篇', color: '#6B7B95', light: '#E5E9EF', dark: '#525F73' },
-  { key: 'master', name: '综合大师篇', color: '#A56B5A', light: '#F0E4DE', dark: '#7C5043' },
+  { key: 'composition', name: '构图基础篇', color: '#6B8E7F' },
+  { key: 'light', name: '光线运用篇', color: '#B0894A' },
+  { key: 'color', name: '色彩搭配篇', color: '#8E7AA0' },
+  { key: 'narrative', name: '叙事技巧篇', color: '#5E7AA0' },
+  { key: 'master', name: '综合大师篇', color: '#A56B5A' },
 ];
-
-const LEVELS_PER_CHAPTER = 10;
-
-const getChapter = (levelId: number) => {
-  if (levelId > 50) {
-    // 51关以后显示为随机挑战
-    return CHAPTERS[0]; // 返回一个默认章节
-  }
-  const chapterIdx = Math.floor((levelId - 1) / LEVELS_PER_CHAPTER);
-  return CHAPTERS[Math.min(chapterIdx, CHAPTERS.length - 1)];
-};
-
-const getChapterRound = (levelId: number) => {
-  if (levelId > 50) return 2;
-  return 1;
-};
+const PER = 10;
+const chapterOf = (id: number) => CHAPTERS[Math.min(Math.floor((id - 1) / PER), CHAPTERS.length - 1)];
 
 export function LevelMapPage() {
   const navigate = useNavigate();
   const { user, maxUnlockedLevel } = useGameStore();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
-  // 构建节点 —— 50关固定 + 无限挑战关
-  const nodes = useMemo(() => {
-    const totalLevels = Math.max(maxUnlockedLevel + 6, 50);
+  const chapters = useMemo(() => {
+    const total = Math.max(maxUnlockedLevel + 5, 50);
     const list: LevelNode[] = [];
-
-    for (let id = 1; id <= totalLevels; id++) {
-      const chapter = getChapter(id);
+    for (let id = 1; id <= total; id++) {
+      const ch = chapterOf(id);
       const completed = user.completedLevels.includes(id);
       const stars = user.levelStars[id] || 0;
-      const level = getLevel(id, stars, completed);
-      const round = getChapterRound(id);
-
-      let chapterName = chapter.name;
-      if (id > 50) {
-        chapterName = '随机挑战';
-      } else if (round > 1) {
-        chapterName = `${chapter.name} ${round}周目`;
-      }
-
-      list.push({
-        id,
-        status: completed ? 'completed' : id <= maxUnlockedLevel ? 'available' : 'locked',
-        stars,
-        title: level.title,
-        chapterKey: id > 50 ? 'challenge' : chapter.key,
-        chapterName,
-      });
+      list.push({ id, status: completed ? 'completed' : id <= maxUnlockedLevel ? 'available' : 'locked', stars, title: getLevel(id, stars, completed).title, chapterKey: ch.key, chapterName: ch.name });
     }
-
-    return list;
+    const map = new Map<string, LevelNode[]>();
+    list.forEach(n => { const k = n.chapterKey; if (!map.has(k)) map.set(k, []); map.get(k)!.push(n); });
+    return Array.from(map.entries()).map(([k, lv]) => ({ key: k, chapter: CHAPTERS.find(c => c.key === k)!, levels: lv }));
   }, [user.completedLevels, user.levelStars, maxUnlockedLevel]);
 
-  // 按章节分组
-  const chapters = useMemo(() => {
-    const map = new Map<string, LevelNode[]>();
-    nodes.forEach(node => {
-      const key = `${node.chapterKey}-${getChapterRound(node.id)}`;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(node);
-    });
-    return Array.from(map.entries()).map(([key, levels]) => ({
-      key,
-      chapterKey: levels[0].chapterKey,
-      chapterName: levels[0].chapterName,
-      levels,
-    }));
-  }, [nodes]);
-
-  const totalCompleted = user.completedLevels.length;
+  const cur = Math.min(maxUnlockedLevel, 50);
+  const curLevel = getLevel(cur, user.levelStars[cur] || 0, user.completedLevels.includes(cur));
+  const curChapter = chapterOf(cur);
+  const totalDone = user.completedLevels.length;
   const totalStars = user.totalStars;
 
-  useEffect(() => {
-    const el = document.getElementById(`map-node-${maxUnlockedLevel}`);
-    if (el && scrollRef.current) {
-      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
-    }
-  }, [maxUnlockedLevel]);
-
-  const handleClick = (node: LevelNode) => {
-    if (node.status === 'locked') return;
-    navigate(`/level/${node.id}`);
-  };
+  const stats = [
+    { n: totalDone, label: '已通关', c: 'text-accent' },
+    { n: totalStars, label: '总星数', c: 'text-gold' },
+    { n: user.level, label: '等级', c: 'text-ink' },
+    { n: user.streak, label: '连击 · 日', c: 'text-ink' },
+  ];
 
   return (
     <PageLayout>
-      {/* 游客提示 */}
-      {user.isGuest && (
-        <div className="fixed top-0 inset-x-0 bg-warning text-white px-4 py-3 text-center text-sm font-medium z-50">
-          ⚠️ 游客模式，记录不会保存
+      <div className="max-w-[1400px] mx-auto w-full px-6 lg:px-10 py-8 lg:py-12 flex flex-col gap-8 lg:gap-10">
+        {/* breadcrumb */}
+        <div className="flex items-center justify-between text-[11px] tracking-[.16em] uppercase text-ink-muted font-mono">
+          <span>摄影之路 <span className="text-line">／</span> <span className="text-ink font-semibold">{curChapter.name}</span></span>
+          <span className="hidden md:flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-accent" />本周挑战 · 残 3 日</span>
         </div>
-      )}
 
-      <div className="max-w-lg mx-auto pt-2 pb-6 space-y-5">
-        {/* 欢迎区 */}
-        <section className="pl-1">
-          <h1 className="font-display text-3xl font-semibold tracking-tight">摄影之路</h1>
+        {/* hero asymmetric */}
+        <section className="grid lg:grid-cols-[1.15fr_.85fr] gap-8 lg:gap-12 items-end">
+          <div className="flex flex-col gap-4">
+            <motion.div variants={variants.heroTitle} initial="hidden" animate="show" className="text-[11px] tracking-[.18em] uppercase text-accent font-mono font-semibold flex items-center gap-2">
+              <Aperture className="w-4 h-4" strokeWidth={1.25} />继续 · 第 {cur} 关
+            </motion.div>
+            <motion.h1 variants={variants.heroTitle} initial="hidden" animate="show" className="font-display text-4xl lg:text-5xl font-medium tracking-[-.015em] leading-[1.05]">
+              {curLevel.title}
+            </motion.h1>
+            <motion.p variants={variants.heroTitle} initial="hidden" animate="show" className="text-[13px] lg:text-sm text-ink-secondary leading-relaxed max-w-[42ch]">
+              将主体置于九宫格的交叉点，让视线自然流动。本关提供实时构图叠加，与参考图逐项对照。
+            </motion.p>
+            <motion.div variants={variants.heroTitle} initial="hidden" animate="show" className="flex gap-2.5 mt-1">
+              <button onClick={() => navigate(`/shoot/${cur}`)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-accent text-white text-[13px] font-medium hover:bg-[#9A3D30] active:translate-y-px transition-colors duration-base">
+                <Camera className="w-4 h-4" strokeWidth={1.25} />开始拍摄
+              </button>
+              <button onClick={() => navigate(`/level/${cur}`)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-line text-ink-secondary text-[13px] font-medium hover:border-ink hover:text-ink active:translate-y-px transition-colors duration-base">
+                <Sliders className="w-4 h-4" strokeWidth={1.25} />练习曝光
+              </button>
+            </motion.div>
+          </div>
+          <motion.div variants={variants.heroImage} initial="hidden" animate="show" className="relative aspect-[4/5] rounded-md overflow-hidden border border-line bg-ink">
+            <img src={curLevel.referenceImage.url} alt={curLevel.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px)', backgroundSize: '33.3% 33.3%' }} />
+            <div className="absolute left-3 bottom-3 text-white/90 text-[10px] font-mono tracking-wide bg-ink/55 backdrop-blur px-2 py-1 rounded">{curLevel.title} · 参考</div>
+          </motion.div>
         </section>
 
-        {/* 数据概览 */}
-        <section className="flex gap-3">
-          <div className="flex-1 bg-surface-card rounded-md border border-line p-4 text-center">
-            <p className="text-2xl font-mono font-bold text-accent">{totalCompleted}</p>
-            <p className="text-xs text-ink-muted mt-0.5">已通关</p>
-          </div>
-          <div className="flex-1 bg-surface-card rounded-md border border-line p-4 text-center">
-            <p className="text-2xl font-mono font-bold text-gold">{totalStars}</p>
-            <p className="text-xs text-ink-muted mt-0.5">总星数</p>
-          </div>
-          <div className="flex-1 bg-surface-card rounded-md border border-line p-4 text-center">
-            <p className="text-2xl font-mono font-bold text-ink">Lv.{user.level}</p>
-            <p className="text-xs text-ink-muted mt-0.5">等级</p>
-          </div>
+        {/* stats inline divide-x */}
+        <section className="flex border-y border-line py-5">
+          {stats.map((s, i) => (
+            <div key={s.label} className={`px-6 lg:px-8 ${i === 0 ? 'pl-0' : ''} ${i < stats.length - 1 ? 'border-r border-line' : ''}`}>
+              <span className={`block font-mono text-2xl lg:text-3xl font-medium tracking-[-.02em] ${s.c}`}>{s.n}</span>
+              <span className="text-[10px] lg:text-[11px] text-ink-muted tracking-[.06em] mt-1.5 block">{s.label}</span>
+            </div>
+          ))}
         </section>
 
-        {/* 章节关卡列表 */}
-        <section className="space-y-4">
-          {chapters.map(chapter => {
-            const chapterInfo = CHAPTERS.find(c => c.key === chapter.chapterKey)!;
-            return (
-              <div key={chapter.key} className="bg-surface-card rounded-md border border-line overflow-hidden">
-                {/* 章节标题栏 */}
-                <div
-                  className="px-5 py-3 flex items-center justify-between"
-                  style={{ background: `linear-gradient(135deg, ${chapterInfo.light}, ${chapterInfo.color}20)` }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                      style={{ backgroundColor: chapterInfo.color }}
-                    >
-                      {chapter.chapterName.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="font-display font-bold text-sm text-ink">{chapter.chapterName}</h3>
-                      <p className="text-[10px] text-ink-muted">{chapter.levels.length} 个关卡</p>
-                    </div>
+        {/* two col: chapters + current chapter levels */}
+        <section className="grid lg:grid-cols-[1fr_1.3fr] gap-8 lg:gap-12">
+          <div>
+            <h3 className="text-[11px] tracking-[.16em] uppercase text-ink-muted font-semibold mb-5 flex justify-between"><span>章节进度</span><span className="font-mono">{chapters.length} ／ {CHAPTERS.length}</span></h3>
+            <div className="flex flex-col">
+              {chapters.map(ch => {
+                const done = ch.levels.filter(l => l.status === 'completed').length;
+                const pct = Math.round((done / ch.levels.length) * 100);
+                return (
+                  <div key={ch.key} className="flex items-center gap-3.5 py-3.5 border-b border-line last:border-b-0">
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: ch.chapter.color }} />
+                    <span className="text-[13px] flex-1">{ch.chapter.name}<span className="block text-[10px] text-ink-muted font-mono mt-0.5">{String(done).padStart(2,'0')} / {ch.levels.length}</span></span>
+                    <span className="w-14 h-[2px] bg-line rounded-full overflow-hidden"><span className="block h-full bg-ink" style={{ width: `${pct}%` }} /></span>
+                    <span className="text-[10px] text-ink-muted font-mono w-7 text-right">{pct}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-ink-muted">
-                    {chapter.levels.filter(l => l.status === 'completed').length}/{chapter.levels.length}
-                  </div>
-                </div>
-
-                {/* 关卡网格 */}
-                <div className="p-4">
-                  <div className="grid grid-cols-5 gap-3">
-                    {chapter.levels.map(node => {
-                      const isHovered = hoveredId === node.id;
-                      const isCurrent = node.id === maxUnlockedLevel && node.status === 'available';
-                      return (
-                        <div key={node.id} className="flex flex-col items-center">
-                          <button
-                            id={`map-node-${node.id}`}
-                            className="focus:outline-none transition-transform duration-200"
-                            style={{
-                              transform: `scale(${isHovered && node.status !== 'locked' ? 1.1 : 1})`,
-                            }}
-                            onClick={() => handleClick(node)}
-                            onMouseEnter={() => setHoveredId(node.id)}
-                            onMouseLeave={() => setHoveredId(null)}
-                            disabled={node.status === 'locked'}
-                          >
-                            <MapNode node={node} theme={chapterInfo} isCurrent={isCurrent} />
-                          </button>
-                          <p className="mt-1.5 text-[10px] text-ink-muted text-center line-clamp-1 w-full">
-                            {node.title}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-
-          {/* 底部无限提示 */}
-          <div className="text-center py-2">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-accent bg-accent/8 px-4 py-1.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              完成50关后解锁随机挑战
-            </span>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-[11px] tracking-[.16em] uppercase text-ink-muted font-semibold mb-5 flex justify-between"><span>本章节关卡</span><span className="font-mono">{cur} — {Math.min(cur + 4, 50)}</span></h3>
+            <div className="grid grid-cols-5 gap-x-2 gap-y-5">
+              {chapters.find(c => c.chapter.key === curChapter.key)!.levels.map(n => (
+                <button key={n.id} disabled={n.status === 'locked'} onClick={() => navigate(`/level/${n.id}`)} className="flex flex-col items-center gap-2 disabled:cursor-default">
+                  <motion.span layoutId={`lvl-${n.id}`} className={`w-9 h-9 rounded-full border flex items-center justify-center text-[12px] font-mono ${
+                    n.status === 'completed' ? 'bg-ink text-surface border-ink' :
+                    n.id === cur ? 'border-accent text-accent' : 'border-line text-ink-muted bg-surface-card'}`}>
+                    {n.status === 'completed' ? <Check className="w-4 h-4" strokeWidth={2} /> : n.id}
+                  </motion.span>
+                  <span className="text-[9px] text-ink-muted text-center line-clamp-1 w-full">{n.title}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </section>
       </div>
     </PageLayout>
-  );
-}
-
-function MapNode({
-  node,
-  theme,
-  isCurrent,
-}: {
-  node: LevelNode;
-  theme: { color: string; light: string; dark: string };
-  isCurrent: boolean;
-}) {
-  const size = 48;
-
-  if (node.status === 'locked') {
-    return (
-      <div className="relative" style={{ width: size, height: size }}>
-        <div className="w-full h-full rounded-full bg-surface-muted flex items-center justify-center">
-          <Lock className="w-4 h-4 text-ink-muted" />
-        </div>
-      </div>
-    );
-  }
-
-  if (node.status === 'completed') {
-    return (
-      <div className="relative" style={{ width: size, height: size }}>
-        <div
-          className="absolute inset-0 rounded-full opacity-30 blur-sm"
-          style={{ backgroundColor: theme.color }}
-        />
-        <div
-          className="relative w-full h-full rounded-full flex items-center justify-center shadow-md"
-          style={{
-            background: `linear-gradient(135deg, ${theme.light}, ${theme.color})`,
-          }}
-        >
-          <Check className="w-5 h-5 text-white" strokeWidth={3} />
-        </div>
-        {node.stars > 0 && (
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex gap-0.5 bg-surface-card rounded-full px-1.5 py-0.5 shadow-sm">
-            {[1, 2, 3].map(i => (
-              <span key={i} className="text-[10px]" style={{ color: i <= node.stars ? '#FBBF24' : '#E5E7EB' }}>★</span>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      {isCurrent && (
-        <>
-          <div
-            className="absolute inset-0 rounded-full animate-ping opacity-30"
-            style={{ backgroundColor: theme.color }}
-          />
-          <div
-            className="absolute -inset-1 rounded-full border-2"
-            style={{ borderColor: theme.color }}
-          />
-        </>
-      )}
-      <div
-        className="relative w-full h-full rounded-full flex items-center justify-center shadow-md bg-surface-card"
-        style={{
-          border: `3px solid ${theme.color}`,
-        }}
-      >
-        <span className="text-sm font-bold" style={{ color: theme.dark }}>{node.id}</span>
-      </div>
-    </div>
   );
 }
