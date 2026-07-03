@@ -91,7 +91,7 @@ export function LearnPage() {
                             )}
                             {isLocked && (
                               <div className="absolute inset-0 bg-ink/40 rounded-md flex items-center justify-center">
-                                <Lock className="w-5 h-5 text-white" />
+                                <Lock className="w-5 h-5 text-white" strokeWidth={1.25} />
                               </div>
                             )}
                           </div>

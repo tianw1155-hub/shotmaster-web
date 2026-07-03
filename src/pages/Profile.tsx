@@ -24,7 +24,7 @@ import {
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/useGameStore';
 import { PageLayout } from '../components/layout/PageLayout';
-import { Card, Badge, Button, ProgressBar } from '../components/ui/Button';
+import { Badge, Button, ProgressBar } from '../components/ui/Button';
 import { variants } from '../lib/motion';
 
 // ==================== Achievement icon mapping ====================

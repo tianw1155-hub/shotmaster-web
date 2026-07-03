@@ -569,7 +569,7 @@ export function GalleryDetailPage() {
 
       <motion.div variants={variants.fadeUp} initial="hidden" animate="show" className="pt-2">
         <Button variant="primary" size="lg" className="w-full" onClick={handleStartChallenge}>
-          <Camera className="w-5 h-5" />
+          <Camera className="w-5 h-5" strokeWidth={1.25} />
           开始挑战
         </Button>
       </motion.div>

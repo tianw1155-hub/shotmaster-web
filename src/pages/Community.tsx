@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Trophy, Clock, ChevronRight, Camera, X, UserPlus, UserCheck, Flame, Star, Target, Users, User, TrendingUp, Sparkles, Trash2 } from 'lucide-react';
+import { Heart, Trophy, Clock, Camera, X, UserPlus, UserCheck, Flame, Star, Target, Users, User, Sparkles, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/useGameStore';
 import { PageLayout } from '../components/layout/PageLayout';
-import { Card, Badge, Button } from '../components/ui/Button';
+import { Badge, Button } from '../components/ui/Button';
 import { variants } from '../lib/motion';
 import type { CommunityWork } from '../types';
 
@@ -64,7 +64,7 @@ function UserDetailModal({
           onClick={onClose}
           className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-ink-secondary hover:bg-ink-muted/15 transition-colors z-20"
         >
-          <X className="w-4 h-4" />
+          <X className="w-4 h-4" strokeWidth={1.25} />
         </button>
 
         {/* 用户信息头部 */}
@@ -85,12 +85,12 @@ function UserDetailModal({
           {/* 粉丝和关注 */}
           <div className="flex items-center gap-6 mt-4">
             <div className="flex items-center gap-1">
-              <Users className="w-4 h-4 text-ink-muted" />
+              <Users className="w-4 h-4 text-ink-muted" strokeWidth={1.25} />
               <span className="font-medium text-ink">{workData.authorFollowers || 0}</span>
               <span className="text-ink-muted text-sm">粉丝</span>
             </div>
             <div className="flex items-center gap-1">
-              <User className="w-4 h-4 text-ink-muted" />
+              <User className="w-4 h-4 text-ink-muted" strokeWidth={1.25} />
               <span className="font-medium text-ink">{workData.authorFollowing || 0}</span>
               <span className="text-ink-muted text-sm">关注</span>
             </div>
@@ -105,12 +105,12 @@ function UserDetailModal({
           >
             {isFollowing ? (
               <>
-                <UserCheck className="w-5 h-5" />
+                <UserCheck className="w-5 h-5" strokeWidth={1.25} />
                 已关注
               </>
             ) : (
               <>
-                <UserPlus className="w-5 h-5" />
+                <UserPlus className="w-5 h-5" strokeWidth={1.25} />
                 关注TA
               </>
             )}
@@ -189,7 +189,7 @@ function UserDetailModal({
                   : 'bg-accent/5 text-accent hover:bg-accent/10'
               }`}
             >
-              <Heart className={`w-4 h-4 ${isVoted ? 'fill-accent' : ''}`} />
+              <Heart className={`w-4 h-4 ${isVoted ? 'fill-accent' : ''}`} strokeWidth={1.25} />
               {workData.votes || 0} 票
             </button>
           </div>
@@ -224,7 +224,7 @@ function WeeklyChallengeCard({
           <Badge color="accent">进行中</Badge>
         </div>
         <Button variant="primary" className="w-full" onClick={onChallengeClick}>
-          <Camera className="w-4 h-4" />
+          <Camera className="w-4 h-4" strokeWidth={1.25} />
           我要挑战
         </Button>
       </div>
@@ -423,7 +423,7 @@ export function CommunityPage() {
                               : 'bg-surface-muted text-ink-secondary hover:text-accent'
                           }`}
                         >
-                          <Heart className={`w-3 h-3 ${isVoted(work.id) ? 'fill-accent' : ''}`} />
+                          <Heart className={`w-3 h-3 ${isVoted(work.id) ? 'fill-accent' : ''}`} strokeWidth={1.25} />
                           {work.votes}
                         </button>
                       </div>
@@ -467,7 +467,7 @@ export function CommunityPage() {
                             : 'bg-surface-muted text-ink-secondary hover:text-accent'
                         }`}
                       >
-                        <Heart className={`w-3 h-3 ${isVoted(work.id) ? 'fill-accent' : ''}`} />
+                        <Heart className={`w-3 h-3 ${isVoted(work.id) ? 'fill-accent' : ''}`} strokeWidth={1.25} />
                         {work.votes}
                       </button>
                     </div>
@@ -524,7 +524,7 @@ export function CommunityPage() {
                             : 'bg-surface-muted text-ink-secondary hover:text-accent'
                         }`}
                       >
-                        <Heart className={`w-3 h-3 ${isVoted(work.id) ? 'fill-accent' : ''}`} />
+                        <Heart className={`w-3 h-3 ${isVoted(work.id) ? 'fill-accent' : ''}`} strokeWidth={1.25} />
                         {work.votes}
                       </button>
                     </div>
@@ -585,7 +585,7 @@ export function CommunityPage() {
                       <span className="text-lg">{work.avatar}</span>
                       <span className="flex-1 text-sm text-ink truncate">{work.author}</span>
                       <span className="text-xs text-ink-muted flex items-center gap-0.5">
-                        <Heart className="w-3 h-3" />
+                        <Heart className="w-3 h-3" strokeWidth={1.25} />
                         {work.votes}
                       </span>
                     </button>
