@@ -80,8 +80,16 @@ test('north-star slice: map -> level -> exposure lesson -> shoot -> score', asyn
   await page.waitForURL(/\//);
   await expect(page.getByText('摄影之路')).toBeVisible({ timeout: 10000 });
 
+  // desktop only: verify Sidebar brand + home heading are visible
+  if (test.info().project.name === 'desktop') {
+    await expect(page.getByText('ShotMaster').first()).toBeVisible({ timeout: 5000 });
+    // the hero heading is the current level title; e.g. "三分法入门"
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 5000 });
+  }
+
   // 2. Click the first available level (level 1)
-  const firstLevel = page.locator('[id="map-node-1"]');
+  // The level map renders numbered buttons in the "本章节关卡" section.
+  const firstLevel = page.getByRole('button', { name: /三分法入门/ });
   await expect(firstLevel).toBeVisible({ timeout: 5000 });
   await firstLevel.click();
 
