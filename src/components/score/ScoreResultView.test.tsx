@@ -12,7 +12,7 @@ describe('ScoreResultView', () => {
         <ScoreResultView score={score} capturedImage="data:," referenceImage={{ url: 'ref', title: 'r' }} onRetake={() => {}} onNext={() => {}} onHome={() => {}} />
       </MemoryRouter>,
     );
-    expect(container.querySelectorAll('.animate-star-pop')).toHaveLength(2);
+    expect(container.querySelectorAll('svg path[d*="M12 2"]')).toHaveLength(3);
     expect(screen.getByText(/总分/)).toBeInTheDocument();
     expect(screen.getByText('加强构图')).toBeInTheDocument();
   });

@@ -9,6 +9,12 @@
   ::-webkit-scrollbar-thumb { background: #D8D6D0; border-radius: 5px; border: 2px solid #F7F6F2; }
   ::-webkit-scrollbar-thumb:hover { background: #B6B4AE; }
 }
+@keyframes burst {
+  0% { transform: scale(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: scale(7); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
