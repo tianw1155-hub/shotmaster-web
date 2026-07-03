@@ -24,4 +24,19 @@ describe('motion', () => {
     expect(spring).toHaveProperty('stiffness', 320);
     expect(spring).toHaveProperty('damping', 30);
   });
+  it('starPop show uses spring transition', () => {
+    expect(variants.starPop.show.transition).toHaveProperty('type', 'spring');
+  });
+  it('heroImage hidden clips bottom', () => {
+    expect((variants.heroImage.hidden as any).clipPath).toBe('inset(0 0 100% 0)');
+    expect((variants.heroImage.show as any).clipPath).toBe('inset(0 0 0% 0)');
+  });
+  it('lineDraw hidden has scaleX 0', () => {
+    expect((variants.lineDraw.hidden as any).scaleX).toBe(0);
+    expect((variants.lineDraw.show as any).scaleX).toBe(1);
+  });
+  it('reveal show has scale 1', () => {
+    expect((variants.reveal.hidden as any).scale).toBeLessThan(1);
+    expect((variants.reveal.show as any).scale).toBe(1);
+  });
 });
