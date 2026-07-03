@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
-import { MotionConfig } from 'framer-motion';
+import { useLocation, Routes } from 'react-router-dom';
+import { MotionConfig, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { BottomNav } from './BottomNav';
@@ -21,7 +21,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {showNav && <Sidebar />}
           <div className="flex flex-col min-h-dvh">
             {showNav && <TopBar />}
-            <div className="flex-1 flex flex-col">{children}</div>
+            <div className="flex-1 flex flex-col">
+              <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                  {children}
+                </Routes>
+              </AnimatePresence>
+            </div>
             {showNav && <BottomNav active={deriveActive(location.pathname)} />}
           </div>
         </div>

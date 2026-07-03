@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Route } from 'react-router-dom';
 import { AppShell } from './AppShell';
 import { useGameStore } from '../../stores/useGameStore';
 
@@ -14,10 +14,8 @@ function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <AppShell>
-        <Routes>
-          <Route path="/" element={<div>home</div>} />
-          <Route path="/shoot/1" element={<div>shoot</div>} />
-        </Routes>
+        <Route path="/" element={<div>home</div>} />
+        <Route path="/shoot/1" element={<div>shoot</div>} />
       </AppShell>
     </MemoryRouter>,
   );

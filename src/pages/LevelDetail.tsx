@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ChevronRight, Sun, Lightbulb, Grid3X3, Camera, Palette, Package, ChevronDown, ChevronUp, Loader2, Upload, Lock, X, Sparkles, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel, chapterInfo } from '../services/levelService';
@@ -275,7 +276,9 @@ export function LevelDetailPage() {
       <div className="max-w-lg lg:max-w-none pt-2 pb-6 space-y-5">
         {/* 参考图 */}
         <section className="relative animate-fade-in bg-ink">
-          <img src={level.referenceImage.url} alt={level.title} className="w-full max-h-[70vh] object-contain mx-auto" />
+          <motion.div layoutId={`lvl-${levelId}`}>
+            <img src={level.referenceImage.url} alt={level.title} className="w-full max-h-[70vh] object-contain mx-auto" />
+          </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent pointer-events-none" />
           <button
             onClick={() => navigate('/')}
