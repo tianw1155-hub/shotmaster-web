@@ -28,7 +28,7 @@ describe('AppShell', () => {
     renderAt('/');
     expect(screen.getByText('home')).toBeInTheDocument();
     expect(screen.getByLabelText('个人中心')).toBeInTheDocument();
-    expect(screen.getByRole('navigation')).toBeInTheDocument();
+    expect(screen.getAllByRole('navigation')).toHaveLength(2);
   });
   it('hides nav on immersive /shoot route', () => {
     renderAt('/shoot/1');

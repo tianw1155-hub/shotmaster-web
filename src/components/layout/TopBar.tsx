@@ -5,7 +5,7 @@ import { useGameStore } from '../../stores/useGameStore';
 export function TopBar() {
   const { user } = useGameStore();
   return (
-    <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-line">
+    <header className="lg:hidden sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-line">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/profile" aria-label="个人中心" className="w-10 h-10 rounded-full bg-ink text-surface flex items-center justify-center text-lg font-display">
           {user.avatar}

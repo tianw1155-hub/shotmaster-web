@@ -12,7 +12,7 @@ const ITEMS: { id: NavSection; icon: typeof Trophy; label: string; path: string 
 
 export function BottomNav({ active }: { active: NavSection }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface-card/90 backdrop-blur-md border-t border-line">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-card/90 backdrop-blur-md border-t border-line">
       <div className="max-w-6xl mx-auto px-2 h-16 flex items-center justify-around">
         {ITEMS.map(({ id, icon: Icon, label, path }) => (
           <Link key={id} to={path} className={`flex flex-col items-center gap-1 px-3 py-2 rounded-md transition-colors ${active === id ? 'text-accent' : 'text-ink-muted hover:text-ink'}`}>

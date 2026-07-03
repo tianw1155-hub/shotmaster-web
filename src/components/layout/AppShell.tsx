@@ -1,34 +1,39 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
+import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
-import { BottomNav, type NavSection } from './BottomNav';
+import { BottomNav } from './BottomNav';
 import { SmoothScroll } from './SmoothScroll';
 
 const NO_NAV_PREFIXES = ['/login', '/preferences', '/admin'];
 const IMMERSIVE_PREFIXES = ['/shoot'];
-
-function deriveSection(pathname: string): NavSection {
-  if (pathname.startsWith('/gallery')) return 'gallery';
-  if (pathname.startsWith('/community')) return 'community';
-  if (pathname.startsWith('/learn')) return 'learn';
-  if (pathname.startsWith('/profile')) return 'profile';
-  return 'levels';
-}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const noNav = NO_NAV_PREFIXES.some((p) => location.pathname.startsWith(p));
   const immersive = IMMERSIVE_PREFIXES.some((p) => location.pathname.startsWith(p));
   const showNav = !noNav && !immersive;
-
   return (
     <MotionConfig reducedMotion="user">
       <SmoothScroll disabled={immersive}>
-        {showNav && <TopBar />}
-        {children}
-        {showNav && <BottomNav active={deriveSection(location.pathname)} />}
+        <div className={showNav ? 'lg:grid lg:grid-cols-[208px_1fr]' : ''}>
+          {showNav && <Sidebar />}
+          <div className="flex flex-col min-h-dvh">
+            {showNav && <TopBar />}
+            <div className="flex-1 flex flex-col">{children}</div>
+            {showNav && <BottomNav active={deriveActive(location.pathname)} />}
+          </div>
+        </div>
       </SmoothScroll>
     </MotionConfig>
   );
+}
+
+function deriveActive(p: string): 'levels' | 'gallery' | 'community' | 'learn' | 'profile' {
+  if (p.startsWith('/gallery')) return 'gallery';
+  if (p.startsWith('/community')) return 'community';
+  if (p.startsWith('/learn')) return 'learn';
+  if (p.startsWith('/profile')) return 'profile';
+  return 'levels';
 }
