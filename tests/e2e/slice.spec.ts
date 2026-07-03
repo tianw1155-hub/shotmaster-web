@@ -158,4 +158,24 @@ test('north-star slice: map -> level -> exposure lesson -> shoot -> score', asyn
   // Wait for the scoring result to appear (either "总分" or the score headline).
   // The mock AI returns immediately, so this should be fast.
   await expect(page.getByText(/总分/)).toBeVisible({ timeout: 15000 });
+
+  // 13. Desktop-only: verify each rolled-out page renders key headings
+  if (test.info().project.name === 'desktop') {
+    // /learn — "学习中心" heading
+    await page.goto('/learn');
+    await expect(page.getByRole('heading', { name: '学习中心' })).toBeVisible({ timeout: 10000 });
+
+    // /gallery — "参考图库" heading
+    await page.goto('/gallery');
+    await expect(page.getByRole('heading', { name: '参考图库' })).toBeVisible({ timeout: 10000 });
+
+    // /community — "社区挑战" heading
+    await page.goto('/community');
+    await expect(page.getByRole('heading', { name: '社区挑战' })).toBeVisible({ timeout: 10000 });
+
+    // /profile — user name heading + Lv badge
+    await page.goto('/profile');
+    await expect(page.getByRole('heading', { name: 'E2E游客' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Lv.1', { exact: true })).toBeVisible({ timeout: 5000 });
+  }
 });
