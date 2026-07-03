@@ -22,6 +22,7 @@ describe('Sidebar', () => {
   it('marks active item', () => {
     renderAt('/learn');
     const learn = screen.getByText('学习').closest('a')!;
-    expect(learn.className).toContain('on');
+    expect(learn.className).toContain('font-medium');
+    expect(learn.className).not.toContain('text-ink-muted');
   });
 });
