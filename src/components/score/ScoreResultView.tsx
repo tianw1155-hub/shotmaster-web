@@ -3,6 +3,7 @@ import { ArrowLeftRight, RefreshCw, ChevronRight, Sparkles, Home } from 'lucide-
 import { Card, Button, RingProgress } from '../ui/Button';
 import { motion } from 'framer-motion';
 import { variants } from '../../lib/motion';
+import { Confetti } from '../ui/Confetti';
 
 interface ScoreData {
   overall: number; stars: 0 | 1 | 2 | 3;
@@ -73,6 +74,9 @@ export function ScoreResultView({ score, capturedImage, referenceImage, fromComm
               className="pointer-events-none absolute left-1/2 top-1/2 w-10 h-10 -ml-5 -mt-5 rounded-full"
               style={{ background: 'radial-gradient(circle,rgba(177,74,58,.32),rgba(177,74,58,0) 70%)', animation: 'burst 900ms cubic-bezier(.22,1,.36,1) forwards' }}
             />
+          )}
+          {score.stars === 3 && revealed && (
+            <Confetti count={30} className="absolute inset-0 pointer-events-none z-10" />
           )}
           {[1, 2, 3].map((i) => (
             <motion.svg
