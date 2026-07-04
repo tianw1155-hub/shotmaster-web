@@ -5,6 +5,7 @@ import { Level, Stars, CompositionRule } from '../../types';
 import { useGameStore } from '../../stores/useGameStore';
 import { chapterInfo } from '../../services/levelService';
 import { compositionRuleLabels } from '../../utils/compositionUtils';
+import { Confetti } from '../ui/Confetti';
 
 // 参考线叠加组件
 export function CompositionOverlay({ rule, showLabel = true }: { rule: CompositionRule; showLabel?: boolean }) {
@@ -280,13 +281,13 @@ export function RewardModal({ show, xp, stars, streak, onClose, onNext, fromComm
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-md p-8 mx-6 max-w-sm w-full animate-bounce-in text-center">
+      <div className="bg-white rounded-md p-8 mx-6 max-w-sm w-full animate-bounce-in text-center relative">
+        <Confetti count={40} className="absolute inset-0 pointer-events-none" />
         <div className="flex justify-center gap-2 mb-4">
           {[1, 2, 3].map(i => (
             <svg
               key={i}
-              className={`w-12 h-12 ${i <= stars ? 'text-gold animate-star-pop' : 'text-line'}`}
-              style={{ animationDelay: `${i * 150}ms` }}
+              className={`w-12 h-12 ${i <= stars ? 'text-gold' : 'text-line'}`}
               fill="currentColor"
               viewBox="0 0 24 24"
             >
