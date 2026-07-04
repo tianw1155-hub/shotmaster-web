@@ -3,7 +3,8 @@ import { apertureFilter, apertureMask } from '../../../lib/filters';
 
 export const apertureConfig: ConceptConfig = {
   key: 'aperture', title: '光圈 · 景深', kicker: '第 6 课 · 曝光三要素',
-  image: { src: 'https://images.unsplash.com/photo-1504198266287-5f4a2f4a2f1f?auto=format&fit=crop&w=900&q=80', alt: '光圈示例' },
+  scene: 'portrait',
+  alt: '中心人像主体',
   param: { name: '光圈', min: 1.4, max: 16, step: 0.1, unit: 'f/', default: 5.6 },
   filter: apertureFilter,
   layers: { foregroundMask: apertureMask },

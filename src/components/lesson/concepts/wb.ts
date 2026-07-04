@@ -3,7 +3,8 @@ import { wbFilter } from '../../../lib/filters';
 
 export const wbConfig: ConceptConfig = {
   key: 'wb', title: '白平衡', kicker: '第 4 课 · 色彩与色温',
-  image: { src: 'https://images.unsplash.com/photo-1519331379826-f10be5486986?auto=format&fit=crop&w=900&q=80', alt: '白平衡示例' },
+  scene: 'neutral',
+  alt: '雪景与白花',
   param: { name: '色温', min: 2000, max: 10000, step: 100, unit: 'K', default: 5500 },
   filter: wbFilter,
   readout: (v) => ({ value: `${v}K`, label: '色温' }),

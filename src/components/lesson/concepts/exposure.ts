@@ -5,10 +5,8 @@ export const exposureConfig: ConceptConfig = {
   key: 'exposure',
   title: '曝光补偿',
   kicker: '第 3 课 · 曝光三要素',
-  image: {
-    src: 'https://images.unsplash.com/photo-1472214103451-9374bd12c9da?auto=format&fit=crop&w=900&q=80',
-    alt: '曝光示例风景',
-  },
+  scene: 'landscape',
+  alt: '日照风景',
   param: { name: '曝光补偿', min: -2, max: 2, step: 0.05, unit: 'EV', default: 0 },
   filter: exposureFilter,
   readout: (v) => ({ value: `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}`, label: 'EV' }),

@@ -18,7 +18,7 @@ describe('InteractiveLesson component', () => {
   it('renders title and image', () => {
     render(<InteractiveLesson concept={exposureConfig} onComplete={() => {}} />);
     expect(screen.getByRole('heading', { name: '曝光补偿' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: '曝光示例风景' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '日照风景' })).toBeInTheDocument();
   });
   it('shows hit toast when value enters target', () => {
     render(<InteractiveLesson concept={exposureConfig} onComplete={() => {}} />);

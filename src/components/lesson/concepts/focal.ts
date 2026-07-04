@@ -3,7 +3,8 @@ import { focalFilter } from '../../../lib/filters';
 
 export const focalConfig: ConceptConfig = {
   key: 'focal', title: '焦距', kicker: '第 7 课 · 镜头语言',
-  image: { src: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80', alt: '焦距示例' },
+  scene: 'street',
+  alt: '纵深透视街道',
   param: { name: '焦距', min: 24, max: 200, step: 1, unit: 'mm', default: 50 },
   filter: focalFilter,
   readout: (v) => ({ value: `${v}mm`, label: '焦距' }),

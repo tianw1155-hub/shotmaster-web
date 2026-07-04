@@ -3,7 +3,8 @@ import { isoFilter, isoOverlay } from '../../../lib/filters';
 
 export const isoConfig: ConceptConfig = {
   key: 'iso', title: 'ISO 感光度', kicker: '第 5 课 · 曝光三要素',
-  image: { src: 'https://images.unsplash.com/photo-1502602898-b0deb70d70ac?auto=format&fit=crop&w=900&q=80', alt: 'ISO 示例' },
+  scene: 'lowlight',
+  alt: '昏黄街灯夜景',
   param: { name: 'ISO', min: 100, max: 6400, step: 50, unit: '', default: 400 },
   filter: isoFilter,
   overlay: (v) => { const o = isoOverlay(v); return o > 0 ? { opacity: o } : null; },
