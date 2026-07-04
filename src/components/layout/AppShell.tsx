@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useLocation, Routes } from 'react-router-dom';
 import { MotionConfig, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { BottomNav } from './BottomNav';
 import { SmoothScroll } from './SmoothScroll';
+import { PageSkeleton } from '../ui/PageSkeleton';
 import { deriveSection } from '../../lib/navSection';
 
 const NO_NAV_PREFIXES = ['/login', '/preferences', '/admin'];
@@ -29,11 +30,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col min-h-dvh">
             {showNav && <TopBar />}
             <div className="flex-1 flex flex-col">
-              <AnimatePresence mode="wait">
-                <Routes location={location} key={location.pathname}>
-                  {children}
-                </Routes>
-              </AnimatePresence>
+              <Suspense fallback={<PageSkeleton />}>
+                <AnimatePresence mode="wait">
+                  <Routes location={location} key={location.pathname}>
+                    {children}
+                  </Routes>
+                </AnimatePresence>
+              </Suspense>
             </div>
             {showNav && <BottomNav active={deriveSection(location.pathname)} />}
           </div>

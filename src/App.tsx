@@ -1,8 +1,7 @@
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell } from './components/layout/AppShell';
-import { PageSkeleton } from './components/ui/PageSkeleton';
 import { useGameStore } from './stores/useGameStore';
 import { useAdminStore } from './stores/useAdminStore';
 
@@ -72,38 +71,36 @@ function App() {
     <BrowserRouter>
       <ErrorBoundary>
         <AppShell>
-          <Suspense fallback={<PageSkeleton />}>
-            {/* 前台路由 */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/preferences" element={<PreferencesPage />} />
-            <Route path="/" element={<AuthGuard><LevelMapPage /></AuthGuard>} />
-            <Route path="/gallery" element={<AuthGuard><GalleryPage /></AuthGuard>} />
-            <Route path="/gallery/:id" element={<AuthGuard><GalleryDetailPage /></AuthGuard>} />
-            <Route path="/gallery/score" element={<AuthGuard><GalleryScorePage /></AuthGuard>} />
-            <Route path="/level/:id" element={<AuthGuard><LevelDetailPage /></AuthGuard>} />
-            <Route path="/shoot/:levelId" element={<AuthGuard><ShootPage /></AuthGuard>} />
-            <Route path="/score/:levelId" element={<AuthGuard><ScorePage /></AuthGuard>} />
-            <Route path="/learn" element={<AuthGuard><LearnPage /></AuthGuard>} />
-            <Route path="/learn/:id" element={<AuthGuard><CourseDetailPage /></AuthGuard>} />
-            <Route path="/community" element={<AuthGuard><ErrorBoundary><CommunityPage /></ErrorBoundary></AuthGuard>} />
-            <Route path="/community/score" element={<AuthGuard><CommunityScorePage /></AuthGuard>} />
-            <Route path="/profile" element={<AuthGuard><ProfilePage /></AuthGuard>} />
-            <Route path="/profile/works" element={<AuthGuard><MyWorksPage /></AuthGuard>} />
-            <Route path="/profile/achievements" element={<AuthGuard><AchievementsPage /></AuthGuard>} />
-            <Route path="/profile/favorites" element={<AuthGuard><MyFavoritesPage /></AuthGuard>} />
+          {/* 前台路由 */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/preferences" element={<PreferencesPage />} />
+          <Route path="/" element={<AuthGuard><LevelMapPage /></AuthGuard>} />
+          <Route path="/gallery" element={<AuthGuard><GalleryPage /></AuthGuard>} />
+          <Route path="/gallery/:id" element={<AuthGuard><GalleryDetailPage /></AuthGuard>} />
+          <Route path="/gallery/score" element={<AuthGuard><GalleryScorePage /></AuthGuard>} />
+          <Route path="/level/:id" element={<AuthGuard><LevelDetailPage /></AuthGuard>} />
+          <Route path="/shoot/:levelId" element={<AuthGuard><ShootPage /></AuthGuard>} />
+          <Route path="/score/:levelId" element={<AuthGuard><ScorePage /></AuthGuard>} />
+          <Route path="/learn" element={<AuthGuard><LearnPage /></AuthGuard>} />
+          <Route path="/learn/:id" element={<AuthGuard><CourseDetailPage /></AuthGuard>} />
+          <Route path="/community" element={<AuthGuard><ErrorBoundary><CommunityPage /></ErrorBoundary></AuthGuard>} />
+          <Route path="/community/score" element={<AuthGuard><CommunityScorePage /></AuthGuard>} />
+          <Route path="/profile" element={<AuthGuard><ProfilePage /></AuthGuard>} />
+          <Route path="/profile/works" element={<AuthGuard><MyWorksPage /></AuthGuard>} />
+          <Route path="/profile/achievements" element={<AuthGuard><AchievementsPage /></AuthGuard>} />
+          <Route path="/profile/favorites" element={<AuthGuard><MyFavoritesPage /></AuthGuard>} />
 
-            {/* 后台路由 */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/admin" element={<AdminAuthGuard><AdminLayout /></AdminAuthGuard>}>
-              <Route index element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="feedback" element={<FeedbackPage />} />
-              <Route path="eval" element={<EvalSetsPage />} />
-              <Route path="ai-eval" element={<AIEvalPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
-          </Suspense>
+          {/* 后台路由 */}
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin" element={<AdminAuthGuard><AdminLayout /></AdminAuthGuard>}>
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="feedback" element={<FeedbackPage />} />
+            <Route path="eval" element={<EvalSetsPage />} />
+            <Route path="ai-eval" element={<AIEvalPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
         </AppShell>
       </ErrorBoundary>
     </BrowserRouter>
