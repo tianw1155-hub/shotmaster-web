@@ -7,6 +7,7 @@ import { getLevel, chapterInfo } from '../services/levelService';
 import { Card, Badge, Button, RingProgress } from '../components/ui/Button';
 import { Level, ShootingPlan, Score, ShootingPlanDimension } from '../types';
 import { PageLayout } from '../components/layout/PageLayout';
+import { HeroBack } from '../components/ui/HeroBack';
 import { InteractiveLesson } from '../components/lesson/InteractiveLesson';
 import { exposureConfig } from '../components/lesson/concepts/exposure';
 
@@ -280,12 +281,7 @@ export function LevelDetailPage() {
             <img src={level.referenceImage.url} alt={level.title} className="w-full max-h-[70vh] object-contain mx-auto" />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent pointer-events-none" />
-          <button
-            onClick={() => navigate('/')}
-            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-surface-card/80 backdrop-blur flex items-center justify-center shadow-md"
-          >
-            <ChevronRight className="w-5 h-5 text-ink rotate-180" />
-          </button>
+          <HeroBack onClick={() => navigate('/')} />
           {level.referenceImage.author && (
             <a
               href={level.referenceImage.authorUrl || '#'}

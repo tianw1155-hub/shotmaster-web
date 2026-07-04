@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { variants } from '../lib/motion';
 import { useGameStore } from '../stores/useGameStore';
 import { PageLayout } from '../components/layout/PageLayout';
+import { HeroBack } from '../components/ui/HeroBack';
 import { Card, Badge, Button, ProgressBar } from '../components/ui/Button';
 import { InteractiveLesson, type ConceptConfig } from '../components/lesson/InteractiveLesson';
 import { exposureConfig } from '../components/lesson/concepts/exposure';
@@ -256,12 +257,7 @@ export function CourseDetailPage() {
             className="w-full aspect-video object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
-          <button
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-surface-card/80 backdrop-blur flex items-center justify-center shadow-elevated hover:bg-surface-card transition-colors"
-          >
-            <ChevronRight className="w-5 h-5 text-ink rotate-180" strokeWidth={1.25} />
-          </button>
+          <HeroBack onClick={() => navigate(-1)} />
           {!isLocked && (
             <div className="absolute inset-0 flex items-center justify-center">
               <button

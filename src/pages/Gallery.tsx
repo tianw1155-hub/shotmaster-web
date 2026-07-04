@@ -30,6 +30,7 @@ import { aiService } from '../services/aiService';
 import { PageLayout } from '../components/layout/PageLayout';
 import { motion } from 'framer-motion';
 import { variants } from '../lib/motion';
+import { HeroBack } from '../components/ui/HeroBack';
 
 // 页签顺序：全部 -> 我的上传 -> 其他分类
 const categoryOrder = ['all', 'myupload', 'composition', 'light', 'color', 'portrait', 'landscape', 'still', 'street'];
@@ -592,12 +593,7 @@ export function GalleryDetailPage() {
             )}
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent pointer-events-none" />
-          <button
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-surface-card/80 backdrop-blur flex items-center justify-center shadow-sm z-10 hover:bg-surface-card transition-colors"
-          >
-            <ChevronRight className="w-5 h-5 text-ink rotate-180" strokeWidth={1.25} />
-          </button>
+          <HeroBack onClick={() => navigate(-1)} />
           {!isCustom && (
             <button
               onClick={() => setShowGuideLines(!showGuideLines)}
