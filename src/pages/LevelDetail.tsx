@@ -71,11 +71,11 @@ function ScoreDetailCard({
       {/* 对比图 */}
       <div className="grid grid-cols-2 gap-1 p-1 bg-surface-muted">
         <div className="relative bg-ink">
-          <img src={referenceImage} alt="参考" className="w-full aspect-square object-contain rounded-md" />
+          <img src={referenceImage} alt="参考" className="w-full aspect-square object-contain rounded-md" loading="lazy" />
           <span className="absolute bottom-1 left-1 px-2 py-0.5 bg-black/60 rounded text-white text-xs">参考图</span>
         </div>
         <div className="relative">
-          <img src={capturedImage} alt="作品" className="w-full aspect-square object-cover rounded-md" />
+          <img src={capturedImage} alt="作品" className="w-full aspect-square object-cover rounded-md" loading="lazy" />
           <span className="absolute bottom-1 right-1 px-2 py-0.5 bg-accent rounded text-white text-xs">你的作品</span>
         </div>
       </div>
@@ -197,7 +197,7 @@ export function LevelDetailPage() {
         {/* 参考图 */}
         <section className="relative animate-fade-in bg-ink">
           <motion.div layoutId={`lvl-${levelId}`}>
-            <img src={level.referenceImage.url} alt={level.title} className="w-full max-h-[70vh] object-contain mx-auto" />
+            <img src={level.referenceImage.url} alt={level.title} className="w-full max-h-[70vh] object-contain mx-auto" loading="lazy" />
           </motion.div>
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent pointer-events-none" />
           <HeroBack onClick={() => navigate('/')} />

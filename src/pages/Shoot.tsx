@@ -296,7 +296,7 @@ export function ShootPage() {
               onClick={() => setReferenceExpanded(true)}
             >
               <div className="relative">
-                <img src={referenceImage.url} alt="参考" className="w-full aspect-square object-cover" />
+                <img src={referenceImage.url} alt="参考" className="w-full aspect-square object-cover" loading="lazy" />
                 {showGuideLines && (
                   <CompositionOverlay rule={compositionRule} showLabel={false} />
                 )}
@@ -321,7 +321,7 @@ export function ShootPage() {
             >
               <div className="relative max-w-lg w-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
                 <div className="relative rounded-md overflow-hidden">
-                  <img src={referenceImage.url} alt="参考图" className="w-full h-auto max-h-[70vh] object-contain bg-ink" />
+                  <img src={referenceImage.url} alt="参考图" className="w-full h-auto max-h-[70vh] object-contain bg-ink" loading="lazy" />
                   {showGuideLines && (
                     <CompositionOverlay rule={compositionRule} showLabel={true} />
                   )}

@@ -103,18 +103,18 @@ export function ScoreResultView({ score, capturedImage, referenceImage, fromComm
           {compareMode === 'split' ? (
             <div className="grid grid-cols-2 gap-px bg-line">
               <div className="relative">
-                <img src={referenceImage.url} alt="参考" className="w-full aspect-square object-cover" />
+                <img src={referenceImage.url} alt="参考" className="w-full aspect-square object-cover" loading="lazy" />
                 <span className="absolute bottom-2 left-2 px-2 py-1 bg-ink/60 text-white text-xs rounded-sm">参考图</span>
               </div>
               <div className="relative">
-                <img src={capturedImage} alt="作品" className="w-full aspect-square object-cover" />
+                <img src={capturedImage} alt="作品" className="w-full aspect-square object-cover" loading="lazy" />
                 <span className="absolute bottom-2 right-2 px-2 py-1 bg-accent text-white text-xs rounded-sm">你的作品</span>
               </div>
             </div>
           ) : (
             <div className="relative aspect-square">
-              <img src={capturedImage} alt="作品" className="w-full h-full object-cover" />
-              <img src={referenceImage.url} alt="参考" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+              <img src={capturedImage} alt="作品" className="w-full h-full object-cover" loading="lazy" />
+              <img src={referenceImage.url} alt="参考" className="absolute inset-0 w-full h-full object-cover opacity-30" loading="lazy" />
             </div>
           )}
         </Card>

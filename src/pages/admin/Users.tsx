@@ -149,6 +149,7 @@ export const UsersPage: React.FC = () => {
                                   src={user.avatar}
                                   alt=""
                                   className="w-full h-full rounded-full object-cover"
+                                  loading="lazy"
                                 />
                               ) : (
                                 user.username.charAt(0).toUpperCase()

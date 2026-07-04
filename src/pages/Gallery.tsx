@@ -396,6 +396,7 @@ export function GalleryDetailPage() {
               src={image.url}
               alt={image.title}
               className="w-full max-h-[80vh] object-contain mx-auto"
+              loading="lazy"
             />
             {showGuideLines && !isCustom && (
               <CompositionOverlay rule={compositionRule} showLabel={true} />
@@ -640,6 +641,7 @@ function GalleryImageCard({
         src={image.url}
         alt={image.title}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        loading="lazy"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="absolute bottom-2 left-2 right-2">

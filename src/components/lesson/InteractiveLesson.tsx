@@ -79,11 +79,11 @@ export function InteractiveLesson({ concept, onComplete }: Props) {
       <div className="relative rounded-md overflow-hidden border border-line mb-4 h-72">
         {concept.layers ? (
           <>
-            <img src={concept.image.src} alt={concept.image.alt} className="absolute inset-0 w-full h-full object-cover" style={comparing ? {} : concept.filter(value)} />
-            <img src={concept.image.src} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" style={comparing ? {} : { WebkitMaskImage: `radial-gradient(circle at 50% 50%, #000 ${concept.layers.foregroundMask?.(value) ?? 100}%, transparent)`, maskImage: `radial-gradient(circle at 50% 50%, #000 ${concept.layers.foregroundMask?.(value) ?? 100}%, transparent)` }} />
+            <img src={concept.image.src} alt={concept.image.alt} className="absolute inset-0 w-full h-full object-cover" style={comparing ? {} : concept.filter(value)} loading="lazy" />
+            <img src={concept.image.src} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" style={comparing ? {} : { WebkitMaskImage: `radial-gradient(circle at 50% 50%, #000 ${concept.layers.foregroundMask?.(value) ?? 100}%, transparent)`, maskImage: `radial-gradient(circle at 50% 50%, #000 ${concept.layers.foregroundMask?.(value) ?? 100}%, transparent)` }} loading="lazy" />
           </>
         ) : (
-          <img src={concept.image.src} alt={concept.image.alt} className="w-full h-full object-cover transition-[filter,transform] duration-75" style={comparing ? {} : concept.filter(value)} />
+          <img src={concept.image.src} alt={concept.image.alt} className="w-full h-full object-cover transition-[filter,transform] duration-75" style={comparing ? {} : concept.filter(value)} loading="lazy" />
         )}
         {concept.overlay && !comparing && (() => { const o = concept.overlay(value); return o ? <div className="absolute inset-0 pointer-events-none mix-blend-overlay" style={{ opacity: o.opacity, backgroundImage: NOISE_BG, backgroundSize: '200px 200px' }} /> : null; })()}
         <div className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-white bg-black/55 backdrop-blur px-2 py-1 rounded-sm">实时预览</div>

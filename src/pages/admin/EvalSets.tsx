@@ -411,6 +411,7 @@ export const EvalSetsPage: React.FC = () => {
                               src={img.imageUrl}
                               alt={img.title || '评测图片'}
                               className="w-full h-48 object-cover rounded-lg bg-slate-100"
+                              loading="lazy"
                             />
                             <a
                               href={img.imageUrl}
@@ -474,6 +475,7 @@ export const EvalSetsPage: React.FC = () => {
                   src={editingImage.imageUrl}
                   alt=""
                   className="w-full max-h-64 object-contain rounded-lg bg-slate-100"
+                  loading="lazy"
                 />
               </div>
 
@@ -642,6 +644,7 @@ export const EvalSetsPage: React.FC = () => {
                         src={newImageUrl}
                         alt="预览"
                         className="w-full h-32 object-cover rounded-lg"
+                        loading="lazy"
                       />
                     </div>
                   )}
@@ -662,6 +665,7 @@ export const EvalSetsPage: React.FC = () => {
                         src={newImageUrl}
                         alt="预览"
                         className="w-full h-32 object-cover rounded-lg"
+                        loading="lazy"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}

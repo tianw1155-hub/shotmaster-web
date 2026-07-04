@@ -163,7 +163,7 @@ function UserDetailModal({
           <div className="grid grid-cols-3 gap-2">
             {(workData.topWorks || []).map((imgUrl, idx) => (
               <div key={idx} className="aspect-square rounded-md overflow-hidden">
-                <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                <img src={imgUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
               </div>
             ))}
           </div>
@@ -176,7 +176,7 @@ function UserDetailModal({
             本周作品
           </h3>
           <div className="rounded-md overflow-hidden">
-            <img src={workData.image || ''} alt="" className="w-full aspect-square object-cover" />
+            <img src={workData.image || ''} alt="" className="w-full aspect-square object-cover" loading="lazy" />
           </div>
           <div className="flex items-center justify-between mt-2 px-1">
             <span className="text-ink-muted text-xs">{workData.createdAt || ''}</span>
@@ -209,7 +209,7 @@ function WeeklyChallengeCard({
   return (
     <div className="border border-line rounded-md overflow-hidden">
       <div className="relative">
-        <img src={weeklyChallenge.url} alt={weeklyChallenge.title} className="w-full aspect-video object-cover" />
+        <img src={weeklyChallenge.url} alt={weeklyChallenge.title} className="w-full aspect-video object-cover" loading="lazy" />
         <div className="absolute top-3 right-3 px-3 py-1.5 rounded-full bg-accent text-surface text-xs font-bold flex items-center gap-1">
           <Clock className="w-3 h-3" strokeWidth={1.25} />
           还剩 3 天
@@ -412,7 +412,7 @@ export function CommunityPage() {
                         {work.avatar}
                       </button>
                       <div className="rounded-md overflow-hidden shadow-elevated">
-                        <img src={work.image} alt="" className="w-full aspect-square object-cover" />
+                        <img src={work.image} alt="" className="w-full aspect-square object-cover" loading="lazy" />
                       </div>
                       <div className="flex items-center justify-center mt-1">
                         <button
@@ -445,7 +445,7 @@ export function CommunityPage() {
                   initial="hidden"
                   animate="show"
                 >
-                  <img src={work.image} alt="" className="w-full aspect-square object-cover" />
+                  <img src={work.image} alt="" className="w-full aspect-square object-cover" loading="lazy" />
                   <div className="p-2">
                     <div className="flex items-center justify-between">
                       {/* 头像可点击 */}
@@ -489,7 +489,7 @@ export function CommunityPage() {
                   animate="show"
                 >
                   <div className="relative">
-                    <img src={work.image} alt="" className="w-full aspect-square object-cover" />
+                    <img src={work.image} alt="" className="w-full aspect-square object-cover" loading="lazy" />
                     {/* 我的标签页：下架按钮 */}
                     {activeTab === 'mine' && work.authorId === user.id && (
                       <button

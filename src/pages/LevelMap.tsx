@@ -83,7 +83,7 @@ export function LevelMapPage() {
             </motion.div>
           </div>
           <motion.div variants={variants.heroImage} initial="hidden" animate="show" className="relative aspect-[4/5] rounded-md overflow-hidden border border-line bg-ink">
-            <img src={curLevel.referenceImage.url} alt={curLevel.title} className="w-full h-full object-cover" />
+            <img src={curLevel.referenceImage.url} alt={curLevel.title} className="w-full h-full object-cover" loading="eager" />
             <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px)', backgroundSize: '33.3% 33.3%' }} />
             <div className="absolute left-3 bottom-3 text-white/90 text-[10px] font-mono tracking-wide bg-ink/55 backdrop-blur px-2 py-1 rounded">{curLevel.title} · 参考</div>
           </motion.div>

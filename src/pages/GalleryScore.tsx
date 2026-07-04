@@ -92,18 +92,18 @@ export function GalleryScorePage() {
             {compareMode === 'split' ? (
               <div className="grid grid-cols-2 gap-1 p-1 bg-surface-muted">
                 <div className="relative">
-                  <img src={referenceImage} alt="参考" className="w-full aspect-square object-cover rounded-md" />
+                  <img src={referenceImage} alt="参考" className="w-full aspect-square object-cover rounded-md" loading="lazy" />
                   <span className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-md text-white text-xs">参考图</span>
                 </div>
                 <div className="relative">
-                  <img src={capturedImage} alt="作品" className="w-full aspect-square object-cover rounded-md" />
+                  <img src={capturedImage} alt="作品" className="w-full aspect-square object-cover rounded-md" loading="lazy" />
                   <span className="absolute bottom-2 right-2 px-2 py-1 bg-accent rounded-md text-white text-xs">你的作品</span>
                 </div>
               </div>
             ) : (
               <div className="relative aspect-square">
-                <img src={capturedImage} alt="作品" className="w-full h-full object-cover rounded-md" />
-                <img src={referenceImage} alt="参考" className="absolute inset-0 w-full h-full object-cover rounded-md opacity-30" />
+                <img src={capturedImage} alt="作品" className="w-full h-full object-cover rounded-md" loading="lazy" />
+                <img src={referenceImage} alt="参考" className="absolute inset-0 w-full h-full object-cover rounded-md opacity-30" loading="lazy" />
               </div>
             )}
           </Card>

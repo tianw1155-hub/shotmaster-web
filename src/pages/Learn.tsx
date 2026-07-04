@@ -121,6 +121,7 @@ export function LearnPage() {
                               src={course.thumbnail}
                               alt={course.title}
                               className={`w-16 h-16 rounded-md object-cover ${course.completed ? 'ring-1 ring-accent' : ''}`}
+                              loading="lazy"
                             />
                             {course.completed && (
                               <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent flex items-center justify-center">
@@ -255,6 +256,7 @@ export function CourseDetailPage() {
             src={course.thumbnail}
             alt={course.title}
             className="w-full aspect-video object-cover"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
           <HeroBack onClick={() => navigate(-1)} />
