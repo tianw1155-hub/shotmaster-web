@@ -6,6 +6,7 @@ import { useGameStore } from '../stores/useGameStore';
 import { getLevel } from '../services/levelService';
 import { PageLayout } from '../components/layout/PageLayout';
 import { variants } from '../lib/motion';
+import { ChapterHeader } from '../components/ui/ChapterHeader';
 
 type LessonStatus = 'locked' | 'available' | 'completed';
 interface LevelNode { id: number; status: LessonStatus; stars: number; title: string; chapterKey: string; chapterName: string; }
@@ -105,15 +106,7 @@ export function LevelMapPage() {
             <div className="flex flex-col">
               {chapters.map(ch => {
                 const done = ch.levels.filter(l => l.status === 'completed').length;
-                const pct = Math.round((done / ch.levels.length) * 100);
-                return (
-                  <div key={ch.key} className="flex items-center gap-3.5 py-3.5 border-b border-line last:border-b-0">
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: ch.chapter.color }} />
-                    <span className="text-[13px] flex-1">{ch.chapter.name}<span className="block text-[10px] text-ink-muted font-mono mt-0.5">{String(done).padStart(2,'0')} / {ch.levels.length}</span></span>
-                    <span className="w-14 h-[2px] bg-line rounded-full overflow-hidden"><span className="block h-full bg-ink" style={{ width: `${pct}%` }} /></span>
-                    <span className="text-[10px] text-ink-muted font-mono w-7 text-right">{pct}</span>
-                  </div>
-                );
+                return <ChapterHeader key={ch.key} name={ch.chapter.name} color={ch.chapter.color} completed={done} total={ch.levels.length} />;
               })}
             </div>
           </div>
