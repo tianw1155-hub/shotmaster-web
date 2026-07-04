@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Lock, Check, ChevronRight, Clock, BookOpen, Play, Star } from 'lucide-react';
+import { Lock, Check, ChevronRight, Clock, BookOpen, Play, Star, Gamepad2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { variants } from '../lib/motion';
 import { useGameStore } from '../stores/useGameStore';
 import { PageLayout } from '../components/layout/PageLayout';
 import { Card, Badge, Button, ProgressBar } from '../components/ui/Button';
+import { InteractiveLesson, type ConceptConfig } from '../components/lesson/InteractiveLesson';
+import { exposureConfig } from '../components/lesson/concepts/exposure';
+import { wbConfig } from '../components/lesson/concepts/wb';
+import { isoConfig } from '../components/lesson/concepts/iso';
+import { apertureConfig } from '../components/lesson/concepts/aperture';
+import { focalConfig } from '../components/lesson/concepts/focal';
+
+const conceptList: ConceptConfig[] = [exposureConfig, wbConfig, isoConfig, apertureConfig, focalConfig];
 
 type CatColor = 'default' | 'gold' | 'accent';
 
@@ -29,9 +37,18 @@ const difficultyColors: Record<string, 'default' | 'gold' | 'accent'> = {
 export function LearnPage() {
   const navigate = useNavigate();
   const { user, courses } = useGameStore();
+  const [activeConcept, setActiveConcept] = useState<ConceptConfig | null>(null);
 
   const completedCount = courses.filter(c => c.completed).length;
   const progress = courses.length > 0 ? (completedCount / courses.length) * 100 : 0;
+
+  if (activeConcept) {
+    return (
+      <PageLayout>
+        <InteractiveLesson concept={activeConcept} onComplete={() => setActiveConcept(null)} />
+      </PageLayout>
+    );
+  }
 
   // Group courses by category
   const grouped = courses.reduce<Record<string, typeof courses>>((acc, c) => {
@@ -47,6 +64,26 @@ export function LearnPage() {
           <h1 className="font-display text-2xl font-bold text-ink mb-1">学习中心</h1>
           <p className="text-ink-muted text-sm">系统化摄影课程，随等级提升解锁</p>
         </motion.div>
+
+        {/* Interactive practice hub */}
+        <motion.section variants={variants.fadeUp} initial="hidden" animate="show" transition={{ delay: 0.03 }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Gamepad2 className="w-4 h-4 text-accent" strokeWidth={1.25} />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-muted">动手练习</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {conceptList.map((c) => (
+              <button
+                key={c.key}
+                onClick={() => setActiveConcept(c)}
+                className="rounded-md border border-line px-3 py-3 text-sm text-left hover:bg-surface-muted transition-colors group"
+              >
+                <div className="font-medium text-ink group-hover:text-accent transition-colors">{c.title}</div>
+                <div className="text-ink-muted text-[11px] mt-0.5 leading-tight">{c.kicker}</div>
+              </button>
+            ))}
+          </div>
+        </motion.section>
 
         {/* Course list grouped by category */}
         <div className="space-y-6">
