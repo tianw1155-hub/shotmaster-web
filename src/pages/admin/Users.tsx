@@ -63,7 +63,7 @@ export const UsersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 顶部栏 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-800">用户管理</h2>
@@ -93,7 +93,7 @@ export const UsersPage: React.FC = () => {
       </div>
 
       {/* 用户列表 */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />

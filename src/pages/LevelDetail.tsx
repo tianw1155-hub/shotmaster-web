@@ -27,10 +27,10 @@ function ScoreDetailCard({
   onClose: () => void;
 }) {
   const scoreItems = [
-    { label: '构图', value: score.composition, color: 'bg-sky' },
-    { label: '光线', value: score.lighting, color: 'bg-sun' },
-    { label: '色彩', value: score.color, color: 'bg-grape' },
-    { label: '相似度', value: score.similarity, color: 'bg-mint' },
+    { label: '构图', value: score.composition, color: 'bg-ink-muted' },
+    { label: '光线', value: score.lighting, color: 'bg-gold' },
+    { label: '色彩', value: score.color, color: 'bg-ink-muted' },
+    { label: '相似度', value: score.similarity, color: 'bg-ink-muted' },
   ];
 
   return (
@@ -58,7 +58,7 @@ function ScoreDetailCard({
           {[1, 2, 3].map(i => (
             <Star
               key={i}
-              className={`w-8 h-8 ${i <= score.stars ? 'text-sun fill-sun' : 'text-ink-muted'}`}
+              className={`w-8 h-8 ${i <= score.stars ? 'text-gold fill-gold' : 'text-ink-muted'}`}
             />
           ))}
         </div>

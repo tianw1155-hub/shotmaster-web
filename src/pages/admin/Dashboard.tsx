@@ -148,7 +148,7 @@ export const DashboardPage: React.FC = () => {
       {/* 统计卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card) => (
-          <div key={card.label} className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition">
+          <div key={card.label} className="bg-white rounded-md shadow-sm p-6 hover:shadow-md transition">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-slate-500 mb-1">{card.label}</p>
@@ -163,7 +163,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* 时间维度选择器 */}
-      <div className="bg-white rounded-2xl shadow-sm p-4">
+      <div className="bg-white rounded-md shadow-sm p-4">
         <div className="flex items-center gap-2">
           <Calendar className="w-5 h-5 text-slate-400" />
           <span className="text-sm text-slate-600">时间维度：</span>
@@ -205,7 +205,7 @@ export const DashboardPage: React.FC = () => {
       {/* 两列布局 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 用户增长趋势 */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="bg-white rounded-md shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-800">用户增长趋势</h3>
@@ -237,7 +237,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* 反馈概览 */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="bg-white rounded-md shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-semibold text-slate-800">反馈概览</h3>
@@ -321,7 +321,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* 维度反馈分析 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">分维度反馈分析</h3>

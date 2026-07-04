@@ -135,18 +135,18 @@ export function TopBar({ title }: { title?: string }) {
   const { user } = useGameStore();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-50">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-line">
       <div className="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link to="/profile" className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-sun flex items-center justify-center text-xl shadow-sm">
+          <Link to="/profile" className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-gold flex items-center justify-center text-xl shadow-sm">
             {user.avatar}
           </Link>
           <div>
             <p className="text-xs text-ink-muted">等级 {user.level}</p>
             <div className="flex items-center gap-1">
-              <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-24 h-2 bg-surface-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-primary to-sun rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-accent to-gold rounded-full transition-all duration-500"
                   style={{ width: `${(user.xp / user.xpToNext) * 100}%` }}
                 />
               </div>
@@ -157,8 +157,8 @@ export function TopBar({ title }: { title?: string }) {
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100">
-            <Flame className="w-4 h-4 text-primary" />
-            <span className="text-sm font-bold text-primary">{user.streak}</span>
+            <Flame className="w-4 h-4 text-accent" />
+            <span className="text-sm font-bold text-accent">{user.streak}</span>
           </div>
         </div>
       </div>
@@ -177,14 +177,14 @@ export function BottomNav({ active }: { active: 'levels' | 'gallery' | 'communit
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-gray-50">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-line">
       <div className="max-w-lg mx-auto px-2 h-16 flex items-center justify-around">
         {items.map(({ id, icon: Icon, label, path }) => (
           <Link
             key={id}
             to={path}
-            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all ${
-              active === id ? 'text-primary' : 'text-ink-muted hover:text-ink'
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-md transition-all ${
+              active === id ? 'text-accent' : 'text-ink-muted hover:text-ink'
             }`}
           >
             <Icon className={`w-5 h-5 ${active === id ? 'scale-110' : ''} transition-transform`} />
@@ -200,20 +200,20 @@ export function BottomNav({ active }: { active: 'levels' | 'gallery' | 'communit
 export function LevelNode({ level, isCurrent, onClick }: { level: Level; isCurrent: boolean; onClick: () => void }) {
   const info = chapterInfo[level.chapter];
   const colorMap: Record<string, string> = {
-    mint: 'from-mint to-mint-light',
-    sky: 'from-sky to-sky-light',
-    sun: 'from-sun to-sun-light',
-    primary: 'from-primary to-primary-light',
-    grape: 'from-grape to-grape-light',
+    mint: 'from-accent to-accent-soft',
+    sky: 'from-chapter-composition to-chapter-composition',
+    sun: 'from-chapter-light to-chapter-light',
+    primary: 'from-chapter-narrative to-chapter-narrative',
+    grape: 'from-chapter-color to-chapter-color',
   };
 
   if (level.status === 'locked') {
     return (
       <div className="flex flex-col items-center gap-2">
-        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center shadow-sm">
-          <Lock className="w-6 h-6 text-gray-400" />
+        <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center shadow-sm">
+          <Lock className="w-6 h-6 text-ink-muted" />
         </div>
-        <span className="text-xs text-gray-400 font-medium">{level.id}</span>
+        <span className="text-xs text-ink-muted font-medium">{level.id}</span>
       </div>
     );
   }
@@ -228,7 +228,7 @@ export function LevelNode({ level, isCurrent, onClick }: { level: Level; isCurre
       >
         <span className="text-2xl">{info.icon}</span>
         {level.status === 'completed' && (
-          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-mint flex items-center justify-center border-2 border-white">
+          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center border-2 border-white">
             <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
           </div>
         )}
@@ -239,7 +239,7 @@ export function LevelNode({ level, isCurrent, onClick }: { level: Level; isCurre
             {[1, 2, 3].map(i => (
               <Star
                 key={i}
-                className={`w-3 h-3 ${i <= level.stars ? 'text-sun fill-sun' : 'text-gray-200'}`}
+                className={`w-3 h-3 ${i <= level.stars ? 'text-gold fill-gold' : 'text-line'}`}
               />
             ))}
           </div>
@@ -256,10 +256,10 @@ export function LevelNode({ level, isCurrent, onClick }: { level: Level; isCurre
 export function StreakFlame({ streak }: { streak: number }) {
   if (streak === 0) return null;
   return (
-    <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100">
-      <Flame className="w-5 h-5 text-primary animate-flame" fill="currentColor" />
+    <div className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-100">
+      <Flame className="w-5 h-5 text-accent animate-flame" fill="currentColor" />
       <div>
-        <span className="font-bold text-primary text-lg">{streak}</span>
+        <span className="font-bold text-accent text-lg">{streak}</span>
         <span className="text-xs text-ink-secondary ml-1">天连胜</span>
       </div>
     </div>
@@ -280,12 +280,12 @@ export function RewardModal({ show, xp, stars, streak, onClose, onNext, fromComm
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-4xl p-8 mx-6 max-w-sm w-full animate-bounce-in text-center">
+      <div className="bg-white rounded-md p-8 mx-6 max-w-sm w-full animate-bounce-in text-center">
         <div className="flex justify-center gap-2 mb-4">
           {[1, 2, 3].map(i => (
             <svg
               key={i}
-              className={`w-12 h-12 ${i <= stars ? 'text-sun animate-star-pop' : 'text-gray-200'}`}
+              className={`w-12 h-12 ${i <= stars ? 'text-gold animate-star-pop' : 'text-line'}`}
               style={{ animationDelay: `${i * 150}ms` }}
               fill="currentColor"
               viewBox="0 0 24 24"
@@ -299,16 +299,16 @@ export function RewardModal({ show, xp, stars, streak, onClose, onNext, fromComm
         <p className="text-ink-secondary text-sm mb-6">{fromCommunity ? '感谢参与本周社区挑战' : '恭喜完成本关挑战'}</p>
 
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-primary/5 rounded-2xl p-3">
-            <p className="text-2xl font-bold text-primary">+{xp}</p>
+          <div className="bg-accent/5 rounded-md p-3">
+            <p className="text-2xl font-bold text-accent">+{xp}</p>
             <p className="text-xs text-ink-muted">经验值</p>
           </div>
-          <div className="bg-sun/10 rounded-2xl p-3">
-            <p className="text-2xl font-bold text-yellow-600">{stars}★</p>
+          <div className="bg-gold/10 rounded-md p-3">
+            <p className="text-2xl font-bold text-gold">{stars}★</p>
             <p className="text-xs text-ink-muted">本关星级</p>
           </div>
-          <div className="bg-orange-50 rounded-2xl p-3">
-            <p className="text-2xl font-bold text-primary">{streak}</p>
+          <div className="bg-orange-50 rounded-md p-3">
+            <p className="text-2xl font-bold text-accent">{streak}</p>
             <p className="text-xs text-ink-muted">连胜</p>
           </div>
         </div>
@@ -316,14 +316,14 @@ export function RewardModal({ show, xp, stars, streak, onClose, onNext, fromComm
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 rounded-2xl bg-gray-100 text-ink-secondary font-medium hover:bg-gray-200 transition-colors"
+            className="flex-1 px-4 py-3 rounded-md bg-surface-muted text-ink-secondary font-medium hover:bg-line transition-colors"
           >
             关闭
           </button>
           {!fromCommunity && (
             <button
               onClick={onNext}
-              className="flex-1 px-4 py-3 rounded-2xl bg-primary text-white font-medium shadow-lg shadow-primary/30 hover:brightness-110 transition-all"
+              className="flex-1 px-4 py-3 rounded-md bg-accent text-white font-medium shadow-lg shadow-accent/30 hover:brightness-110 transition-all"
             >
               下一关
             </button>

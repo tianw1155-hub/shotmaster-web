@@ -200,7 +200,7 @@ export const EvalSetsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 顶部栏 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-800">评测集管理</h2>
@@ -237,7 +237,7 @@ export const EvalSetsPage: React.FC = () => {
       </form>
 
       {/* 评测集列表 */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
@@ -318,7 +318,7 @@ export const EvalSetsPage: React.FC = () => {
       {/* 创建评测集弹窗 */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-white rounded-md shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-800">创建评测集</h3>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600">
@@ -369,7 +369,7 @@ export const EvalSetsPage: React.FC = () => {
       {/* 图片列表/标注弹窗 */}
       {selectedSet && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white rounded-md shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <div>
                 <h3 className="text-lg font-semibold text-slate-800">{selectedSet.name}</h3>
@@ -460,7 +460,7 @@ export const EvalSetsPage: React.FC = () => {
       {/* 标注编辑弹窗 */}
       {editingImage && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white rounded-md shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between p-6 border-b border-slate-100">
               <h3 className="text-lg font-semibold text-slate-800">标注 Ground Truth</h3>
               <button onClick={() => setEditingImage(null)} className="text-slate-400 hover:text-slate-600">
@@ -583,7 +583,7 @@ export const EvalSetsPage: React.FC = () => {
       {/* 添加图片弹窗 */}
       {showAddImageModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-white rounded-md shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-800">添加评测图片</h3>
               <button onClick={() => setShowAddImageModal(false)} className="text-slate-400 hover:text-slate-600">

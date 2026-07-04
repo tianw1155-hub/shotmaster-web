@@ -80,7 +80,7 @@ export const AIEvalPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 顶部说明 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex items-start gap-4">
           <Camera className="w-8 h-8 text-purple-500 flex-shrink-0" />
           <div>
@@ -94,7 +94,7 @@ export const AIEvalPage: React.FC = () => {
       </div>
 
       {/* 选择评测集并运行 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <h3 className="text-lg font-semibold text-slate-800 mb-4">运行评测</h3>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
@@ -150,7 +150,7 @@ export const AIEvalPage: React.FC = () => {
       {results && (
         <div className="space-y-6">
           {/* 总体指标 */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
+          <div className="bg-white rounded-md shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="text-lg font-semibold text-slate-800">评测结果</h3>
@@ -188,7 +188,7 @@ export const AIEvalPage: React.FC = () => {
           </div>
 
           {/* 分维度得分 */}
-          <div className="bg-white rounded-2xl shadow-sm p-6">
+          <div className="bg-white rounded-md shadow-sm p-6">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">分维度准确率</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(results.dimensionScores).map(([dim, score]: [string, any]) => (
@@ -220,7 +220,7 @@ export const AIEvalPage: React.FC = () => {
 
           {/* 错误分析 */}
           {results.errors && results.errors.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-md shadow-sm p-6">
               <h3 className="text-lg font-semibold text-slate-800 mb-4">错误分析</h3>
               <div className="space-y-3">
                 {results.errors.slice(0, 10).map((err: any, idx: number) => (
@@ -241,7 +241,7 @@ export const AIEvalPage: React.FC = () => {
           )}
 
           {/* 评测建议 */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6">
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-md p-6">
             <div className="flex items-start gap-4">
               <TrendingUp className="w-6 h-6 text-purple-500 flex-shrink-0" />
               <div>
@@ -259,7 +259,7 @@ export const AIEvalPage: React.FC = () => {
 
       {/* 等待评测 */}
       {running && (
-        <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
+        <div className="bg-white rounded-md shadow-sm p-12 text-center">
           <Clock className="w-12 h-12 text-purple-500 mx-auto mb-4 animate-spin" />
           <p className="text-lg font-semibold text-slate-800">正在评测AI模型...</p>
           <p className="text-sm text-slate-500 mt-2">对比Ground Truth与AI输出，计算各维度准确率</p>

@@ -12,8 +12,7 @@ export const buttonVariants = cva(
         secondary: 'bg-surface-card text-ink border border-line hover:bg-surface-muted',
         outline: 'border border-ink text-ink hover:bg-ink hover:text-surface',
         ghost: 'text-ink-secondary hover:bg-surface-muted',
-        // legacy compat — callers still pass variant="mint"
-        mint: 'bg-mint text-white shadow-lg shadow-mint/30 hover:brightness-110',
+        mint: 'bg-accent text-surface shadow-lg shadow-accent/30 hover:brightness-110',
       },
       size: {
         sm: 'rounded-md px-3 py-2 text-sm',

@@ -16,7 +16,7 @@ function getPasswordStrength(password: string): { level: number; label: string; 
   if (level <= 2) return { level, label: '弱', color: 'bg-red-500' };
   if (level <= 3) return { level, label: '中', color: 'bg-yellow-500' };
   if (level <= 4) return { level, label: '强', color: 'bg-green-500' };
-  return { level, label: '非常强', color: 'bg-primary' };
+  return { level, label: '非常强', color: 'bg-accent' };
 }
 
 function PasswordStrength({ password }: { password: string }) {
@@ -28,7 +28,7 @@ function PasswordStrength({ password }: { password: string }) {
           <div
             key={i}
             className={`h-1 flex-1 rounded-full transition-colors ${
-              i < strength.level ? strength.color : 'bg-gray-200'
+              i < strength.level ? strength.color : 'bg-surface-muted'
             }`}
           />
         ))}
@@ -141,11 +141,11 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface via-surface to-primary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-surface via-surface to-accent/10 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent mb-4 shadow-lg shadow-primary/20">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-md bg-gradient-to-br from-accent to-accent-soft mb-4 shadow-lg shadow-accent/20">
             <Camera className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-ink">ShotMaster</h1>
@@ -153,9 +153,9 @@ export function LoginPage() {
         </div>
 
         {/* 登录/注册表单 */}
-        <div className="bg-surface rounded-2xl p-6 shadow-xl border border-gray-100">
+        <div className="bg-surface rounded-md p-6 shadow-xl border border-line">
           {/* 模式切换 */}
-          <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
+          <div className="flex bg-surface-muted rounded-xl p-1 mb-6">
             <button
               onClick={() => setMode('login')}
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
@@ -192,7 +192,7 @@ export function LoginPage() {
                   }}
                   placeholder="请输入用户名（即昵称）"
                   maxLength={20}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-ink placeholder-ink-light focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-line bg-surface-muted text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition"
                 />
               </div>
             </div>
@@ -209,7 +209,7 @@ export function LoginPage() {
                     setError('');
                   }}
                   placeholder="请输入密码"
-                  className="w-full pl-11 pr-12 py-3 rounded-xl border border-gray-200 bg-gray-50 text-ink placeholder-ink-light focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+                  className="w-full pl-11 pr-12 py-3 rounded-xl border border-line bg-surface-muted text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition"
                 />
                 <button
                   type="button"
@@ -238,7 +238,7 @@ export function LoginPage() {
                       setError('');
                     }}
                     placeholder="请再次输入密码"
-                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-ink placeholder-ink-light focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-line bg-surface-muted text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-accent to-accent-soft text-white font-semibold shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isLoading ? '加载中...' : mode === 'login' ? '登 录' : '注 册'}
               {!isLoading && <ChevronRight className="w-5 h-5" />}
@@ -260,15 +260,15 @@ export function LoginPage() {
 
           {/* 分隔线 */}
           <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className="flex-1 h-px bg-line" />
             <span className="text-ink-light text-sm">或</span>
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className="flex-1 h-px bg-line" />
           </div>
 
           {/* 游客登录 */}
           <button
             onClick={handleGuestLogin}
-            className="w-full py-3 rounded-xl border border-gray-200 text-ink font-medium hover:bg-gray-50 transition"
+            className="w-full py-3 rounded-xl border border-line text-ink font-medium hover:bg-surface-muted transition"
           >
             游客模式体验
           </button>
@@ -279,14 +279,14 @@ export function LoginPage() {
           {mode === 'login' ? (
             <>
               还没有账号？{' '}
-              <button onClick={toggleMode} className="text-primary font-medium hover:underline">
+              <button onClick={toggleMode} className="text-accent font-medium hover:underline">
                 立即注册
               </button>
             </>
           ) : (
             <>
               已有账号？{' '}
-              <button onClick={toggleMode} className="text-primary font-medium hover:underline">
+              <button onClick={toggleMode} className="text-accent font-medium hover:underline">
                 立即登录
               </button>
             </>

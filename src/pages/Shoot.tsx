@@ -247,7 +247,7 @@ export function ShootPage() {
                   <button
                     onClick={handleRetryCamera}
                     disabled={isRetrying}
-                    className="w-full px-6 py-3.5 rounded-2xl bg-accent text-surface font-medium shadow-lg shadow-accent/30 hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full px-6 py-3.5 rounded-md bg-accent text-surface font-medium shadow-lg shadow-accent/30 hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     <RefreshCw className={`w-5 h-5 ${isRetrying ? 'animate-spin' : ''}`} />
                     {isRetrying ? '正在重试...' : '重新获取权限'}
@@ -255,14 +255,14 @@ export function ShootPage() {
                 )}
                 <button
                   onClick={handleSwitchToUpload}
-                  className="w-full px-6 py-3.5 rounded-2xl bg-surface-card/10 text-surface font-medium hover:bg-surface-card/15 transition-all flex items-center justify-center gap-2"
+                  className="w-full px-6 py-3.5 rounded-md bg-surface-card/10 text-surface font-medium hover:bg-surface-card/15 transition-all flex items-center justify-center gap-2"
                 >
                   <Upload className="w-5 h-5" />
                   改用上传图片
                 </button>
               </div>
 
-              <div className="mt-6 bg-surface-card/5 rounded-2xl p-4 text-left">
+              <div className="mt-6 bg-surface-card/5 rounded-md p-4 text-left">
                 <p className="text-surface/80 text-sm mb-2">📌 本关要求</p>
                 <p className="text-surface/60 text-sm mb-1">参考图：{level.referenceImage.title}</p>
                 {level.constraints?.map((c, i) => (
@@ -292,7 +292,7 @@ export function ShootPage() {
 
           {/* 参考图叠加 */}
           {showReference && (
-            <div className="absolute top-20 right-4 w-32 rounded-2xl overflow-hidden border-2 border-white/40 shadow-xl cursor-pointer"
+            <div className="absolute top-20 right-4 w-32 rounded-md overflow-hidden border-2 border-white/40 shadow-xl cursor-pointer"
               onClick={() => setReferenceExpanded(true)}
             >
               <div className="relative">
@@ -320,7 +320,7 @@ export function ShootPage() {
               onClick={() => setReferenceExpanded(false)}
             >
               <div className="relative max-w-lg w-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
-                <div className="relative rounded-2xl overflow-hidden">
+                <div className="relative rounded-md overflow-hidden">
                   <img src={referenceImage.url} alt="参考图" className="w-full h-auto max-h-[70vh] object-contain bg-ink" />
                   {showGuideLines && (
                     <CompositionOverlay rule={compositionRule} showLabel={true} />
@@ -390,7 +390,7 @@ export function ShootPage() {
         <div className="min-h-screen flex flex-col items-center justify-center p-8">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full max-w-sm border-2 border-dashed border-surface-card/20 rounded-3xl p-12 text-center hover:border-accent/50 transition-colors"
+            className="w-full max-w-sm border-2 border-dashed border-surface-card/20 rounded-md p-12 text-center hover:border-accent/50 transition-colors"
           >
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
             <div className="w-16 h-16 mx-auto rounded-full bg-surface-card/10 flex items-center justify-center mb-4">
@@ -400,7 +400,7 @@ export function ShootPage() {
             <p className="text-surface/40 text-sm">支持 JPG / PNG</p>
           </button>
 
-          <div className="mt-6 max-w-sm w-full bg-surface-card/5 rounded-2xl p-4">
+          <div className="mt-6 max-w-sm w-full bg-surface-card/5 rounded-md p-4">
             <p className="text-surface/80 text-sm mb-2">📌 本关要求</p>
             <p className="text-surface/60 text-sm mb-1">参考图：{level.referenceImage.title}</p>
             {level.constraints?.map((c, i) => (

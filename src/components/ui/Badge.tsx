@@ -9,12 +9,11 @@ export function Badge({ children, color = 'default', className }: { children: Re
     success: 'bg-success/12 text-success',
     warning: 'bg-warning/12 text-warning',
     gold: 'bg-gold/16 text-gold',
-    // legacy compat — callers pass old color names (resolved via compat tokens)
-    primary: 'bg-primary/10 text-primary',
-    mint: 'bg-mint/10 text-mint',
-    sun: 'bg-sun/20 text-sun',
-    sky: 'bg-sky/10 text-sky',
-    grape: 'bg-grape/10 text-grape',
+    primary: 'bg-accent/10 text-accent',
+    mint: 'bg-ink-muted/10 text-ink-muted',
+    sun: 'bg-gold/16 text-gold',
+    sky: 'bg-ink-muted/10 text-ink-muted',
+    grape: 'bg-ink-muted/10 text-ink-muted',
   };
   return <span className={cn('inline-block rounded-sm px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider', colors[color], className)}>{children}</span>;
 }

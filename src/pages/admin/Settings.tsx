@@ -117,7 +117,7 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 顶部说明 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-start gap-4">
             <Settings className="w-8 h-8 text-slate-500 flex-shrink-0" />
@@ -150,7 +150,7 @@ export const SettingsPage: React.FC = () => {
       )}
 
       {/* 配置列表 */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
@@ -223,7 +223,7 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* 注意事项 */}
-      <div className="bg-slate-50 rounded-2xl p-6">
+      <div className="bg-slate-50 rounded-md p-6">
         <h3 className="text-sm font-semibold text-slate-700 mb-3">注意事项</h3>
         <ul className="text-xs text-slate-600 space-y-2">
           <li>• 配置修改后立即生效，部分配置可能需要重启服务</li>

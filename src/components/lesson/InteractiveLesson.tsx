@@ -36,7 +36,7 @@ export function captionFor(value: number, c: ConceptConfig): { text: string; lev
 }
 
 const LEVEL_COLOR: Record<CaptionLevel, string> = {
-  under: 'bg-sky',
+  under: 'bg-ink-muted',
   ok: 'bg-success',
   over: 'bg-warning',
 };

@@ -14,12 +14,6 @@ export default {
         warning: '#B0894A',
         danger: '#A8412E',
         chapter: { composition: '#6B8E7F', light: '#B0894A', color: '#8E7AA0', narrative: '#5E7AA0', master: '#A56B5A' },
-        // 兼容旧令牌 → 重映射（去 AI 味，非切片页不失色）
-        primary: { DEFAULT: '#B14A3A', light: '#C76A5C', dark: '#8A3528' },
-        mint: { DEFAULT: '#8A8A86', light: '#A6A6A2', dark: '#5E5E5A' },
-        sun: { DEFAULT: '#9A7B3A', light: '#B89A55', dark: '#765C2A' },
-        sky: { DEFAULT: '#5E7AA0', light: '#7E94B4', dark: '#465E80' },
-        grape: { DEFAULT: '#8A8A86', light: '#A6A6A2', dark: '#5E5E5A' },
       },
       fontFamily: {
         display: ['Geist', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', '"Noto Sans SC"', 'system-ui', 'sans-serif'],

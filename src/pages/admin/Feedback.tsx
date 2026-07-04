@@ -76,7 +76,7 @@ export const FeedbackPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 反馈趋势 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">反馈趋势</h3>
@@ -119,7 +119,7 @@ export const FeedbackPage: React.FC = () => {
       </div>
 
       {/* 维度分析卡片 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">分维度反馈分析</h3>
@@ -174,7 +174,7 @@ export const FeedbackPage: React.FC = () => {
 
       {/* 需改进提示 */}
       {worstDimension && worstDimension.disliked > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6">
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-md p-6">
           <div className="flex items-start gap-4">
             <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0" />
             <div>
@@ -189,7 +189,7 @@ export const FeedbackPage: React.FC = () => {
       )}
 
       {/* 低评分反馈列表 */}
-      <div className="bg-white rounded-2xl shadow-sm p-6">
+      <div className="bg-white rounded-md shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">低评分反馈详情</h3>
