@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import type { CSSProperties } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
@@ -12,7 +13,7 @@ export interface ConceptConfig {
   kicker: string;
   image: { src: string; alt: string };
   param: { name: string; min: number; max: number; step: number; unit: string; default: number };
-  filter: (v: number) => string;
+  filter: (v: number) => CSSProperties;
   readout: (v: number) => { value: string; label: string };
   target: number;
   hitTolerance: number;
@@ -73,7 +74,7 @@ export function InteractiveLesson({ concept, onComplete }: Props) {
       </div>
 
       <div className="relative rounded-md overflow-hidden border border-line mb-4">
-        <img src={concept.image.src} alt={concept.image.alt} className="w-full h-72 object-cover transition-[filter] duration-75" style={{ filter: comparing ? 'none' : concept.filter(value) }} />
+        <img src={concept.image.src} alt={concept.image.alt} className="w-full h-72 object-cover transition-[filter] duration-75" style={comparing ? {} : concept.filter(value)} />
         <div className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-white bg-black/55 backdrop-blur px-2 py-1 rounded-sm">实时预览</div>
         <div className="absolute bottom-2 right-2 text-right text-white drop-shadow">
           <div className="font-mono text-3xl font-semibold leading-none">{readout.value}</div>
