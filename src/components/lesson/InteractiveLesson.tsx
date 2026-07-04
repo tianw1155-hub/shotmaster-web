@@ -6,6 +6,8 @@ import { Check } from 'lucide-react';
 import { spring } from '../../lib/motion';
 import { clamp } from '../../lib/filters';
 
+const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")`;
+
 export type CaptionLevel = 'under' | 'ok' | 'over';
 export interface ConceptConfig {
   key: string;
@@ -20,6 +22,8 @@ export interface ConceptConfig {
   captions: { range: [number, number]; text: string; level: CaptionLevel }[];
   hitToast: string;
   nextConcepts: string[];
+  layers?: { foregroundMask?: (value: number) => number };
+  overlay?: (value: number) => { opacity: number } | null;
 }
 
 export function isHit(value: number, c: ConceptConfig): boolean {
@@ -73,8 +77,16 @@ export function InteractiveLesson({ concept, onComplete }: Props) {
         </div>
       </div>
 
-      <div className="relative rounded-md overflow-hidden border border-line mb-4">
-        <img src={concept.image.src} alt={concept.image.alt} className="w-full h-72 object-cover transition-[filter] duration-75" style={comparing ? {} : concept.filter(value)} />
+      <div className="relative rounded-md overflow-hidden border border-line mb-4 h-72">
+        {concept.layers ? (
+          <>
+            <img src={concept.image.src} alt={concept.image.alt} className="absolute inset-0 w-full h-full object-cover" style={comparing ? {} : concept.filter(value)} />
+            <img src={concept.image.src} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover" style={comparing ? {} : { WebkitMaskImage: `radial-gradient(circle at 50% 50%, #000 ${concept.layers.foregroundMask?.(value) ?? 100}%, transparent)`, maskImage: `radial-gradient(circle at 50% 50%, #000 ${concept.layers.foregroundMask?.(value) ?? 100}%, transparent)` }} />
+          </>
+        ) : (
+          <img src={concept.image.src} alt={concept.image.alt} className="w-full h-full object-cover transition-[filter,transform] duration-75" style={comparing ? {} : concept.filter(value)} />
+        )}
+        {concept.overlay && !comparing && (() => { const o = concept.overlay(value); return o ? <div className="absolute inset-0 pointer-events-none mix-blend-overlay" style={{ opacity: o.opacity, backgroundImage: NOISE_BG, backgroundSize: '200px 200px' }} /> : null; })()}
         <div className="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider text-white bg-black/55 backdrop-blur px-2 py-1 rounded-sm">实时预览</div>
         <div className="absolute bottom-2 right-2 text-right text-white drop-shadow">
           <div className="font-mono text-3xl font-semibold leading-none">{readout.value}</div>
