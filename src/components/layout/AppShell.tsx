@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { BottomNav } from './BottomNav';
 import { SmoothScroll } from './SmoothScroll';
+import { deriveSection } from '../../lib/navSection';
 
 const NO_NAV_PREFIXES = ['/login', '/preferences', '/admin'];
 const IMMERSIVE_PREFIXES = ['/shoot'];
@@ -28,7 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Routes>
               </AnimatePresence>
             </div>
-            {showNav && <BottomNav active={deriveActive(location.pathname)} />}
+            {showNav && <BottomNav active={deriveSection(location.pathname)} />}
           </div>
         </div>
       </SmoothScroll>
@@ -36,10 +37,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function deriveActive(p: string): 'levels' | 'gallery' | 'community' | 'learn' | 'profile' {
-  if (p.startsWith('/gallery')) return 'gallery';
-  if (p.startsWith('/community')) return 'community';
-  if (p.startsWith('/learn')) return 'learn';
-  if (p.startsWith('/profile')) return 'profile';
-  return 'levels';
-}

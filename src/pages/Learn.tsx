@@ -29,10 +29,10 @@ const difficultyLabels: Record<string, string> = {
   beginner: '入门', intermediate: '进阶', advanced: '高级',
 };
 
-const difficultyColors: Record<string, 'default' | 'gold' | 'accent'> = {
+const difficultyColors: Record<string, 'accent' | 'gold' | 'ink-muted'> = {
   beginner: 'accent',
   intermediate: 'gold',
-  advanced: 'default',
+  advanced: 'ink-muted',
 };
 
 export function LearnPage() {

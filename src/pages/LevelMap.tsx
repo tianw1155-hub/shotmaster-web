@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, Check, Camera, Sliders, ChevronRight, Aperture } from 'lucide-react';
+import { Check, Camera, Sliders, Aperture } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel } from '../services/levelService';
 import { PageLayout } from '../components/layout/PageLayout';

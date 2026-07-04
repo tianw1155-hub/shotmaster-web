@@ -362,7 +362,7 @@ function validatePassword(password: string): { valid: boolean; message: string; 
 const defaultUser: GameUser = loadUserFromStorage() || {
   id: '1',
   name: '摄影新手',
-  avatar: '📷',
+  avatar: '摄',
   level: 1,
   xp: 0,
   xpToNext: XP_PER_LEVEL,

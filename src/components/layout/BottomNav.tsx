@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Trophy, Image as ImageIcon, Users, BookOpen, Camera } from 'lucide-react';
+import type { NavSection } from '../../lib/navSection';
 
-export type NavSection = 'levels' | 'gallery' | 'community' | 'learn' | 'profile';
+export type { NavSection };
 const ITEMS: { id: NavSection; icon: typeof Trophy; label: string; path: string }[] = [
   { id: 'levels', icon: Trophy, label: '闯关', path: '/' },
   { id: 'gallery', icon: ImageIcon, label: '图库', path: '/gallery' },

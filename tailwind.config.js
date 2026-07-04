@@ -24,7 +24,7 @@ export default {
         sm: '4px', DEFAULT: '6px', md: '8px', lg: '12px', xl: '16px', '2xl': '20px',
       },
       boxShadow: {
-        hairline: 'inset 0 0 0 1px #E2E2DE',
+        hairline: 'inset 0 0 0 1px #E6E4DE',
         elevated: '0 1px 2px rgba(20,22,26,.04), 0 8px 24px rgba(20,22,26,.06)',
         focus: '0 0 0 3px rgba(177,74,58,.24)',
       },
