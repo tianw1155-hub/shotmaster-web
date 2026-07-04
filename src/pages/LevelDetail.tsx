@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Sun, Lightbulb, Grid3X3, Camera, Palette, Package, ChevronDown, ChevronUp, Loader2, Upload, Lock, X, Sparkles, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ChevronRight, Lightbulb, Camera, Upload, Lock, X, Sparkles, Star } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel, chapterInfo } from '../services/levelService';
 import { Card, Badge, Button, RingProgress } from '../components/ui/Button';
@@ -9,6 +9,7 @@ import { Level, ShootingPlan, Score, ShootingPlanDimension } from '../types';
 import { PageLayout } from '../components/layout/PageLayout';
 import { HeroBack } from '../components/ui/HeroBack';
 import { InteractiveLesson } from '../components/lesson/InteractiveLesson';
+import { PlanSections } from '../components/lesson/PlanSections';
 import { exposureConfig } from '../components/lesson/concepts/exposure';
 
 // AI 评图详情卡片
@@ -122,7 +123,6 @@ export function LevelDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, maxUnlockedLevel, shootingPlan, isAnalyzing, generateShootingPlan, loadLevel, currentLevel, lastScore, lastScoreLevelId, lastCapturedImage, clearLastScore, toggleLikeDimension, toggleDislikeDimension, getDimensionFeedback } = useGameStore();
-  const [expandedSection, setExpandedSection] = useState<string | null>('scene');
   const [showLesson, setShowLesson] = useState(false);
 
   const levelId = parseInt(id || '1');
@@ -181,87 +181,6 @@ export function LevelDetailPage() {
   const handleDislikeDimension = (dimension: ShootingPlanDimension) => {
     toggleDislikeDimension(`level_${levelId}`, dimension);
   };
-
-  const planSections: { key: ShootingPlanDimension; icon: React.ElementType; title: string; color: string; content: (plan: ShootingPlan) => React.ReactNode }[] = [
-    {
-      key: 'scene', icon: Sun, title: '场景', color: 'text-accent',
-      content: (p) => (
-        <div>
-          <p className="text-ink font-medium mb-1">{p.scene.type}</p>
-          <p className="text-ink-secondary text-sm">{p.scene.description}</p>
-        </div>
-      ),
-    },
-    {
-      key: 'lighting', icon: Lightbulb, title: '光线', color: 'text-gold',
-      content: (p) => (
-        <div className="space-y-1 text-sm">
-          <p className="text-ink-secondary">方向：<span className="text-ink font-medium">{p.lighting.direction}</span></p>
-          <p className="text-ink-secondary">质量：<span className="text-ink font-medium">{p.lighting.quality}</span></p>
-          <p className="text-ink-secondary">色温：<span className="text-ink font-medium">{p.lighting.colorTemp}</span></p>
-          <p className="text-accent text-xs mt-2">💡 {p.lighting.suggestion}</p>
-        </div>
-      ),
-    },
-    {
-      key: 'composition', icon: Grid3X3, title: '构图', color: 'text-sky',
-      content: (p) => (
-        <div>
-          <p className="text-ink font-medium mb-1">{p.composition.rule}</p>
-          <p className="text-ink-secondary text-sm">{p.composition.details}</p>
-        </div>
-      ),
-    },
-    {
-      key: 'params', icon: Camera, title: '参数建议', color: 'text-mint',
-      content: (p) => (
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-surface-muted rounded-md p-2">
-            <p className="text-xs text-ink-muted">ISO</p>
-            <p className="text-sm font-medium text-ink">{p.params.iso}</p>
-          </div>
-          <div className="bg-surface-muted rounded-md p-2">
-            <p className="text-xs text-ink-muted">光圈</p>
-            <p className="text-sm font-medium text-ink">{p.params.aperture}</p>
-          </div>
-          <div className="bg-surface-muted rounded-md p-2">
-            <p className="text-xs text-ink-muted">快门</p>
-            <p className="text-sm font-medium text-ink">{p.params.shutter}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'postProcessing', icon: Palette, title: '后期调色', color: 'text-grape',
-      content: (p) => (
-        <div>
-          <p className="text-ink font-medium mb-2">{p.postProcessing.style}</p>
-          <ul className="space-y-1">
-            {p.postProcessing.steps.map((s, i) => (
-              <li key={i} className="text-ink-secondary text-sm flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-grape" />
-                {s}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ),
-    },
-    {
-      key: 'equipment', icon: Package, title: '推荐装备', color: 'text-sky',
-      content: (p) => (
-        <div className="space-y-1 text-sm">
-          <p className="text-ink-secondary">相机：<span className="text-ink font-medium">{p.equipment.camera}</span></p>
-          <p className="text-ink-secondary">镜头：<span className="text-ink font-medium">{p.equipment.lens}</span></p>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {p.equipment.accessories.map((a, i) => (
-              <span key={i} className="px-2 py-1 rounded-full bg-sky/5 text-sky-dark text-xs">{a}</span>
-            ))}
-          </div>
-        </div>
-      ),
-    },
-  ];
 
   // 曝光练习课件覆盖
   if (showLesson) {
@@ -337,69 +256,18 @@ export function LevelDetailPage() {
           <div className="animate-slide-up">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-display font-bold text-lg text-ink flex items-center gap-2">
-                🤖 AI 拍摄计划
+                <Sparkles className="w-5 h-5 text-accent" strokeWidth={1.25} />
+                AI 拍摄计划
               </h2>
             </div>
 
-            {isAnalyzing || !shootingPlan ? (
-              <Card className="p-8 text-center">
-                <Loader2 className="w-8 h-8 text-accent animate-spin mx-auto mb-3" />
-                <p className="text-ink-secondary text-sm">AI 正在分析参考图...</p>
-                <p className="text-ink-muted text-xs mt-1">生成结构化拍摄计划</p>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {planSections.map(({ key, icon: Icon, title, color, content }) => {
-                  const isExpanded = expandedSection === key;
-                  const dimFeedback = getDimensionFeedback(`level_${levelId}`, key);
-                  return (
-                    <Card key={key} className="overflow-hidden">
-                      <button
-                        onClick={() => setExpandedSection(isExpanded ? null : key)}
-                        className="w-full p-4 flex items-center justify-between hover:bg-surface-muted transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-md bg-surface-muted flex items-center justify-center`}>
-                            <Icon className={`w-5 h-5 ${color}`} />
-                          </div>
-                          <span className="font-medium text-ink">{title}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleLikeDimension(key); }}
-                            className={`w-7 h-7 rounded-full flex items-center justify-center transition ${
-                              dimFeedback.liked
-                                ? 'bg-success/12 text-success'
-                                : 'bg-surface-muted text-ink-muted hover:bg-surface'
-                            }`}
-                            title="这部分建议有用"
-                          >
-                            <ThumbsUp className={`w-3.5 h-3.5 ${dimFeedback.liked ? 'fill-current' : ''}`} />
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDislikeDimension(key); }}
-                            className={`w-7 h-7 rounded-full flex items-center justify-center transition ${
-                              dimFeedback.disliked
-                                ? 'bg-danger/12 text-danger'
-                                : 'bg-surface-muted text-ink-muted hover:bg-surface'
-                            }`}
-                            title="这部分建议没用"
-                          >
-                            <ThumbsDown className={`w-3.5 h-3.5 ${dimFeedback.disliked ? 'fill-current' : ''}`} />
-                          </button>
-                          {isExpanded ? <ChevronUp className="w-5 h-5 text-ink-muted ml-1" /> : <ChevronDown className="w-5 h-5 text-ink-muted ml-1" />}
-                        </div>
-                      </button>
-                      {isExpanded && (
-                        <div className="px-4 pb-4 animate-slide-up">
-                          {content(shootingPlan)}
-                        </div>
-                      )}
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+            <PlanSections
+              plan={shootingPlan}
+              isAnalyzing={isAnalyzing}
+              onLike={handleLikeDimension}
+              onDislike={handleDislikeDimension}
+              getFeedback={(dim) => getDimensionFeedback(`level_${levelId}`, dim)}
+            />
           </div>
 
           {/* 操作按钮 */}
