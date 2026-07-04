@@ -12,6 +12,8 @@ interface PageLayoutProps {
 export function PageLayout({ children, desktop = 'single', immersive = false, mainClassName }: PageLayoutProps) {
   return (
     <motion.main
+      id="main-content"
+      tabIndex={-1}
       variants={variants.routeIn}
       initial="initial"
       animate="animate"

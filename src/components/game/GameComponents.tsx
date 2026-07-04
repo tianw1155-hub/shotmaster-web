@@ -223,6 +223,7 @@ export function LevelNode({ level, isCurrent, onClick }: { level: Level; isCurre
     <div className="flex flex-col items-center gap-2">
       <button
         onClick={onClick}
+        aria-label={`关卡 ${level.id}`}
         className={`relative w-16 h-16 rounded-full bg-gradient-to-br ${colorMap[info.color]} flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95 ${
           isCurrent ? 'animate-pulse-ring ring-4 ring-white' : ''
         } ${level.status === 'completed' ? 'opacity-90' : ''}`}

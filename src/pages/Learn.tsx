@@ -264,6 +264,7 @@ export function CourseDetailPage() {
             <div className="absolute inset-0 flex items-center justify-center">
               <button
                 onClick={() => completeCourse(course.id)}
+                aria-label={course.completed ? '已完成' : '开始学习'}
                 className="w-16 h-16 rounded-full bg-accent flex items-center justify-center shadow-elevated hover:scale-105 active:scale-95 transition-transform"
               >
                 {course.completed ? (

@@ -127,6 +127,7 @@ export function PlanSections({ plan, isAnalyzing, onLike, onDislike, getFeedback
               <div className="flex items-center gap-1">
                 <button
                   onClick={(e) => { e.stopPropagation(); onLike(key); }}
+                  aria-label="这部分建议有用"
                   className={`w-7 h-7 rounded-full flex items-center justify-center transition ${
                     feedback.liked
                       ? 'bg-success/12 text-success'
@@ -138,6 +139,7 @@ export function PlanSections({ plan, isAnalyzing, onLike, onDislike, getFeedback
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); onDislike(key); }}
+                  aria-label="这部分建议没用"
                   className={`w-7 h-7 rounded-full flex items-center justify-center transition ${
                     feedback.disliked
                       ? 'bg-danger/12 text-danger'

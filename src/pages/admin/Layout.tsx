@@ -53,6 +53,7 @@ export const AdminLayout: React.FC = () => {
           </div>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? '收起侧栏' : '展开侧栏'}
             className="p-1.5 hover:bg-slate-700 rounded-lg transition"
           >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

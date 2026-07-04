@@ -114,7 +114,7 @@ export function LevelMapPage() {
             <h3 className="text-[11px] tracking-[.16em] uppercase text-ink-muted font-semibold mb-5 flex justify-between"><span>本章节关卡</span><span className="font-mono">{cur} — {Math.min(cur + 4, 50)}</span></h3>
             <div className="grid grid-cols-5 gap-x-2 gap-y-5">
               {chapters.find(c => c.chapter.key === curChapter.key)!.levels.map(n => (
-                <button key={n.id} disabled={n.status === 'locked'} onClick={() => navigate(`/level/${n.id}`)} className="flex flex-col items-center gap-2 disabled:cursor-default">
+                <button key={n.id} disabled={n.status === 'locked'} onClick={() => navigate(`/level/${n.id}`)} aria-label={`关卡 ${n.id}: ${n.title}`} className="flex flex-col items-center gap-2 disabled:cursor-default">
                   <motion.span layoutId={`lvl-${n.id}`} className={`w-9 h-9 rounded-full border flex items-center justify-center text-[12px] font-mono ${
                     n.status === 'completed' ? 'bg-ink text-surface border-ink' :
                     n.id === cur ? 'border-accent text-accent' : 'border-line text-ink-muted bg-surface-card'}`}>

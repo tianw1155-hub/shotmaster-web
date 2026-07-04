@@ -62,6 +62,7 @@ function UserDetailModal({
         {/* 关闭按钮 */}
         <button
           onClick={onClose}
+          aria-label="关闭"
           className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-ink-secondary hover:bg-ink-muted/15 transition-colors z-20"
         >
           <X className="w-4 h-4" strokeWidth={1.25} />
@@ -407,6 +408,7 @@ export function CommunityPage() {
                           e.stopPropagation();
                           handleAvatarClick(work);
                         }}
+                        aria-label={`查看 ${work.author} 的主页`}
                         className="absolute bottom-2 left-2 w-8 h-8 rounded-full bg-surface-card shadow-elevated flex items-center justify-center text-lg hover:scale-110 transition-transform z-10"
                       >
                         {work.avatar}
@@ -497,6 +499,7 @@ export function CommunityPage() {
                           e.stopPropagation();
                           handleRemoveWork(work);
                         }}
+                        aria-label="下架作品"
                         className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/50 flex items-center justify-center text-surface hover:bg-danger transition-colors"
                       >
                         <Trash2 className="w-4 h-4" strokeWidth={1.25} />

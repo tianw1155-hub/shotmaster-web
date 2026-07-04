@@ -209,6 +209,7 @@ export function GalleryPage() {
             <button
               onClick={handleManualRefresh}
               disabled={!canRefresh || isLoadingUnsplash}
+              aria-label="刷新参考图"
               className={`w-8 h-8 rounded-md flex items-center justify-center transition ${
                 canRefresh
                   ? 'bg-surface-muted text-ink-muted hover:text-ink hover:bg-surface-muted/80'
@@ -338,6 +339,7 @@ export function GalleryDetailPage() {
         {!isCustom && (
           <button
             onClick={handleToggleFav}
+            aria-label={isFav ? '取消收藏' : '收藏'}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors shrink-0 ${
               isFav ? 'bg-accent/12 text-accent' : 'bg-surface-muted text-ink-muted hover:bg-surface-muted/80'
             }`}
@@ -407,6 +409,7 @@ export function GalleryDetailPage() {
           {!isCustom && (
             <button
               onClick={() => setShowGuideLines(!showGuideLines)}
+              aria-label="参考线"
               className={`absolute top-4 right-16 w-10 h-10 rounded-full backdrop-blur flex items-center justify-center shadow-sm z-10 transition-colors ${
                 showGuideLines ? 'bg-accent text-white' : 'bg-surface-card/80 text-ink'
               }`}
@@ -662,6 +665,7 @@ function GalleryImageCard({
       {showDelete && (
         <button
           onClick={(e) => onDelete(image.id, e)}
+          aria-label="删除图片"
           className="absolute top-2 right-2 w-8 h-8 rounded-full bg-danger/90 text-white flex items-center justify-center hover:bg-danger transition z-10"
           title="删除"
         >

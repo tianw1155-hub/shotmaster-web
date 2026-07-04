@@ -38,6 +38,7 @@ function ScoreDetailCard({
       {/* 关闭按钮 */}
       <button
         onClick={onClose}
+        aria-label="关闭"
         className="absolute top-3 right-3 w-8 h-8 rounded-md bg-surface-muted flex items-center justify-center text-ink-secondary hover:bg-surface transition-colors z-10"
       >
         <X className="w-4 h-4" />

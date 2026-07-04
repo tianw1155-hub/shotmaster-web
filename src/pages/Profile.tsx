@@ -57,6 +57,7 @@ export function MyWorksPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/profile')}
+            aria-label="返回"
             className="w-10 h-10 rounded-full bg-surface-card border border-line flex items-center justify-center"
           >
             <ChevronLeft className="w-5 h-5 text-ink" strokeWidth={1.25} />
@@ -144,6 +145,7 @@ export function AchievementsPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/profile')}
+            aria-label="返回"
             className="w-10 h-10 rounded-full bg-surface-card border border-line flex items-center justify-center"
           >
             <ChevronLeft className="w-5 h-5 text-ink" strokeWidth={1.25} />
@@ -230,6 +232,7 @@ export function MyFavoritesPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/profile')}
+            aria-label="返回"
             className="w-10 h-10 rounded-full bg-surface-card border border-line flex items-center justify-center"
           >
             <ChevronLeft className="w-5 h-5 text-ink" strokeWidth={1.25} />

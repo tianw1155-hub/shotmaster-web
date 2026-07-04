@@ -168,6 +168,7 @@ export function ShootPage() {
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
+            aria-label="关闭"
             className="w-10 h-10 rounded-full bg-ink/30 backdrop-blur flex items-center justify-center text-surface"
           >
             <X className="w-5 h-5" />
@@ -196,6 +197,7 @@ export function ShootPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowGrid(!showGrid)}
+                aria-label="构图网格"
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${showGrid ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
                 title="构图网格"
               >
@@ -203,6 +205,7 @@ export function ShootPage() {
               </button>
               <button
                 onClick={() => setShowGuideLines(!showGuideLines)}
+                aria-label="参考线"
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${showGuideLines ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
                 title="参考线"
               >
@@ -210,6 +213,7 @@ export function ShootPage() {
               </button>
               <button
                 onClick={() => setShowReference(!showReference)}
+                aria-label="参考图"
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${showReference ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
                 title="参考图"
               >
@@ -333,6 +337,7 @@ export function ShootPage() {
                   </div>
                   <button
                     onClick={() => setReferenceExpanded(false)}
+                    aria-label="关闭参考图"
                     className="w-10 h-10 rounded-full bg-surface-card/10 flex items-center justify-center text-surface hover:bg-surface-card/20"
                   >
                     <X className="w-5 h-5" />
@@ -368,6 +373,7 @@ export function ShootPage() {
               <button
                 onClick={handleCapture}
                 disabled={isCapturing}
+                aria-label="拍摄"
                 className="w-20 h-20 rounded-full bg-surface flex items-center justify-center transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
               >
                 <div className={`w-16 h-16 rounded-full border-4 border-ink/10 flex items-center justify-center ${isCapturing ? 'bg-accent animate-pulse' : ''}`}>
@@ -376,6 +382,7 @@ export function ShootPage() {
               </button>
               <button
                 onClick={() => setFacingMode(prev => prev === 'environment' ? 'user' : 'environment')}
+                aria-label="切换摄像头"
                 className="w-14 h-14 rounded-full bg-ink/30 backdrop-blur flex items-center justify-center text-surface"
               >
                 <SwitchCamera className="w-6 h-6" />

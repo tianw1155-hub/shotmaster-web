@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation, Routes } from 'react-router-dom';
 import { MotionConfig, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
@@ -15,8 +15,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const noNav = NO_NAV_PREFIXES.some((p) => location.pathname.startsWith(p));
   const immersive = IMMERSIVE_PREFIXES.some((p) => location.pathname.startsWith(p));
   const showNav = !noNav && !immersive;
+
+  useEffect(() => {
+    document.getElementById('main-content')?.focus();
+  }, [location.pathname]);
+
   return (
     <MotionConfig reducedMotion="user">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-accent focus:text-white focus:px-3 focus:py-2 focus:rounded-md">跳到主要内容</a>
       <SmoothScroll disabled={immersive}>
         <div className={showNav ? 'lg:grid lg:grid-cols-[208px_1fr]' : ''}>
           {showNav && <Sidebar />}
@@ -36,4 +42,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </MotionConfig>
   );
 }
-

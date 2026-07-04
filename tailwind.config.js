@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         surface: { DEFAULT: '#F7F6F2', card: '#FBFAF7', muted: '#EFEDE6' },
-        ink: { DEFAULT: '#1A1A1A', secondary: '#3D3D3A', muted: '#8A8A86' },
+        ink: { DEFAULT: '#1A1A1A', secondary: '#3D3D3A', muted: '#6B6B66' },
         accent: { DEFAULT: '#B14A3A', soft: '#C76A5C' },
         gold: '#9A7B3A',
         line: '#E6E4DE',
