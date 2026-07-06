@@ -401,7 +401,7 @@ export function GalleryDetailPage() {
               loading="lazy"
             />
             {showGuideLines && !isCustom && (
-              <CompositionOverlay rule={compositionRule} showLabel={true} />
+              <CompositionOverlay rule={compositionRule} showLabel={false} />
             )}
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent pointer-events-none" />

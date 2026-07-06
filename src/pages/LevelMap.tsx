@@ -7,6 +7,7 @@ import { getLevel } from '../services/levelService';
 import { PageLayout } from '../components/layout/PageLayout';
 import { variants } from '../lib/motion';
 import { ChapterHeader } from '../components/ui/ChapterHeader';
+import { inferCompositionRule, compositionRuleLabels } from '../utils/compositionUtils';
 
 type LessonStatus = 'locked' | 'available' | 'completed';
 interface LevelNode { id: number; status: LessonStatus; stars: number; title: string; chapterKey: string; chapterName: string; }
@@ -78,14 +79,17 @@ export function LevelMapPage() {
                 <Camera className="w-4 h-4" strokeWidth={1.25} />开始拍摄
               </button>
               <button onClick={() => navigate(`/level/${cur}`)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md border border-line text-ink-secondary text-[13px] font-medium hover:border-ink hover:text-ink active:translate-y-px transition-colors duration-base">
-                <Sliders className="w-4 h-4" strokeWidth={1.25} />练习曝光
+                <Sliders className="w-4 h-4" strokeWidth={1.25} />拍摄详情
               </button>
             </motion.div>
           </div>
           <motion.div variants={variants.heroImage} initial="hidden" animate="show" className="relative aspect-[4/5] rounded-md overflow-hidden border border-line bg-ink">
             <img src={curLevel.referenceImage.url} alt={curLevel.title} className="w-full h-full object-cover" loading="eager" />
             <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px)', backgroundSize: '33.3% 33.3%' }} />
-            <div className="absolute left-3 bottom-3 text-white/90 text-[10px] font-mono tracking-wide bg-ink/55 backdrop-blur px-2 py-1 rounded">{curLevel.title} · 参考</div>
+            <div className="absolute left-3 bottom-3 flex items-center gap-2">
+              <span className="text-white/90 text-[10px] font-mono tracking-wide bg-ink/55 backdrop-blur px-2 py-1 rounded">{curLevel.title} · 参考</span>
+              <span className="text-white text-[10px] font-mono tracking-wide bg-accent/80 backdrop-blur px-2 py-1 rounded">{compositionRuleLabels[inferCompositionRule(curLevel.referenceImage)]}</span>
+            </div>
           </motion.div>
         </section>
 
