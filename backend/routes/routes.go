@@ -26,6 +26,10 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/api/users/sync", controllers.SyncUserData)
 	r.POST("/api/users/sync-feedbacks", controllers.SyncFeedbacks)
 
+	// 拍摄建议缓存（前台调用，不需要管理员权限）
+	r.POST("/api/shooting-plan/cache", controllers.GetShootingPlanCache)
+	r.POST("/api/shooting-plan/cache/save", controllers.SaveShootingPlanCache)
+
 	// 需要认证的管理员路由
 	admin := r.Group("/api/admin")
 	admin.Use(middleware.AuthMiddleware())

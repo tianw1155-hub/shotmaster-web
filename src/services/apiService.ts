@@ -93,8 +93,12 @@ export async function adminLogin(username: string, password: string): Promise<Ad
   return await response.json();
 }
 
-export async function getDashboardStats(token: string): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/admin/dashboard/stats`, {
+export async function getDashboardStats(token: string, startDate?: string, endDate?: string): Promise<any> {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${API_BASE_URL}/admin/dashboard/stats${query}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

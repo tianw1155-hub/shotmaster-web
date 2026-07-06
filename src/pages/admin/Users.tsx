@@ -4,8 +4,7 @@ import { getUsers } from '../../services/apiService';
 import { Search, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface User {
-  id: number;
-  userId: string;
+  id: string;
   username: string;
   phone: string;
   avatar: string;
@@ -16,12 +15,12 @@ interface User {
   worksCount: number;
   avgScore: number;
   isGuest: boolean;
-  lastActiveAt: string;
+  lastActive: string;
   createdAt: string;
 }
 
 interface UserListResponse {
-  users: User[];
+  list: User[];
   total: number;
   page: number;
   pageSize: number;
@@ -131,7 +130,7 @@ export const UsersPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {data?.users?.length === 0 ? (
+                  {data?.list?.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-6 py-16 text-center">
                         <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
@@ -139,7 +138,7 @@ export const UsersPage: React.FC = () => {
                       </td>
                     </tr>
                   ) : (
-                    data?.users?.map((user) => (
+                    data?.list?.map((user) => (
                       <tr key={user.id} className="hover:bg-slate-50 transition">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
@@ -180,8 +179,8 @@ export const UsersPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-500">
-                          {user.lastActiveAt
-                            ? new Date(user.lastActiveAt).toLocaleDateString('zh-CN')
+                          {user.lastActive
+                            ? new Date(user.lastActive).toLocaleDateString('zh-CN')
                             : '-'}
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-500">

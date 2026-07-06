@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 	"shotmaster-backend/models"
 	"strconv"
@@ -97,10 +98,45 @@ func GetEvalSetDetail(c *gin.Context) {
 
 	evalSet.ImageCount = len(images)
 
+	// 将JSON字符串字段解析为数组返回给前端
+	imageList := make([]gin.H, len(images))
+	for i, img := range images {
+		var pros, problems, suggestions []string
+		if img.GTPros != "" {
+			json.Unmarshal([]byte(img.GTPros), &pros)
+		}
+		if img.GTProblems != "" {
+			json.Unmarshal([]byte(img.GTProblems), &problems)
+		}
+		if img.GTSuggestions != "" {
+			json.Unmarshal([]byte(img.GTSuggestions), &suggestions)
+		}
+		imageList[i] = gin.H{
+			"id":                 img.ID,
+			"evalSetId":          img.EvalSetId,
+			"imageUrl":           img.ImageUrl,
+			"title":              img.Title,
+			"description":        img.Description,
+			"category":           img.Category,
+			"status":             img.Status,
+			"gtCompositionScore": img.GTCompositionScore,
+			"gtLightingScore":    img.GTLightingScore,
+			"gtColorScore":       img.GTColorScore,
+			"gtOverallScore":     img.GTOverallScore,
+			"gtStars":            img.GTStars,
+			"gtPros":             pros,
+			"gtProblems":         problems,
+			"gtSuggestions":      suggestions,
+			"gtIsHarmful":        img.GTIsHarmful,
+			"createdAt":          img.CreatedAt,
+			"updatedAt":          img.UpdatedAt,
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
 			"evalSet": evalSet,
-			"images":  images,
+			"images":  imageList,
 		},
 	})
 }
@@ -230,16 +266,19 @@ func UpdateEvalImage(c *gin.Context) {
 	}
 
 	var req struct {
-		Title            string `json:"title"`
-		Description      string `json:"description"`
-		Category         string `json:"category"`
-		GroundTruthScene string `json:"groundTruthScene"`
-		GroundTruthLight string `json:"groundTruthLight"`
-		GroundTruthComp  string `json:"groundTruthComp"`
-		GroundTruthParams string `json:"groundTruthParams"`
-		GroundTruthPost  string `json:"groundTruthPost"`
-		GroundTruthEquip string `json:"groundTruthEquip"`
-		Status           string `json:"status"`
+		Title              string   `json:"title"`
+		Description        string   `json:"description"`
+		Category           string   `json:"category"`
+		GTCompositionScore int      `json:"gtCompositionScore"`
+		GTLightingScore    int      `json:"gtLightingScore"`
+		GTColorScore       int      `json:"gtColorScore"`
+		GTOverallScore     int      `json:"gtOverallScore"`
+		GTStars            int      `json:"gtStars"`
+		GTPros             []string `json:"gtPros"`
+		GTProblems         []string `json:"gtProblems"`
+		GTSuggestions      []string `json:"gtSuggestions"`
+		GTIsHarmful        bool     `json:"gtIsHarmful"`
+		Status             string   `json:"status"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -259,34 +298,71 @@ func UpdateEvalImage(c *gin.Context) {
 	if req.Category != "" {
 		updates["category"] = req.Category
 	}
-	if req.GroundTruthScene != "" {
-		updates["ground_truth_scene"] = req.GroundTruthScene
+	updates["gt_composition_score"] = req.GTCompositionScore
+	updates["gt_lighting_score"] = req.GTLightingScore
+	updates["gt_color_score"] = req.GTColorScore
+	updates["gt_overall_score"] = req.GTOverallScore
+	updates["gt_stars"] = req.GTStars
+	if len(req.GTPros) > 0 {
+		if prosJson, err := json.Marshal(req.GTPros); err == nil {
+			updates["gt_pros"] = string(prosJson)
+		}
 	}
-	if req.GroundTruthLight != "" {
-		updates["ground_truth_light"] = req.GroundTruthLight
+	if len(req.GTProblems) > 0 {
+		if problemsJson, err := json.Marshal(req.GTProblems); err == nil {
+			updates["gt_problems"] = string(problemsJson)
+		}
 	}
-	if req.GroundTruthComp != "" {
-		updates["ground_truth_comp"] = req.GroundTruthComp
+	if len(req.GTSuggestions) > 0 {
+		if suggestionsJson, err := json.Marshal(req.GTSuggestions); err == nil {
+			updates["gt_suggestions"] = string(suggestionsJson)
+		}
 	}
-	if req.GroundTruthParams != "" {
-		updates["ground_truth_params"] = req.GroundTruthParams
-	}
-	if req.GroundTruthPost != "" {
-		updates["ground_truth_post"] = req.GroundTruthPost
-	}
-	if req.GroundTruthEquip != "" {
-		updates["ground_truth_equip"] = req.GroundTruthEquip
-	}
+	updates["gt_is_harmful"] = req.GTIsHarmful
 	if req.Status != "" {
 		updates["status"] = req.Status
 	}
 
 	models.DB.Model(&image).Updates(updates)
 
+	// 重新读取完整数据
+	models.DB.First(&image, imageId)
+
+	// 解析JSON字符串为数组返回
+	var pros, problems, suggestions []string
+	if image.GTPros != "" {
+		json.Unmarshal([]byte(image.GTPros), &pros)
+	}
+	if image.GTProblems != "" {
+		json.Unmarshal([]byte(image.GTProblems), &problems)
+	}
+	if image.GTSuggestions != "" {
+		json.Unmarshal([]byte(image.GTSuggestions), &suggestions)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "图片更新成功",
-		"data":    image,
+		"data": gin.H{
+			"id":                 image.ID,
+			"evalSetId":          image.EvalSetId,
+			"imageUrl":           image.ImageUrl,
+			"title":              image.Title,
+			"description":        image.Description,
+			"category":           image.Category,
+			"status":             image.Status,
+			"gtCompositionScore": image.GTCompositionScore,
+			"gtLightingScore":    image.GTLightingScore,
+			"gtColorScore":       image.GTColorScore,
+			"gtOverallScore":     image.GTOverallScore,
+			"gtStars":            image.GTStars,
+			"gtPros":             pros,
+			"gtProblems":         problems,
+			"gtSuggestions":      suggestions,
+			"gtIsHarmful":        image.GTIsHarmful,
+			"createdAt":          image.CreatedAt,
+			"updatedAt":          image.UpdatedAt,
+		},
 	})
 }
 

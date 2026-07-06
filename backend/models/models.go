@@ -62,7 +62,7 @@ type EvalSet struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
-// 评测图片（带人工标注）
+// 评测图片（AI评图评测 - 带人工标注Ground Truth）
 type EvalImage struct {
 	ID               uint      `gorm:"primaryKey" json:"id"`
 	EvalSetId        uint      `gorm:"index" json:"evalSetId"`
@@ -71,15 +71,18 @@ type EvalImage struct {
 	Description      string    `gorm:"type:text" json:"description"`
 	Category         string    `gorm:"size:20;index" json:"category"`
 	Status           string    `gorm:"size:20;default:'pending'" json:"status"` // pending/annotated/reviewed
-	// Ground Truth 标注
-	GroundTruthScene string    `gorm:"type:text" json:"groundTruthScene"`
-	GroundTruthLight string    `gorm:"type:text" json:"groundTruthLight"`
-	GroundTruthComp  string    `gorm:"type:text" json:"groundTruthComp"`
-	GroundTruthParams string   `gorm:"type:text" json:"groundTruthParams"`
-	GroundTruthPost  string    `gorm:"type:text" json:"groundTruthPost"`
-	GroundTruthEquip string    `gorm:"type:text" json:"groundTruthEquip"`
-	CreatedAt        time.Time `json:"createdAt"`
-	UpdatedAt        time.Time `json:"updatedAt"`
+	// Ground Truth 标注（AI评图评测）
+	GTCompositionScore int       `gorm:"default:0" json:"gtCompositionScore"` // 构图评分 0-100
+	GTLightingScore    int       `gorm:"default:0" json:"gtLightingScore"`    // 光线评分 0-100
+	GTColorScore       int       `gorm:"default:0" json:"gtColorScore"`       // 色彩评分 0-100
+	GTOverallScore     int       `gorm:"default:0" json:"gtOverallScore"`     // 整体评分 0-100
+	GTStars            int       `gorm:"default:1" json:"gtStars"`            // 推荐星级 1-3
+	GTPros             string    `gorm:"type:text" json:"gtPros"`             // 主要优点 JSON数组
+	GTProblems         string    `gorm:"type:text" json:"gtProblems"`         // 主要问题 JSON数组
+	GTSuggestions      string    `gorm:"type:text" json:"gtSuggestions"`      // 改进建议 JSON数组
+	GTIsHarmful        bool      `gorm:"default:false" json:"gtIsHarmful"`    // 是否有害内容
+	CreatedAt          time.Time `json:"createdAt"`
+	UpdatedAt          time.Time `json:"updatedAt"`
 }
 
 // AI评测任务
@@ -145,4 +148,24 @@ type UserAction struct {
 	Category  string    `gorm:"size:20" json:"category"`
 	Detail    string    `gorm:"type:text" json:"detail"`
 	CreatedAt time.Time `json:"createdAt"`
+}
+
+// 拍摄建议缓存（AI生成的拍摄计划，按图片URL缓存）
+type ShootingPlanCache struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	ImageHash string    `gorm:"uniqueIndex;size:64;not null" json:"imageHash"` // 图片URL的hash
+	ImageURL  string    `gorm:"size:500" json:"imageUrl"`
+	Category  string    `gorm:"size:20;index" json:"category"`
+	// 拍摄计划 JSON
+	Scene          string `gorm:"type:text" json:"scene"`
+	Lighting       string `gorm:"type:text" json:"lighting"`
+	Composition    string `gorm:"type:text" json:"composition"`
+	Params         string `gorm:"type:text" json:"params"`
+	PostProcessing string `gorm:"type:text" json:"postProcessing"`
+	Equipment      string `gorm:"type:text" json:"equipment"`
+	ShootingIdea   string `gorm:"type:text" json:"shootingIdea"`
+	CommonMistakes string `gorm:"type:text" json:"commonMistakes"` // JSON数组
+	HitCount       int    `gorm:"default:1" json:"hitCount"`       // 命中次数
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
 }

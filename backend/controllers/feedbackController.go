@@ -8,17 +8,45 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var feedbackShanghaiLocation *time.Location
+
+func init() {
+	var err error
+	feedbackShanghaiLocation, err = time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		feedbackShanghaiLocation = time.FixedZone("CST", 8*3600)
+	}
+}
+
+func feedbackNow() time.Time {
+	return time.Now().In(feedbackShanghaiLocation)
+}
+
+func feedbackStartOfToday() time.Time {
+	now := feedbackNow()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, feedbackShanghaiLocation)
+}
+
+func feedbackParseDate(dateStr string) (time.Time, error) {
+	return time.ParseInLocation("2006-01-02", dateStr, feedbackShanghaiLocation)
+}
+
 // 获取反馈分析详情
 func GetFeedbackAnalysis(c *gin.Context) {
 	dimension := c.Query("dimension")
-	startDate := c.Query("startDate")
-	endDate := c.Query("endDate")
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
 
 	var feedbacks []models.ShootingPlanFeedback
 	query := models.DB.Model(&models.ShootingPlanFeedback{})
 
-	if startDate != "" && endDate != "" {
-		query = query.Where("created_at BETWEEN ? AND ?", startDate, endDate)
+	if startDateStr != "" && endDateStr != "" {
+		startDate, err1 := feedbackParseDate(startDateStr)
+		endDate, err2 := feedbackParseDate(endDateStr)
+		if err1 == nil && err2 == nil {
+			endDate = endDate.AddDate(0, 0, 1)
+			query = query.Where("created_at >= ? AND created_at < ?", startDate, endDate)
+		}
 	}
 
 	query.Find(&feedbacks)
@@ -89,20 +117,23 @@ func GetFeedbackTrend(c *gin.Context) {
 	}
 
 	var trendData []gin.H
+	today := feedbackStartOfToday()
 
 	for i := 6; i >= 0; i-- {
-		date := time.Now().AddDate(0, 0, -i).Format("2006-01-02")
+		day := today.AddDate(0, 0, -i)
+		nextDay := day.AddDate(0, 0, 1)
+		dateStr := day.Format("2006-01-02")
 
 		var likedCount, dislikedCount int64
 		models.DB.Model(&models.ShootingPlanFeedback{}).
-			Where("DATE(created_at) = ? AND liked = ?", date, true).
+			Where("created_at >= ? AND created_at < ? AND liked = ?", day, nextDay, true).
 			Count(&likedCount)
 		models.DB.Model(&models.ShootingPlanFeedback{}).
-			Where("DATE(created_at) = ? AND disliked = ?", date, true).
+			Where("created_at >= ? AND created_at < ? AND disliked = ?", day, nextDay, true).
 			Count(&dislikedCount)
 
 		trendData = append(trendData, gin.H{
-			"date":     date,
+			"date":     dateStr,
 			"liked":    likedCount,
 			"disliked": dislikedCount,
 			"total":    likedCount + dislikedCount,
@@ -171,8 +202,8 @@ func UpdateSystemConfig(c *gin.Context) {
 	if err := models.DB.Where("key = ?", key).First(&config).Error; err != nil {
 		// 如果不存在，创建新的
 		config = models.SystemConfig{
-			Key:   key,
-			CreatedAt: time.Now(),
+			Key:       key,
+			CreatedAt: feedbackNow(),
 		}
 	}
 
@@ -186,7 +217,7 @@ func UpdateSystemConfig(c *gin.Context) {
 	}
 
 	config.Value = req.Value
-	config.UpdatedAt = time.Now()
+	config.UpdatedAt = feedbackNow()
 
 	if config.ID == 0 {
 		models.DB.Create(&config)
@@ -215,19 +246,20 @@ func BatchUpdateSystemConfigs(c *gin.Context) {
 		return
 	}
 
+	now := feedbackNow()
 	for _, cfg := range req.Configs {
 		var config models.SystemConfig
 		if err := models.DB.Where("key = ?", cfg.Key).First(&config).Error; err != nil {
 			config = models.SystemConfig{
-				Key:   cfg.Key,
-				Value: cfg.Value,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
+				Key:       cfg.Key,
+				Value:     cfg.Value,
+				CreatedAt: now,
+				UpdatedAt: now,
 			}
 			models.DB.Create(&config)
 		} else {
 			config.Value = cfg.Value
-			config.UpdatedAt = time.Now()
+			config.UpdatedAt = now
 			models.DB.Save(&config)
 		}
 	}

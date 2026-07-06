@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAdminStore } from '../../stores/useAdminStore';
 import { getDashboardStats } from '../../services/apiService';
 import {
@@ -10,7 +10,15 @@ import {
   Activity,
   BarChart3,
   Calendar,
+  RotateCcw,
 } from 'lucide-react';
+
+function formatDate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 interface DashboardStats {
   totalUsers: number;
@@ -59,19 +67,42 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [timeDimension, setTimeDimension] = useState<TimeDimension>('daily');
 
+  const today = useMemo(() => formatDate(new Date()), []);
+  const sevenDaysAgo = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 6);
+    return formatDate(d);
+  }, []);
+  const [startDate, setStartDate] = useState<string>(sevenDaysAgo);
+  const [endDate, setEndDate] = useState<string>(today);
+
+  const fetchData = async (start?: string, end?: string) => {
+    try {
+      setLoading(true);
+      const data = await getDashboardStats(token, start, end);
+      setStats(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getDashboardStats(token);
-        setStats(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    fetchData(startDate, endDate);
   }, [token]);
+
+  const handleDateChange = () => {
+    if (!startDate || !endDate) return;
+    if (new Date(startDate) > new Date(endDate)) return;
+    fetchData(startDate, endDate);
+  };
+
+  const handleResetDate = () => {
+    setStartDate(sevenDaysAgo);
+    setEndDate(today);
+    fetchData(sevenDaysAgo, today);
+  };
 
   if (loading || !stats) {
     return (
@@ -162,42 +193,79 @@ export const DashboardPage: React.FC = () => {
         ))}
       </div>
 
-      {/* 时间维度选择器 */}
+      {/* 时间范围选择器 */}
       <div className="bg-white rounded-md shadow-sm p-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-slate-400" />
-          <span className="text-sm text-slate-600">时间维度：</span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTimeDimension('daily')}
-              className={`px-4 py-2 text-sm font-medium rounded-xl transition ${
-                timeDimension === 'daily'
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              日度
-            </button>
-            <button
-              onClick={() => setTimeDimension('weekly')}
-              className={`px-4 py-2 text-sm font-medium rounded-xl transition ${
-                timeDimension === 'weekly'
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              周度
-            </button>
-            <button
-              onClick={() => setTimeDimension('monthly')}
-              className={`px-4 py-2 text-sm font-medium rounded-xl transition ${
-                timeDimension === 'monthly'
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              月度
-            </button>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-slate-400" />
+            <span className="text-sm text-slate-600">时间范围：</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={startDate}
+              max={endDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+            />
+            <span className="text-slate-400">至</span>
+            <input
+              type="date"
+              value={endDate}
+              min={startDate}
+              max={today}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+            />
+          </div>
+          <button
+            onClick={handleDateChange}
+            className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl shadow-sm hover:shadow-md transition"
+          >
+            查询
+          </button>
+          <button
+            onClick={handleResetDate}
+            className="px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition flex items-center gap-1"
+          >
+            <RotateCcw className="w-4 h-4" />
+            重置
+          </button>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-slate-600">时间维度：</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTimeDimension('daily')}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition ${
+                  timeDimension === 'daily'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                日度
+              </button>
+              <button
+                onClick={() => setTimeDimension('weekly')}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition ${
+                  timeDimension === 'weekly'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                周度
+              </button>
+              <button
+                onClick={() => setTimeDimension('monthly')}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition ${
+                  timeDimension === 'monthly'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                月度
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -210,7 +278,7 @@ export const DashboardPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-slate-800">用户增长趋势</h3>
               <p className="text-sm text-slate-500">
-                {timeDimension === 'daily' ? '最近7天' : timeDimension === 'weekly' ? '最近4周' : '最近6个月'}新增用户
+                {startDate} 至 {endDate} · {timeDimension === 'daily' ? '按日统计' : timeDimension === 'weekly' ? '按周统计' : '按月统计'}新增用户
               </p>
             </div>
             <Users className="w-5 h-5 text-slate-400" />
