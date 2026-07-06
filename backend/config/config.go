@@ -7,12 +7,13 @@ import (
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBSSLMode  string
+	DatabaseURL string
+	DBHost      string
+	DBPort      string
+	DBUser      string
+	DBPassword  string
+	DBName      string
+	DBSSLMode   string
 
 	JWTSecret      string
 	JWTExpireHours string
@@ -29,12 +30,13 @@ func LoadConfig() error {
 	godotenv.Load()
 
 	AppConfig = Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "postgres"),
-		DBName:     getEnv("DB_NAME", "shotmaster"),
-		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+		DatabaseURL: getEnv("DATABASE_URL", ""),
+		DBHost:      getEnv("DB_HOST", "localhost"),
+		DBPort:      getEnv("DB_PORT", "5432"),
+		DBUser:      getEnv("DB_USER", "postgres"),
+		DBPassword:  getEnv("DB_PASSWORD", "postgres"),
+		DBName:      getEnv("DB_NAME", "shotmaster"),
+		DBSSLMode:   getEnv("DB_SSLMODE", "disable"),
 
 		JWTSecret:      getEnv("JWT_SECRET", "shotmaster-secret"),
 		JWTExpireHours: getEnv("JWT_EXPIRE_HOURS", "24"),
@@ -42,7 +44,7 @@ func LoadConfig() error {
 		AdminUsername: getEnv("ADMIN_USERNAME", "admin"),
 		AdminPassword: getEnv("ADMIN_PASSWORD", "admin123"),
 
-		ServerPort: getEnv("SERVER_PORT", "8080"),
+		ServerPort: getEnv("PORT", getEnv("SERVER_PORT", "8080")),
 	}
 
 	return nil
