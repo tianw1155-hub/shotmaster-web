@@ -1,0 +1,33 @@
+databases:
+  - name: shotmaster-db
+    region: singapore
+    plan: free
+    databaseName: shotmaster
+    user: shotmaster
+
+services:
+  - type: web
+    name: shotmaster-api
+    env: go
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: go build -o shotmaster-backend .
+    startCommand: ./shotmaster-backend
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shotmaster-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE_HOURS
+        value: "24"
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: PORT
+        value: "8080"
