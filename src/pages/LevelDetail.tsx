@@ -176,11 +176,19 @@ export function LevelDetailPage() {
   };
 
   const handleLikeDimension = (dimension: ShootingPlanDimension) => {
-    toggleLikeDimension(`level_${levelId}`, dimension);
+    toggleLikeDimension(`level_${levelId}`, dimension, {
+      imageUrl: level?.referenceImage?.url || '',
+      imageTitle: level?.title || `关卡${levelId}`,
+      category: level?.referenceImage?.category || '',
+    });
   };
 
   const handleDislikeDimension = (dimension: ShootingPlanDimension) => {
-    toggleDislikeDimension(`level_${levelId}`, dimension);
+    toggleDislikeDimension(`level_${levelId}`, dimension, {
+      imageUrl: level?.referenceImage?.url || '',
+      imageTitle: level?.title || `关卡${levelId}`,
+      category: level?.referenceImage?.category || '',
+    });
   };
 
   // 曝光练习课件覆盖

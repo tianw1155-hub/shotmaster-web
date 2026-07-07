@@ -138,8 +138,8 @@ interface GameState {
   shouldRefreshUnsplash: () => boolean;
 
   // 拍摄计划反馈
-  toggleLikeDimension: (imageId: string, dimension: ShootingPlanDimension) => void;
-  toggleDislikeDimension: (imageId: string, dimension: ShootingPlanDimension) => void;
+  toggleLikeDimension: (imageId: string, dimension: ShootingPlanDimension, imageInfo?: { imageUrl?: string; imageTitle?: string; category?: string }) => void;
+  toggleDislikeDimension: (imageId: string, dimension: ShootingPlanDimension, imageInfo?: { imageUrl?: string; imageTitle?: string; category?: string }) => void;
   getDimensionFeedback: (imageId: string, dimension: ShootingPlanDimension) => { liked: boolean; disliked: boolean };
 
   // 课程
@@ -271,9 +271,9 @@ function syncFeedbacksToBackend(user: GameUser) {
       for (const dim of fb.dimensions || []) {
         allFeedbacks.push({
           imageId: fb.imageId,
-          imageUrl: '',
-          imageTitle: '',
-          category: '',
+          imageUrl: fb.imageUrl || '',
+          imageTitle: fb.imageTitle || '',
+          category: fb.category || '',
           dimension: dim.dimension,
           liked: dim.liked,
           disliked: dim.disliked,
@@ -874,7 +874,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ user: updatedUser });
   },
   // 拍摄计划反馈
-  toggleLikeDimension: (imageId, dimension) => {
+  toggleLikeDimension: (imageId, dimension, imageInfo) => {
     const { user } = get();
     const feedbacks = user.shootingPlanFeedbacks || [];
     const existingIdx = feedbacks.findIndex(f => f.imageId === imageId);
@@ -900,11 +900,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         }];
       }
       newFeedbacks = feedbacks.map((f, idx) =>
-        idx === existingIdx ? { ...f, dimensions: newDimensions, updatedAt: now } : f
+        idx === existingIdx ? { ...f, dimensions: newDimensions, updatedAt: now, imageUrl: imageInfo?.imageUrl || f.imageUrl, imageTitle: imageInfo?.imageTitle || f.imageTitle, category: imageInfo?.category || f.category } : f
       );
     } else {
       newFeedbacks = [...feedbacks, {
         imageId,
+        imageUrl: imageInfo?.imageUrl || '',
+        imageTitle: imageInfo?.imageTitle || '',
+        category: imageInfo?.category || '',
         dimensions: [{
           dimension,
           liked: true,
@@ -920,7 +923,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ user: updatedUser });
     syncFeedbacksToBackend(updatedUser);
   },
-  toggleDislikeDimension: (imageId, dimension) => {
+  toggleDislikeDimension: (imageId, dimension, imageInfo) => {
     const { user } = get();
     const feedbacks = user.shootingPlanFeedbacks || [];
     const existingIdx = feedbacks.findIndex(f => f.imageId === imageId);
@@ -946,11 +949,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         }];
       }
       newFeedbacks = feedbacks.map((f, idx) =>
-        idx === existingIdx ? { ...f, dimensions: newDimensions, updatedAt: now } : f
+        idx === existingIdx ? { ...f, dimensions: newDimensions, updatedAt: now, imageUrl: imageInfo?.imageUrl || f.imageUrl, imageTitle: imageInfo?.imageTitle || f.imageTitle, category: imageInfo?.category || f.category } : f
       );
     } else {
       newFeedbacks = [...feedbacks, {
         imageId,
+        imageUrl: imageInfo?.imageUrl || '',
+        imageTitle: imageInfo?.imageTitle || '',
+        category: imageInfo?.category || '',
         dimensions: [{
           dimension,
           liked: false,

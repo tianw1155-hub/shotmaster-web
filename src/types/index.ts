@@ -60,6 +60,9 @@ export interface DimensionFeedback {
 // 拍摄计划反馈
 export interface ShootingPlanFeedback {
   imageId: string;
+  imageUrl: string;
+  imageTitle: string;
+  category: string;
   dimensions: DimensionFeedback[];
   createdAt: string;
   updatedAt: string;

@@ -318,12 +318,20 @@ export function GalleryDetailPage() {
 
   const handleLike = (dimension: ShootingPlanDimension) => {
     if (!image) return;
-    toggleLikeDimension(image.id, dimension);
+    toggleLikeDimension(image.id, dimension, {
+      imageUrl: image.url,
+      imageTitle: image.title,
+      category: image.category,
+    });
   };
 
   const handleDislike = (dimension: ShootingPlanDimension) => {
     if (!image) return;
-    toggleDislikeDimension(image.id, dimension);
+    toggleDislikeDimension(image.id, dimension, {
+      imageUrl: image.url,
+      imageTitle: image.title,
+      category: image.category,
+    });
   };
 
   const sidebarContent = (
