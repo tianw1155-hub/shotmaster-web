@@ -373,22 +373,21 @@ export function ProfilePage() {
           <div className="flex items-center gap-5">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              {user.avatar && user.avatar.startsWith('data:') ? (
-                <img
-                  src={user.avatar}
-                  alt="头像"
-                  className="w-20 h-20 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center text-4xl flex-shrink-0">
-                  <Camera className="w-10 h-10 text-accent" strokeWidth={1.25} />
-                </div>
-              )}
               <label
                 htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center cursor-pointer hover:bg-accent-soft transition-colors shadow-lg"
+                className="block cursor-pointer"
               >
-                <Camera className="w-4 h-4" strokeWidth={1.25} />
+                {user.avatar && user.avatar.startsWith('data:') ? (
+                  <img
+                    src={user.avatar}
+                    alt="头像"
+                    className="w-20 h-20 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center text-4xl">
+                    <Camera className="w-10 h-10 text-accent" strokeWidth={1.25} />
+                  </div>
+                )}
               </label>
               <input
                 id="avatar-upload"
