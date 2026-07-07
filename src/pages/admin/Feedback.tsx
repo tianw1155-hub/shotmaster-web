@@ -9,6 +9,10 @@ import {
   AlertTriangle,
   MessageSquare,
   ChevronRight,
+  X,
+  Image,
+  Calendar,
+  Tag,
 } from 'lucide-react';
 
 const dimensionLabels: Record<string, string> = {
@@ -37,6 +41,7 @@ export const FeedbackPage: React.FC = () => {
   const [lowRatedCounts, setLowRatedCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [selectedDimension, setSelectedDimension] = useState<string | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -275,7 +280,8 @@ export const FeedbackPage: React.FC = () => {
             {lowRated.slice(0, 20).map((fb, idx) => (
               <div
                 key={fb.id || idx}
-                className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100"
+                className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100 cursor-pointer"
+                onClick={() => setSelectedFeedback(fb)}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
@@ -286,7 +292,7 @@ export const FeedbackPage: React.FC = () => {
                       {dimensionLabels[fb.dimension] || fb.dimension}
                     </p>
                     <p className="text-xs text-slate-400">
-                      图片: {fb.imageId || '-'} · {new Date(fb.createdAt).toLocaleDateString('zh-CN')}
+                      图片: {fb.imageTitle || fb.imageId || '-'} · {new Date(fb.createdAt).toLocaleDateString('zh-CN')}
                     </p>
                   </div>
                 </div>
@@ -311,6 +317,78 @@ export const FeedbackPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* 反馈详情弹窗 */}
+      {selectedFeedback && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedFeedback(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+              <h3 className="font-semibold text-slate-800">反馈详情</h3>
+              <button onClick={() => setSelectedFeedback(null)} className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition">
+                <X className="w-4 h-4 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="aspect-video bg-slate-100 rounded-xl overflow-hidden">
+                {selectedFeedback.imageUrl ? (
+                  <img src={selectedFeedback.imageUrl} alt={selectedFeedback.imageTitle || '参考图'} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                    <Image className="w-10 h-10" />
+                  </div>
+                )}
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
+                    <ThumbsDown className="w-5 h-5 text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">点踩维度</p>
+                    <p className="font-semibold text-slate-800">{dimensionLabels[selectedFeedback.dimension] || selectedFeedback.dimension}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center">
+                    <Image className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">图片标题</p>
+                    <p className="font-medium text-slate-800">{selectedFeedback.imageTitle || '-'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center">
+                    <Tag className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">分类</p>
+                    <p className="font-medium text-slate-800">{selectedFeedback.category || '-'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">反馈时间</p>
+                    <p className="font-medium text-slate-800">{new Date(selectedFeedback.createdAt).toLocaleString('zh-CN')}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center">
+                    <Tag className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">用户ID</p>
+                    <p className="font-medium text-slate-800">{selectedFeedback.userId || '-'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
