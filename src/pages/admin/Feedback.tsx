@@ -7,6 +7,7 @@ import {
   ThumbsDown,
   TrendingUp,
   AlertTriangle,
+  MessageSquare,
   ChevronRight,
 } from 'lucide-react';
 
@@ -67,7 +68,13 @@ export const FeedbackPage: React.FC = () => {
     );
   }
 
-  // 找出最需要改进的维度（点踩最多）
+  // 计算反馈概览数据
+  const totalLiked = dimensionStats.reduce((sum, d) => sum + (d.liked || 0), 0);
+  const totalDisliked = dimensionStats.reduce((sum, d) => sum + (d.disliked || 0), 0);
+  const totalFeedbacks = totalLiked + totalDisliked;
+  const overallLikeRate = totalFeedbacks > 0 ? totalLiked / totalFeedbacks : 0;
+
+  // 找出最需要改进的维度
   const worstDimension = dimensionStats.reduce((worst, current) => {
     if (!worst || current.disliked > worst.disliked) return current;
     return worst;
@@ -75,8 +82,61 @@ export const FeedbackPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* 反馈概览统计卡片 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500 mb-1">总反馈数</p>
+              <p className="text-3xl font-bold text-slate-800">{totalFeedbacks}</p>
+            </div>
+            <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center">
+              <MessageSquare className="w-7 h-7 text-purple-500" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500 mb-1">点赞 / 点踩</p>
+              <p className="text-3xl font-bold text-slate-800">
+                <span className="text-green-600">{totalLiked}</span>
+                <span className="text-lg text-slate-400 mx-1">/</span>
+                <span className="text-red-500">{totalDisliked}</span>
+              </p>
+            </div>
+            <div className="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center">
+              <ThumbsUp className="w-7 h-7 text-green-500" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition border border-slate-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-slate-500 mb-1">好评率</p>
+              <p className={`text-3xl font-bold ${
+                overallLikeRate >= 0.7 ? 'text-green-600' : overallLikeRate >= 0.5 ? 'text-amber-600' : 'text-red-600'
+              }`}>
+                {(overallLikeRate * 100).toFixed(1)}%
+              </p>
+            </div>
+            <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center">
+              <TrendingUp className="w-7 h-7 text-amber-500" />
+            </div>
+          </div>
+          <div className="mt-3 h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                overallLikeRate >= 0.7 ? 'bg-green-500' : overallLikeRate >= 0.5 ? 'bg-amber-500' : 'bg-red-500'
+              }`}
+              style={{ width: `${overallLikeRate * 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* 反馈趋势 */}
-      <div className="bg-white rounded-md shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">反馈趋势</h3>
@@ -84,24 +144,24 @@ export const FeedbackPage: React.FC = () => {
           </div>
           <TrendingUp className="w-5 h-5 text-slate-400" />
         </div>
-        <div className="flex items-end justify-between h-48 gap-2">
+        <div className="flex items-end justify-between h-48 gap-3">
           {trendData.map((item) => {
             const maxTotal = Math.max(...trendData.map((d) => d.total || 1));
             const likedHeight = (item.liked / maxTotal) * 100;
             const dislikedHeight = (item.disliked / maxTotal) * 100;
             return (
-              <div key={item.date} className="flex-1 flex flex-col items-center gap-1">
+              <div key={item.date} className="flex-1 flex flex-col items-center gap-1 group">
                 <div className="w-full flex flex-col items-center flex-1 justify-end gap-1">
                   <div
-                    className="w-full bg-gradient-to-t from-green-400 to-emerald-500 rounded-t-lg"
+                    className="w-full bg-gradient-to-t from-green-400 to-emerald-500 rounded-t-lg transition-all group-hover:from-green-300 group-hover:to-emerald-400"
                     style={{ height: `${likedHeight}%`, minHeight: item.liked > 0 ? '4px' : '0' }}
                   />
                   <div
-                    className="w-full bg-gradient-to-t from-red-400 to-rose-500 rounded-t-lg"
+                    className="w-full bg-gradient-to-t from-red-400 to-rose-500 rounded-t-lg transition-all group-hover:from-red-300 group-hover:to-rose-400"
                     style={{ height: `${dislikedHeight}%`, minHeight: item.disliked > 0 ? '4px' : '0' }}
                   />
                 </div>
-                <span className="text-xs text-slate-500">{item.date?.slice(5) || '-'}</span>
+                <span className="text-xs text-slate-500 group-hover:text-slate-700 transition">{item.date?.slice(5) || '-'}</span>
               </div>
             );
           })}
@@ -118,8 +178,8 @@ export const FeedbackPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 维度分析卡片 */}
-      <div className="bg-white rounded-md shadow-sm p-6">
+      {/* 维度分析 */}
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">分维度反馈分析</h3>
@@ -131,10 +191,10 @@ export const FeedbackPage: React.FC = () => {
           {dimensionStats.map((dim) => (
             <div
               key={dim.dimension}
-              className={`border rounded-xl p-4 cursor-pointer transition ${
+              className={`border rounded-xl p-5 cursor-pointer transition ${
                 selectedDimension === dim.dimension
-                  ? 'border-amber-300 bg-amber-50'
-                  : 'border-slate-100 hover:border-slate-200'
+                  ? 'border-amber-300 bg-amber-50/50 shadow-sm'
+                  : 'border-slate-100 hover:border-slate-200 hover:shadow-sm'
               }`}
               onClick={() => setSelectedDimension(dim.dimension === selectedDimension ? null : dim.dimension)}
             >
@@ -143,12 +203,12 @@ export const FeedbackPage: React.FC = () => {
                   {dimensionLabels[dim.dimension] || dim.dimension}
                 </span>
                 <span
-                  className={`text-sm font-semibold ${
+                  className={`text-sm font-semibold px-2 py-0.5 rounded-full ${
                     dim.likeRate >= 0.7
-                      ? 'text-green-600'
+                      ? 'text-green-700 bg-green-50'
                       : dim.likeRate >= 0.5
-                      ? 'text-amber-600'
-                      : 'text-red-600'
+                      ? 'text-amber-700 bg-amber-50'
+                      : 'text-red-700 bg-red-50'
                   }`}
                 >
                   {(dim.likeRate * 100).toFixed(1)}%
@@ -158,14 +218,16 @@ export const FeedbackPage: React.FC = () => {
                 <div
                   className={`h-full bg-gradient-to-r ${
                     dimensionColors[dim.dimension] || 'from-slate-400 to-gray-500'
-                  } rounded-full`}
+                  } rounded-full transition-all`}
                   style={{ width: `${dim.likeRate * 100}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs text-slate-500">
-                <span>总: {dim.total}</span>
-                <span className="text-green-600">👍 {dim.liked}</span>
-                <span className="text-red-500">👎 {dim.disliked}</span>
+                <span>共 {dim.total} 条</span>
+                <div className="flex gap-3">
+                  <span className="text-green-600">+{dim.liked}</span>
+                  <span className="text-red-500">-{dim.disliked}</span>
+                </div>
               </div>
             </div>
           ))}
@@ -174,9 +236,11 @@ export const FeedbackPage: React.FC = () => {
 
       {/* 需改进提示 */}
       {worstDimension && worstDimension.disliked > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-md p-6">
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5">
           <div className="flex items-start gap-4">
-            <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0" />
+            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            </div>
             <div>
               <h4 className="font-semibold text-amber-800 mb-1">改进建议</h4>
               <p className="text-sm text-amber-700">
@@ -189,7 +253,7 @@ export const FeedbackPage: React.FC = () => {
       )}
 
       {/* 低评分反馈列表 */}
-      <div className="bg-white rounded-md shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">低评分反馈详情</h3>
@@ -200,28 +264,33 @@ export const FeedbackPage: React.FC = () => {
 
         {lowRated.length === 0 ? (
           <div className="text-center py-12 text-slate-500">
-            <ThumbsUp className="w-12 h-12 text-green-300 mx-auto mb-3" />
-            <p>暂无低评分反馈，AI表现良好！</p>
+            <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <ThumbsUp className="w-8 h-8 text-green-400" />
+            </div>
+            <p className="font-medium">暂无低评分反馈</p>
+            <p className="text-sm text-slate-400 mt-1">AI表现良好，继续加油!</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {lowRated.slice(0, 20).map((fb, idx) => (
               <div
                 key={fb.id || idx}
-                className="flex items-center justify-between p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition"
+                className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition border border-transparent hover:border-slate-100"
               >
                 <div className="flex items-center gap-4">
-                  <ThumbsDown className="w-5 h-5 text-red-400" />
+                  <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
+                    <ThumbsDown className="w-4 h-4 text-red-400" />
+                  </div>
                   <div>
                     <p className="text-sm font-medium text-slate-700">
                       {dimensionLabels[fb.dimension] || fb.dimension}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-400">
                       图片: {fb.imageId || '-'} · {new Date(fb.createdAt).toLocaleDateString('zh-CN')}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <ChevronRight className="w-4 h-4 text-slate-300" />
               </div>
             ))}
           </div>
