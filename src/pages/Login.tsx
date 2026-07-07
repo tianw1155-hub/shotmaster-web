@@ -74,27 +74,27 @@ export function LoginPage() {
       return;
     }
 
-    if (password.length < 8) {
-      setError('密码长度不能少于8位');
-      return;
-    }
-
-    if (!/[a-zA-Z]/.test(password)) {
-      setError('密码必须包含字母');
-      return;
-    }
-
-    if (!/[0-9]/.test(password)) {
-      setError('密码必须包含数字');
-      return;
-    }
-
-    if (!/[^a-zA-Z0-9]/.test(password)) {
-      setError('密码必须包含特殊符号（如 !@#$%^&* 等）');
-      return;
-    }
-
     if (mode === 'register') {
+      if (password.length < 8) {
+        setError('密码长度不能少于8位');
+        return;
+      }
+
+      if (!/[a-zA-Z]/.test(password)) {
+        setError('密码必须包含字母');
+        return;
+      }
+
+      if (!/[0-9]/.test(password)) {
+        setError('密码必须包含数字');
+        return;
+      }
+
+      if (!/[^a-zA-Z0-9]/.test(password)) {
+        setError('密码必须包含特殊符号（如 !@#$%^&* 等）');
+        return;
+      }
+
       if (!confirmPassword) {
         setError('请确认密码');
         return;
@@ -220,7 +220,7 @@ export function LoginPage() {
                 </button>
               </div>
               {/* 密码强度指示 */}
-              {password && (
+              {mode === 'register' && password && (
                 <PasswordStrength password={password} />
               )}
             </div>
