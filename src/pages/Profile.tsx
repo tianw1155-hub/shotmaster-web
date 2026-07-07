@@ -4,7 +4,6 @@ import {
   ChevronRight,
   ChevronLeft,
   Settings,
-  Shield,
   HelpCircle,
   Camera,
   Heart,
@@ -477,7 +476,6 @@ export function ProfilePage() {
           <h3 className="text-ink-muted text-sm px-4 py-2 bg-surface-muted/50">更多</h3>
           {[
             { icon: Settings, label: '设置' },
-            { icon: Shield, label: '隐私政策' },
             { icon: HelpCircle, label: '帮助与反馈' },
           ].map((item, idx) => {
             const IconComponent = item.icon;
