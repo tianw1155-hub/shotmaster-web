@@ -41,7 +41,11 @@ export function Sidebar() {
       </nav>
       <div className="px-3 py-4 border-t border-line">
         <Link to="/profile" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-surface-muted transition-colors">
-          <div className="w-7 h-7 rounded-full bg-ink text-surface flex items-center justify-center text-[11px] font-medium">{user.avatar}</div>
+          {user.avatar && user.avatar.startsWith('data:') ? (
+            <img src={user.avatar} alt="头像" className="w-7 h-7 rounded-full object-cover" />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-ink text-surface flex items-center justify-center text-[11px] font-medium">{user.avatar}</div>
+          )}
           <div className="min-w-0">
             <p className="text-[12px] font-medium text-ink truncate">Lv.{user.level} · 摄影师</p>
             <p className="text-[10px] text-ink-muted font-mono">{user.xp}/{user.xpToNext} XP</p>

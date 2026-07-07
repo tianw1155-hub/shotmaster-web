@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
@@ -303,12 +303,27 @@ export function MyFavoritesPage() {
 // ==================== 主个人中心页面 ====================
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { user } = useGameStore();
+  const { user, updateUser } = useGameStore();
+  const [isUploading, setIsUploading] = useState(false);
 
   const completedCount = user.completedLevels.length;
   const unlockedAchievements = user.achievements.filter((a) => a.unlocked);
   const xpProgress = (user.xp / user.xpToNext) * 100;
   const favoriteCount = (user.favoriteImageIds || []).length;
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      updateUser({ avatar: dataUrl });
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const menuItems = [
     {
@@ -357,8 +372,32 @@ export function ProfilePage() {
         >
           <div className="flex items-center gap-5">
             {/* Avatar */}
-            <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center text-4xl flex-shrink-0">
-              <Camera className="w-10 h-10 text-accent" strokeWidth={1.25} />
+            <div className="relative flex-shrink-0">
+              {user.avatar && user.avatar.startsWith('data:') ? (
+                <img
+                  src={user.avatar}
+                  alt="头像"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center text-4xl flex-shrink-0">
+                  <Camera className="w-10 h-10 text-accent" strokeWidth={1.25} />
+                </div>
+              )}
+              <label
+                htmlFor="avatar-upload"
+                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center cursor-pointer hover:bg-accent-soft transition-colors shadow-lg"
+              >
+                <Camera className="w-4 h-4" strokeWidth={1.25} />
+              </label>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                disabled={isUploading}
+                className="hidden"
+              />
             </div>
 
             <div className="flex-1 min-w-0">

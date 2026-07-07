@@ -7,8 +7,14 @@ export function TopBar() {
   return (
     <header className="lg:hidden sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-line">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/profile" aria-label="个人中心" className="w-10 h-10 rounded-full bg-ink text-surface flex items-center justify-center text-lg font-display">
-          {user.avatar}
+        <Link to="/profile" aria-label="个人中心">
+          {user.avatar && user.avatar.startsWith('data:') ? (
+            <img src={user.avatar} alt="头像" className="w-10 h-10 rounded-full object-cover" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-ink text-surface flex items-center justify-center text-lg font-display">
+              {user.avatar}
+            </div>
+          )}
         </Link>
         <div className="flex items-center gap-3" aria-label="等级">
           <div className="w-24 h-1.5 bg-surface-muted rounded-full overflow-hidden">
