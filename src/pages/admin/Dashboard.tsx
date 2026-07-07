@@ -8,7 +8,6 @@ import {
   MessageSquare,
   TrendingUp,
   Activity,
-  BarChart3,
   Calendar,
   RotateCcw,
 } from 'lucide-react';
@@ -30,34 +29,9 @@ interface DashboardStats {
   dailyNewUsers: Array<{ date: string; newUsers: number }>;
   weeklyNewUsers: Array<{ week: string; weekNum: number; newUsers: number }>;
   monthlyNewUsers: Array<{ month: string; monthName: string; newUsers: number }>;
-  dimensionStats: Array<{
-    dimension: string;
-    total: number;
-    liked: number;
-    disliked: number;
-    likeRate: number;
-  }>;
   weeklyFeedbackStats: Array<{ week: string; weekNum: number; liked: number; disliked: number; total: number; likeRate: number }>;
   monthlyFeedbackStats: Array<{ month: string; monthName: string; liked: number; disliked: number; total: number; likeRate: number }>;
 }
-
-const dimensionLabels: Record<string, string> = {
-  scene: '场景选择',
-  lighting: '光线运用',
-  composition: '构图技巧',
-  params: '参数建议',
-  postProcessing: '后期调色',
-  equipment: '推荐装备',
-};
-
-const dimensionColors: Record<string, string> = {
-  scene: 'from-blue-500 to-cyan-500',
-  lighting: 'from-amber-500 to-yellow-500',
-  composition: 'from-purple-500 to-pink-500',
-  params: 'from-green-500 to-emerald-500',
-  postProcessing: 'from-rose-500 to-red-500',
-  equipment: 'from-slate-500 to-gray-500',
-};
 
 type TimeDimension = 'daily' | 'weekly' | 'monthly';
 
@@ -385,55 +359,6 @@ export const DashboardPage: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      {/* 维度反馈分析 */}
-      <div className="bg-white rounded-md shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-800">分维度反馈分析</h3>
-            <p className="text-sm text-slate-500">各维度的点赞率与改进空间</p>
-          </div>
-          <BarChart3 className="w-5 h-5 text-slate-400" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {stats.dimensionStats.map((dim) => (
-            <div
-              key={dim.dimension}
-              className="border border-slate-100 rounded-xl p-4 hover:border-slate-200 transition"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-medium text-slate-700">
-                  {dimensionLabels[dim.dimension] || dim.dimension}
-                </span>
-                <span
-                  className={`text-sm font-semibold ${
-                    dim.likeRate >= 0.7
-                      ? 'text-green-600'
-                      : dim.likeRate >= 0.5
-                      ? 'text-amber-600'
-                      : 'text-red-600'
-                  }`}
-                >
-                  {(dim.likeRate * 100).toFixed(1)}%
-                </span>
-              </div>
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
-                <div
-                  className={`h-full bg-gradient-to-r ${
-                    dimensionColors[dim.dimension] || 'from-slate-400 to-gray-500'
-                  } rounded-full`}
-                  style={{ width: `${dim.likeRate * 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-slate-500">
-                <span>总反馈: {dim.total}</span>
-                <span className="text-green-600">👍 {dim.liked}</span>
-                <span className="text-red-500">👎 {dim.disliked}</span>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>
