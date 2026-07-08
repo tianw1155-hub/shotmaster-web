@@ -1,14 +1,35 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeftRight, RefreshCw, ChevronRight, Sparkles, Home } from 'lucide-react';
+import { ArrowLeftRight, RefreshCw, ChevronRight, Sparkles, Home, ThumbsUp, Lightbulb, Target } from 'lucide-react';
 import { Card, Button, RingProgress } from '../ui/Button';
 import { motion } from 'framer-motion';
 import { variants } from '../../lib/motion';
 import { Confetti } from '../ui/Confetti';
 
+interface ScoreSuggestion {
+  dimension: string;
+  priority: 'high' | 'medium' | 'low';
+  title: string;
+  problem: string;
+  analysis: string;
+  method: string;
+  referencePoint: string;
+}
+
+interface ScoreSummary {
+  level: string;
+  mainImprovement: string;
+  nextPractice: string;
+  encouragement: string;
+}
+
 interface ScoreData {
   overall: number; stars: 0 | 1 | 2 | 3;
   composition: number; lighting: number; color: number; similarity: number;
   feedback: string[];
+  strengths?: string[];
+  suggestions?: ScoreSuggestion[];
+  summary?: ScoreSummary;
+  quickTips?: string[];
 }
 interface Props {
   score: ScoreData;
@@ -143,19 +164,103 @@ export function ScoreResultView({ score, capturedImage, referenceImage, fromComm
         </div>
       </motion.section>
 
-      <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
-        <Card className="p-4">
-          <h3 className="font-medium mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" />AI 改进建议</h3>
-          <ul className="space-y-2">
-            {score.feedback.map((f, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-ink-secondary">
-                <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </motion.div>
+      {/* 优点展示 */}
+      {score.strengths && score.strengths.length > 0 && (
+        <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
+          <Card className="p-4">
+            <h3 className="font-medium mb-3 flex items-center gap-2"><ThumbsUp className="w-5 h-5 text-accent" />做得好的地方</h3>
+            <ul className="space-y-2">
+              {score.strengths.map((s, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-ink-secondary">
+                  <span className="w-5 h-5 rounded-full bg-accent/12 flex items-center justify-center text-accent text-xs flex-shrink-0 mt-0.5">✓</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* 分维度改进建议 */}
+      {score.suggestions && score.suggestions.length > 0 && (
+        <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
+          <Card className="p-4">
+            <h3 className="font-medium mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" />AI 改进建议</h3>
+            <div className="space-y-4">
+              {score.suggestions.map((s, i) => (
+                <div key={i} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      s.priority === 'high' ? 'bg-red-50 text-red-600' :
+                      s.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
+                      'bg-surface-muted text-ink-secondary'
+                    }`}>
+                      {s.priority === 'high' ? '重要' : s.priority === 'medium' ? '建议' : '可选'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-surface-muted text-ink-secondary text-xs">{s.dimension}</span>
+                    <span className="font-medium text-ink text-sm">{s.title}</span>
+                  </div>
+                  <div className="space-y-1.5 text-sm text-ink-secondary">
+                    <p><span className="font-medium text-ink">问题：</span>{s.problem}</p>
+                    <p><span className="font-medium text-ink">分析：</span>{s.analysis}</p>
+                    <p><span className="font-medium text-ink">方法：</span>{s.method}</p>
+                    <p><span className="font-medium text-ink">参考：</span>{s.referencePoint}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* 整体总结 */}
+      {score.summary && (
+        <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
+          <Card className="p-4 bg-accent/5">
+            <h3 className="font-medium mb-3 flex items-center gap-2"><Target className="w-5 h-5 text-accent" />总结</h3>
+            <div className="space-y-2 text-sm">
+              <p className="text-ink"><span className="font-medium">水平：</span>{score.summary.level}</p>
+              <p className="text-ink"><span className="font-medium">提升方向：</span>{score.summary.mainImprovement}</p>
+              <p className="text-ink"><span className="font-medium">下一步：</span>{score.summary.nextPractice}</p>
+              <p className="text-accent font-medium">{score.summary.encouragement}</p>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* 快速小贴士 */}
+      {score.quickTips && score.quickTips.length > 0 && (
+        <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
+          <Card className="p-4">
+            <h3 className="font-medium mb-3 flex items-center gap-2"><Lightbulb className="w-5 h-5 text-gold" />快速小贴士</h3>
+            <ul className="space-y-2">
+              {score.quickTips.map((t, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-ink-secondary">
+                  <span className="w-5 h-5 rounded-full bg-gold/12 flex items-center justify-center text-gold text-xs flex-shrink-0 mt-0.5">💡</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* 兼容旧版：当没有新数据时显示feedback */}
+      {(!score.suggestions || score.suggestions.length === 0) && score.feedback && score.feedback.length > 0 && (
+        <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
+          <Card className="p-4">
+            <h3 className="font-medium mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" />AI 改进建议</h3>
+            <ul className="space-y-2">
+              {score.feedback.map((f, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-ink-secondary">
+                  <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </motion.div>
+      )}
 
       {fromCommunity || score.overall >= 60 ? (
         <div className="grid grid-cols-2 gap-3">

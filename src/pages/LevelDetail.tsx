@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Lightbulb, Camera, Upload, Lock, X, Sparkles, Star } from 'lucide-react';
+import { ChevronRight, Lightbulb, Camera, Upload, Lock, X, Sparkles, Star, ThumbsUp, Target } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel, chapterInfo } from '../services/levelService';
 import { Card, Badge, Button, RingProgress } from '../components/ui/Button';
@@ -103,18 +103,91 @@ function ScoreDetailCard({
           </div>
         </div>
 
-        {/* 改进建议 */}
-        <div className="bg-surface-muted rounded-md p-3">
-          <p className="text-sm font-medium text-ink mb-2">💡 改进建议</p>
-          <ul className="space-y-1">
-            {score.feedback.map((f, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-ink-secondary">
-                <ChevronRight className="w-3 h-3 text-accent mt-0.5 flex-shrink-0" />
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* 优点 */}
+        {score.strengths && score.strengths.length > 0 && (
+          <div className="bg-green-50 rounded-md p-3 mb-3">
+            <p className="text-sm font-medium text-ink mb-2 flex items-center gap-1"><ThumbsUp className="w-4 h-4 text-accent" />做得好的地方</p>
+            <ul className="space-y-1">
+              {score.strengths.map((s, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-ink-secondary">
+                  <span className="w-4 h-4 rounded-full bg-accent/12 flex items-center justify-center text-accent text-xs flex-shrink-0 mt-0.5">✓</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* 分维度改进建议 */}
+        {score.suggestions && score.suggestions.length > 0 ? (
+          <div className="bg-surface-muted rounded-md p-3 mb-3">
+            <p className="text-sm font-medium text-ink mb-2 flex items-center gap-1"><Sparkles className="w-4 h-4 text-accent" />改进建议</p>
+            <div className="space-y-3">
+              {score.suggestions.map((s, i) => (
+                <div key={i} className="border-b border-line pb-2 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className={`px-1.5 py-0.5 rounded text-xs ${
+                      s.priority === 'high' ? 'bg-red-50 text-red-600' :
+                      s.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
+                      'bg-surface-card text-ink-secondary'
+                    }`}>
+                      {s.priority === 'high' ? '重要' : s.priority === 'medium' ? '建议' : '可选'}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-surface-card text-ink-secondary text-xs">{s.dimension}</span>
+                    <span className="font-medium text-ink text-xs">{s.title}</span>
+                  </div>
+                  <div className="space-y-1 text-xs text-ink-secondary">
+                    <p><span className="font-medium text-ink">问题：</span>{s.problem}</p>
+                    <p><span className="font-medium text-ink">分析：</span>{s.analysis}</p>
+                    <p><span className="font-medium text-ink">方法：</span>{s.method}</p>
+                    <p><span className="font-medium text-ink">参考：</span>{s.referencePoint}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : score.feedback && score.feedback.length > 0 && (
+          /* 兼容旧版 */
+          <div className="bg-surface-muted rounded-md p-3 mb-3">
+            <p className="text-sm font-medium text-ink mb-2">💡 改进建议</p>
+            <ul className="space-y-1">
+              {score.feedback.map((f, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-ink-secondary">
+                  <ChevronRight className="w-3 h-3 text-accent mt-0.5 flex-shrink-0" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* 总结 */}
+        {score.summary && (
+          <div className="bg-accent/5 rounded-md p-3 mb-3">
+            <p className="text-sm font-medium text-ink mb-2 flex items-center gap-1"><Target className="w-4 h-4 text-accent" />总结</p>
+            <div className="space-y-1 text-xs">
+              <p className="text-ink"><span className="font-medium">水平：</span>{score.summary.level}</p>
+              <p className="text-ink"><span className="font-medium">提升：</span>{score.summary.mainImprovement}</p>
+              <p className="text-ink"><span className="font-medium">下一步：</span>{score.summary.nextPractice}</p>
+              <p className="text-accent font-medium">{score.summary.encouragement}</p>
+            </div>
+          </div>
+        )}
+
+        {/* 快速小贴士 */}
+        {score.quickTips && score.quickTips.length > 0 && (
+          <div className="bg-gold/5 rounded-md p-3">
+            <p className="text-sm font-medium text-ink mb-2 flex items-center gap-1"><Lightbulb className="w-4 h-4 text-gold" />快速小贴士</p>
+            <ul className="space-y-1">
+              {score.quickTips.map((t, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-ink-secondary">
+                  <span className="w-4 h-4 rounded-full bg-gold/12 flex items-center justify-center text-gold text-xs flex-shrink-0 mt-0.5">💡</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </Card>
   );

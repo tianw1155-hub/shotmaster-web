@@ -51,28 +51,106 @@ async function callAgnesAPI(referenceBase64: string, userBase64: string): Promis
     throw new Error('API key not configured');
   }
 
-  const prompt = `你是一位专业的摄影评委。请对比以下两张图片：
-1. 参考图（标准）
-2. 用户作品
+  const prompt = `你是一位资深摄影导师，擅长从专业角度评价摄影作品并给出可操作的改进建议。
 
-请从以下四个维度评分（满分100）：
-- 构图 (composition)
-- 光线 (lighting)
-- 色彩 (color)
-- 与参考图的相似度 (similarity)
+## 任务
+请对比以下两张图片：
+1. 参考图（教学标准，代表该关卡的优秀水平）
+2. 用户作品（学习者的拍摄成果）
 
-最终给出总分（100分制）和1-3星评级。
+请以鼓励和教学的态度进行评价，先肯定做得好的地方，再给出具体的改进建议。
 
-请以JSON格式返回：
+## 评分维度（每项满分100分）
+
+### 1. 构图 (composition)
+细致分析要点：
+- 主体位置：是否在黄金分割点/三分线等关键位置
+- 画面平衡：左右上下的视觉重量是否均衡
+- 视觉引导：是否有引导线、框架、前景等引导视线
+- 留白与呼吸感：主体周围是否有合适的空间
+- 构图法则：是否运用了三分法、对称、引导线、框架构图等
+- 层次：前景、中景、远景是否有层次
+
+### 2. 光线 (lighting)
+细致分析要点：
+- 光线方向：顺光/侧光/逆光/顶光，是否符合主题需要
+- 光线质感：硬光还是柔光，是否营造了合适的氛围
+- 光影层次：是否有丰富的明暗过渡，还是平光一片
+- 高光与暗部：高光是否过曝丢失细节，暗部是否死黑
+- 光线氛围：光线是否传达了正确的情绪（温暖/清冷/戏剧等）
+
+### 3. 色彩 (color)
+细致分析要点：
+- 白平衡：是否偏冷/偏暖，肤色/中性色是否准确
+- 色彩饱和度：是否过于鲜艳或过于平淡
+- 色彩对比：互补色/邻近色搭配是否和谐
+- 色彩统一：整体色调是否统一，有无杂色干扰
+- 色彩情感：色彩是否传达了正确的情绪
+
+### 4. 相似度 (similarity)
+细致分析要点：
+- 构图相似度：主体位置、画面比例、景别是否接近
+- 光影相似度：光线方向、明暗对比是否接近
+- 色彩相似度：色调、饱和度、白平衡是否接近
+- 氛围相似度：整体感觉和情绪是否一致
+- 关键元素：参考图中的关键视觉元素是否还原
+
+## 输出要求（严格JSON格式）
+
 {
   "composition": 分数,
   "lighting": 分数,
   "color": 分数,
   "similarity": 分数,
-  "overall": 总分,
+  "overall": 综合总分,
   "stars": 星级(1-3),
-  "feedback": ["建议1", "建议2", ...]
-}`;
+  
+  "strengths": [
+    "做得好的地方1（具体描述，指出是哪个维度的什么优点）",
+    "做得好的地方2",
+    "..."
+  ],
+  
+  "suggestions": [
+    {
+      "dimension": "维度名称（构图/光线/色彩/相似度）",
+      "priority": "high" | "medium" | "low",
+      "title": "建议标题（一句话概括）",
+      "problem": "具体问题描述（指出用户作品哪里不好）",
+      "analysis": "为什么这是个问题（原理解释）",
+      "method": "具体改进方法（怎么操作，包括角度、位置、参数、时机等）",
+      "referencePoint": "参考图在这方面是怎么做的"
+    }
+  ],
+  
+  "summary": {
+    "level": "当前水平评价（一句话，如：构图基础不错，光线把控有待提升）",
+    "mainImprovement": "最主要的提升方向（一句话）",
+    "nextPractice": "下一步建议练习什么（一句话）",
+    "encouragement": "鼓励的话（一句话）"
+  },
+  
+  "quickTips": [
+    "快速小贴士1（一句话实用技巧，与这张图相关）",
+    "快速小贴士2",
+    "快速小贴士3"
+  ],
+  
+  "feedback": ["简洁建议1", "简洁建议2"]
+}
+
+## 注意事项
+1. 保持4个评分维度不变，但每个维度都要从上述要点进行细致分析
+2. 只有需要改进的维度才给出建议，做得好的维度只在strengths中肯定，不给出建议
+3. 建议要具体可操作，不能说空话：
+   - 不好的："构图不好"
+   - 好的："主体偏右约1/5画面，建议向左移动到左侧三分线位置，让视觉重心更稳定"
+4. 每条建议都要包含：问题是什么、为什么是问题、怎么改、参考图怎么做的
+5. 优先级为high的建议不超过3条，让用户知道先改什么
+6. strengths至少3条，善于发现闪光点，即使整体一般也要找到优点
+7. quickTips提供3条与这张图相关的实用小技巧，可以是拍摄技巧也可以是后期技巧
+8. 语言要像老师对学生说话，专业但不生硬，鼓励为主
+9. feedback字段保留，放3-5条最精简的建议，兼容旧版展示`;
 
   const response = await fetch(`${API_URL}/chat/completions`, {
     method: 'POST',
@@ -105,7 +183,7 @@ async function callAgnesAPI(referenceBase64: string, userBase64: string): Promis
           ],
         },
       ],
-      max_tokens: 1000,
+      max_tokens: 3000,
     }),
   });
 
@@ -141,15 +219,97 @@ function generateMockScore(): Score {
   if (overall >= 90) stars = 3;
   else if (overall >= 75) stars = 2;
 
-  const feedback: string[] = [];
-  if (composition < 80) feedback.push('构图可以更精准，建议参考三分法线调整主体位置');
-  if (lighting < 80) feedback.push('光线方向稍有偏差，尝试调整拍摄角度');
-  if (color < 80) feedback.push('色彩还原可以更准确，注意白平衡设置');
-  if (similarity < 80) feedback.push('与参考图整体相似度还有提升空间');
-  if (overall >= 90) feedback.push('太棒了！这张作品非常接近参考图的水平！');
-  if (feedback.length === 0) feedback.push('整体不错，继续保持！');
+  const strengths: string[] = [];
+  if (composition >= 80) strengths.push('构图方面做得不错，主体位置把握得当，画面平衡感良好');
+  if (lighting >= 80) strengths.push('光线运用合理，光影层次丰富，营造了合适的氛围');
+  if (color >= 80) strengths.push('色彩还原准确，白平衡合适，色彩搭配和谐');
+  if (similarity >= 80) strengths.push('与参考图整体相似度较高，构图思路基本一致');
+  if (strengths.length === 0) strengths.push('敢于尝试就是进步，继续加油！');
 
-  return { similarity, composition, lighting, color, overall, stars, feedback };
+  const suggestions: Score['suggestions'] = [];
+  
+  if (composition < 80) {
+    suggestions.push({
+      dimension: '构图',
+      priority: composition < 60 ? 'high' : 'medium',
+      title: '优化主体位置和画面平衡',
+      problem: `当前构图得分${composition}分，主体位置偏${Math.random() > 0.5 ? '右' : '左'}，画面${Math.random() > 0.5 ? '上方' : '下方'}略显空旷`,
+      analysis: '构图是摄影的骨架，主体位置不当会让观众视线分散，无法快速抓住视觉焦点',
+      method: '建议将主体移动到画面的三分线位置，可以尝试向左/右移动约1/5画面距离，同时注意画面上下的视觉平衡',
+      referencePoint: '参考图将主体放在左侧三分线位置，右侧留白适当，整体构图稳定且有呼吸感',
+    });
+  }
+  
+  if (lighting < 80) {
+    suggestions.push({
+      dimension: '光线',
+      priority: lighting < 60 ? 'high' : 'medium',
+      title: '调整光线方向和曝光',
+      problem: `当前光线得分${lighting}分，${lighting < 70 ? '高光区域有些过曝，细节丢失较多' : '暗部层次不够丰富，稍显死黑'}`,
+      analysis: '光线是摄影的灵魂，过曝会丢失高光细节，欠曝则会让暗部失去层次，影响画面质感',
+      method: `${lighting < 70 ? '建议减少曝光补偿0.3-0.7EV，或使用点测光对准高光区域' : '建议增加曝光补偿0.3-0.7EV，或在后期提亮阴影区域'}，注意观察直方图确保高光和暗部都有细节`,
+      referencePoint: '参考图的光线控制得当，高光不过曝，暗部有层次，光影过渡自然柔和',
+    });
+  }
+  
+  if (color < 80) {
+    suggestions.push({
+      dimension: '色彩',
+      priority: color < 60 ? 'high' : 'low',
+      title: '调整白平衡和色彩饱和度',
+      problem: `当前色彩得分${color}分，${Math.random() > 0.5 ? '画面整体偏暖，肤色略显偏黄' : '画面饱和度偏高，色彩略显刺眼'}`,
+      analysis: '色彩影响画面情绪表达，白平衡不准会导致整体色调偏差，过高的饱和度会让画面显得廉价',
+      method: `${Math.random() > 0.5 ? '建议将白平衡调整到5500K左右（日光模式），或在后期降低色温' : '建议降低整体饱和度5-10%，让色彩更加自然柔和'}`,
+      referencePoint: '参考图的色彩还原准确，白平衡合适，饱和度适中，整体色调统一和谐',
+    });
+  }
+  
+  if (similarity < 80) {
+    suggestions.push({
+      dimension: '相似度',
+      priority: similarity < 60 ? 'high' : 'medium',
+      title: '提升与参考图的整体一致性',
+      problem: `当前相似度得分${similarity}分，${Math.random() > 0.5 ? '构图思路与参考图差异较大' : '光影效果与参考图差距明显'}`,
+      analysis: '相似度体现了对参考图的理解和还原能力，是学习摄影的重要环节',
+      method: '建议仔细观察参考图的构图、光线和色彩特点，尝试从相同的机位和角度重新拍摄',
+      referencePoint: '参考图在构图、光线和色彩上都有明确的特点，建议重点参考这些方面进行调整',
+    });
+  }
+
+  const summary: Score['summary'] = {
+    level: overall >= 90 ? '优秀！你的摄影水平已经相当不错了' : 
+           overall >= 75 ? '良好！构图基础不错，部分维度还有提升空间' :
+           overall >= 60 ? '及格！掌握了基本技巧，但需要加强练习' : '需要多加练习，基础还有待巩固',
+    mainImprovement: composition < lighting && composition < color && composition < similarity ? '构图' :
+                      lighting < color && lighting < similarity ? '光线' :
+                      color < similarity ? '色彩' : '相似度',
+    nextPractice: '建议多观察优秀作品的构图和光线运用，尝试在不同光线条件下拍摄练习',
+    encouragement: overall >= 80 ? '非常棒！继续保持，你已经很接近专业水平了！' :
+                   overall >= 60 ? '继续加油！每一次练习都会让你进步！' : '不要气馁，坚持练习，你一定会越来越棒！',
+  };
+
+  const quickTips = [
+    '拍摄时可以开启网格线，帮助判断三分线位置',
+    '逆光拍摄时可以尝试使用点测光，避免主体过暗',
+    '调整白平衡时，可以找一个中性灰色参考点',
+  ];
+
+  const feedback: string[] = suggestions.map(s => s.title);
+  if (feedback.length === 0) feedback.push('整体表现不错，继续保持！');
+
+  return { 
+    similarity, 
+    composition, 
+    lighting, 
+    color, 
+    overall, 
+    stars, 
+    feedback,
+    strengths,
+    suggestions,
+    summary,
+    quickTips,
+  };
 }
 
 // 模拟拍摄计划生成

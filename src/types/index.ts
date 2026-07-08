@@ -84,6 +84,23 @@ export interface Level {
 }
 
 // AI 评分
+export interface ScoreSuggestion {
+  dimension: string;
+  priority: 'high' | 'medium' | 'low';
+  title: string;
+  problem: string;
+  analysis: string;
+  method: string;
+  referencePoint: string;
+}
+
+export interface ScoreSummary {
+  level: string;
+  mainImprovement: string;
+  nextPractice: string;
+  encouragement: string;
+}
+
 export interface Score {
   similarity: number;
   composition: number;
@@ -92,6 +109,10 @@ export interface Score {
   overall: number;
   stars: Stars;
   feedback: string[];
+  strengths?: string[];
+  suggestions?: ScoreSuggestion[];
+  summary?: ScoreSummary;
+  quickTips?: string[];
 }
 
 // 成就徽章
