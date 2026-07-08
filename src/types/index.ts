@@ -223,6 +223,7 @@ export interface GameUser {
   hasCompletedOnboarding: boolean;
   hasSetNickname: boolean; // 是否已设置昵称
   favoriteImageIds: string[]; // 收藏的图片ID
+  favoriteWorkIds: string[]; // 收藏的社区作品ID
   imageInteractions: ImageInteraction[]; // 图片交互记录
   shootCategories: ImageCategory[]; // 经常拍摄的类别
   shootingPlanFeedbacks: ShootingPlanFeedback[]; // 拍摄计划反馈记录

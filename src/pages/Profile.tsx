@@ -25,6 +25,7 @@ import { useGameStore } from '../stores/useGameStore';
 import { PageLayout } from '../components/layout/PageLayout';
 import { Badge, Button, ProgressBar } from '../components/ui/Button';
 import { variants } from '../lib/motion';
+import { CommunityWork } from '../types';
 
 // ==================== Achievement icon mapping ====================
 const achievementIconMap: Record<string, React.ReactNode> = {
@@ -218,11 +219,19 @@ export function AchievementsPage() {
 // ==================== 我的收藏页面 ====================
 export function MyFavoritesPage() {
   const navigate = useNavigate();
-  const { user, galleryImages, customGalleryImages, toggleFavoriteImage, isFavoriteImage } =
+  const { user, galleryImages, customGalleryImages, communityWorks, toggleFavoriteImage, isFavoriteImage, toggleFavoriteWork, isFavoriteWork } =
     useGameStore();
+  const [activeTab, setActiveTab] = useState<'gallery' | 'community'>('gallery');
+  const [selectedWork, setSelectedWork] = useState<CommunityWork | null>(null);
 
   const allImages = [...customGalleryImages, ...galleryImages];
   const favoriteImages = allImages.filter((img) => isFavoriteImage(img.id));
+  const favoriteWorks = communityWorks.filter((work) => isFavoriteWork(work.id));
+
+  const handleToggleWorkFav = (workId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleFavoriteWork(workId);
+  };
 
   return (
     <PageLayout desktop="single">
@@ -237,64 +246,216 @@ export function MyFavoritesPage() {
             <ChevronLeft className="w-5 h-5 text-ink" strokeWidth={1.25} />
           </button>
           <h1 className="font-display text-xl font-bold text-ink">我的收藏</h1>
-          <span className="text-ink-muted text-sm">{favoriteImages.length} 张</span>
+          <span className="text-ink-muted text-sm">
+            {activeTab === 'gallery' ? `${favoriteImages.length} 张` : `${favoriteWorks.length} 个作品`}
+          </span>
         </div>
 
-        {favoriteImages.length > 0 ? (
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
-            initial="hidden"
-            animate="show"
-            variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+        {/* Tab 切换 */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('gallery')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              activeTab === 'gallery'
+                ? 'bg-accent text-white'
+                : 'bg-surface-card text-ink-secondary border border-line hover:bg-surface-muted'
+            }`}
           >
-            {favoriteImages.map((image) => {
-              const isCustom = image.id.startsWith('custom_');
-              return (
+            图库收藏
+          </button>
+          <button
+            onClick={() => setActiveTab('community')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              activeTab === 'community'
+                ? 'bg-accent text-white'
+                : 'bg-surface-card text-ink-secondary border border-line hover:bg-surface-muted'
+            }`}
+          >
+            社区作品
+          </button>
+        </div>
+
+        {activeTab === 'gallery' ? (
+          favoriteImages.length > 0 ? (
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+            >
+              {favoriteImages.map((image) => {
+                const isCustom = image.id.startsWith('custom_');
+                return (
+                  <motion.button
+                    key={image.id}
+                    onClick={() => navigate(`/gallery/${image.id}`)}
+                    variants={variants.fadeUp}
+                    className="group relative aspect-square rounded-md overflow-hidden text-left border border-line"
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <p className="text-white text-sm font-medium truncate">{image.title}</p>
+                      </div>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <Heart className="w-5 h-5 text-danger fill-danger drop-shadow" strokeWidth={1.25} />
+                    </div>
+                    {isCustom && (
+                      <div className="absolute top-2 left-2">
+                        <span className="px-2 py-0.5 bg-accent/90 text-white text-xs rounded-full">我的</span>
+                      </div>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          ) : (
+            <motion.div
+              variants={variants.fadeUp}
+              initial="hidden"
+              animate="show"
+              className="bg-surface-card border border-line rounded-md p-8 text-center"
+            >
+              <Heart className="w-12 h-12 text-ink-muted mx-auto mb-3" strokeWidth={1.25} />
+              <p className="text-ink-secondary">还没有收藏图库图片</p>
+              <p className="text-ink-muted text-sm mt-1">在图库中收藏喜欢的参考图</p>
+              <Button variant="primary" className="mt-4" onClick={() => navigate('/gallery')}>
+                去图库看看
+              </Button>
+            </motion.div>
+          )
+        ) : (
+          favoriteWorks.length > 0 ? (
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+            >
+              {favoriteWorks.map((work) => (
                 <motion.button
-                  key={image.id}
-                  onClick={() => navigate(`/gallery/${image.id}`)}
+                  key={work.id}
+                  onClick={() => setSelectedWork(work)}
                   variants={variants.fadeUp}
                   className="group relative aspect-square rounded-md overflow-hidden text-left border border-line"
                 >
                   <img
-                    src={image.url}
-                    alt={image.title}
+                    src={work.image}
+                    alt={work.author}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="absolute bottom-2 left-2 right-2">
-                      <p className="text-white text-sm font-medium truncate">{image.title}</p>
+                      <p className="text-white text-sm font-medium truncate">{work.author}</p>
+                      <p className="text-white/70 text-xs flex items-center gap-1">
+                        <Heart className="w-3 h-3 fill-white" />
+                        {work.votes}
+                      </p>
                     </div>
                   </div>
-                  <div className="absolute top-2 right-2">
-                    <Heart className="w-5 h-5 text-danger fill-danger drop-shadow" strokeWidth={1.25} />
-                  </div>
-                  {isCustom && (
-                    <div className="absolute top-2 left-2">
-                      <span className="px-2 py-0.5 bg-accent/90 text-white text-xs rounded-full">我的</span>
-                    </div>
-                  )}
+                  <button
+                    onClick={(e) => handleToggleWorkFav(work.id, e)}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/30 backdrop-blur flex items-center justify-center hover:bg-black/50 transition-colors"
+                  >
+                    <Heart className="w-4 h-4 text-danger fill-danger" strokeWidth={1.25} />
+                  </button>
                 </motion.button>
-              );
-            })}
-          </motion.div>
-        ) : (
-          <motion.div
-            variants={variants.fadeUp}
-            initial="hidden"
-            animate="show"
-            className="bg-surface-card border border-line rounded-md p-8 text-center"
-          >
-            <Heart className="w-12 h-12 text-ink-muted mx-auto mb-3" strokeWidth={1.25} />
-            <p className="text-ink-secondary">还没有收藏</p>
-            <p className="text-ink-muted text-sm mt-1">在图库中收藏喜欢的参考图</p>
-            <Button variant="primary" className="mt-4" onClick={() => navigate('/gallery')}>
-              去图库看看
-            </Button>
-          </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              variants={variants.fadeUp}
+              initial="hidden"
+              animate="show"
+              className="bg-surface-card border border-line rounded-md p-8 text-center"
+            >
+              <Heart className="w-12 h-12 text-ink-muted mx-auto mb-3" strokeWidth={1.25} />
+              <p className="text-ink-secondary">还没有收藏社区作品</p>
+              <p className="text-ink-muted text-sm mt-1">在社区中点赞喜欢的作品会自动收藏</p>
+              <Button variant="primary" className="mt-4" onClick={() => navigate('/community')}>
+                去社区看看
+              </Button>
+            </motion.div>
+          )
         )}
       </div>
+
+      {/* 社区作品详情弹窗 */}
+      {selectedWork && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+          <div className="bg-white rounded-md max-w-2xl w-full max-h-[90vh] overflow-hidden animate-bounce-in relative">
+            <button
+              onClick={() => setSelectedWork(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/30 backdrop-blur text-white flex items-center justify-center hover:bg-black/50 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex flex-col md:flex-row">
+              <div className="md:w-2/3 bg-ink flex items-center justify-center">
+                <img
+                  src={selectedWork.image}
+                  alt={selectedWork.author}
+                  className="max-h-[60vh] md:max-h-[80vh] w-full object-contain"
+                />
+              </div>
+              <div className="md:w-1/3 p-6 flex flex-col">
+                <div className="flex items-center gap-3 mb-4">
+                  <img
+                    src={selectedWork.avatar}
+                    alt={selectedWork.author}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-medium text-ink">{selectedWork.author}</p>
+                    <p className="text-xs text-ink-muted">Lv.{selectedWork.authorLevel}</p>
+                  </div>
+                </div>
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-2 text-sm text-ink-secondary">
+                    <Star className="w-4 h-4 text-gold fill-gold" />
+                    <span>{selectedWork.authorStars} 星</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-ink-secondary">
+                    <Trophy className="w-4 h-4 text-accent" />
+                    <span>通关 {selectedWork.authorCompletedCount} 关</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-ink-secondary">
+                    <Flame className="w-4 h-4 text-orange-500" />
+                    <span>连胜 {selectedWork.authorStreak} 天</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-ink-secondary">
+                    <Heart className="w-4 h-4 text-danger fill-danger" />
+                    <span>{selectedWork.votes} 票</span>
+                  </div>
+                </div>
+                <div className="mt-auto space-y-2">
+                  <button
+                    onClick={() => {
+                      toggleFavoriteWork(selectedWork.id);
+                      setSelectedWork(null);
+                    }}
+                    className={`w-full px-4 py-3 rounded-md font-medium transition-colors ${
+                      isFavoriteWork(selectedWork.id)
+                        ? 'bg-danger/10 text-danger hover:bg-danger/20'
+                        : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
+                    }`}
+                  >
+                    {isFavoriteWork(selectedWork.id) ? '取消收藏' : '收藏作品'}
+                  </button>
+                  <p className="text-center text-xs text-ink-muted">{selectedWork.createdAt}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 }
@@ -308,7 +469,7 @@ export function ProfilePage() {
   const completedCount = user.completedLevels.length;
   const unlockedAchievements = user.achievements.filter((a) => a.unlocked);
   const xpProgress = (user.xp / user.xpToNext) * 100;
-  const favoriteCount = (user.favoriteImageIds || []).length;
+  const favoriteCount = (user.favoriteImageIds || []).length + (user.favoriteWorkIds || []).length;
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

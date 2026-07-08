@@ -159,6 +159,8 @@ interface GameState {
   removeCommunityWork: (workId: string) => void;
   voteWork: (workId: string) => void;
   isVoted: (workId: string) => boolean;
+  toggleFavoriteWork: (workId: string) => void;
+  isFavoriteWork: (workId: string) => boolean;
 
   // 关注
   toggleFollow: (userId: string) => void;
@@ -391,6 +393,7 @@ const defaultUser: GameUser = loadUserFromStorage() || {
   hasSetNickname: false,
   phone: '',
   favoriteImageIds: [],
+  favoriteWorkIds: [],
   imageInteractions: [],
   shootCategories: [],
   shootingPlanFeedbacks: [],
@@ -1429,6 +1432,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const { user } = get();
     const votedWorks = user.votedWorks || [];
     const hasVoted = votedWorks.includes(workId);
+    const favoriteWorkIds = user.favoriteWorkIds || [];
 
     if (hasVoted) {
       // 取消点赞
@@ -1438,18 +1442,22 @@ export const useGameStore = create<GameState>((set, get) => ({
         )
       }));
       const newVotedWorks = votedWorks.filter(id => id !== workId);
-      const updatedUser = { ...user, votedWorks: newVotedWorks };
+      const newFavoriteWorkIds = favoriteWorkIds.filter(id => id !== workId);
+      const updatedUser = { ...user, votedWorks: newVotedWorks, favoriteWorkIds: newFavoriteWorkIds };
       saveUserToStorage(updatedUser);
       set({ user: updatedUser });
     } else {
-      // 点赞
+      // 点赞 + 自动收藏
       set(state => ({
         communityWorks: state.communityWorks.map(w =>
           w.id === workId ? { ...w, votes: w.votes + 1 } : w
         )
       }));
       const newVotedWorks = [...votedWorks, workId];
-      const updatedUser = { ...user, votedWorks: newVotedWorks };
+      const newFavoriteWorkIds = favoriteWorkIds.includes(workId)
+        ? favoriteWorkIds
+        : [...favoriteWorkIds, workId];
+      const updatedUser = { ...user, votedWorks: newVotedWorks, favoriteWorkIds: newFavoriteWorkIds };
       saveUserToStorage(updatedUser);
       set({ user: updatedUser });
     }
@@ -1457,6 +1465,21 @@ export const useGameStore = create<GameState>((set, get) => ({
   isVoted: (workId: string) => {
     const votedWorks = get().user.votedWorks || [];
     return votedWorks.includes(workId);
+  },
+  toggleFavoriteWork: (workId) => {
+    const { user } = get();
+    const favorites = user.favoriteWorkIds || [];
+    const isFav = favorites.includes(workId);
+    const newFavorites = isFav
+      ? favorites.filter(id => id !== workId)
+      : [...favorites, workId];
+    const updatedUser = { ...user, favoriteWorkIds: newFavorites };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+  isFavoriteWork: (workId: string) => {
+    const favorites = get().user.favoriteWorkIds || [];
+    return favorites.includes(workId);
   },
 
   // 关注
