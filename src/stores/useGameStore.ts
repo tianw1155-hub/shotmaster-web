@@ -142,6 +142,14 @@ interface GameState {
   toggleDislikeDimension: (imageId: string, dimension: ShootingPlanDimension, imageInfo?: { imageUrl?: string; imageTitle?: string; category?: string }) => void;
   getDimensionFeedback: (imageId: string, dimension: ShootingPlanDimension) => { liked: boolean; disliked: boolean };
 
+  // 评分建议反馈
+  toggleLikeSuggestion: (scoreId: string, suggestionKey: string) => void;
+  toggleDislikeSuggestion: (scoreId: string, suggestionKey: string) => void;
+  getSuggestionFeedback: (scoreId: string, suggestionKey: string) => { liked: boolean; disliked: boolean };
+  toggleLikeFeedback: (scoreId: string, feedbackIndex: number) => void;
+  toggleDislikeFeedback: (scoreId: string, feedbackIndex: number) => void;
+  getFeedbackItemFeedback: (scoreId: string, feedbackIndex: number) => { liked: boolean; disliked: boolean };
+
   // 课程
   courses: typeof mockCourses;
 
@@ -386,6 +394,7 @@ const defaultUser: GameUser = loadUserFromStorage() || {
   imageInteractions: [],
   shootCategories: [],
   shootingPlanFeedbacks: [],
+  scoreFeedbacks: [],
 };
 
 // 加载本周挑战图片（用户独立）
@@ -978,6 +987,189 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!feedback) return { liked: false, disliked: false };
     const dim = feedback.dimensions.find(d => d.dimension === dimension);
     return { liked: dim?.liked || false, disliked: dim?.disliked || false };
+  },
+  // 评分建议反馈
+  toggleLikeSuggestion: (scoreId, suggestionKey) => {
+    const { user } = get();
+    const scoreFeedbacks = user.scoreFeedbacks || [];
+    const existingIdx = scoreFeedbacks.findIndex(f => f.scoreId === scoreId);
+    const now = new Date().toISOString();
+    let newScoreFeedbacks;
+
+    if (existingIdx >= 0) {
+      const existing = scoreFeedbacks[existingIdx];
+      const suggIdx = existing.suggestionFeedbacks.findIndex(s => s.suggestionKey === suggestionKey);
+      let newSuggestionFeedbacks;
+      if (suggIdx >= 0) {
+        const sugg = existing.suggestionFeedbacks[suggIdx];
+        const newLiked = !sugg.liked;
+        newSuggestionFeedbacks = existing.suggestionFeedbacks.map((s, i) =>
+          i === suggIdx ? { ...s, liked: newLiked, disliked: newLiked ? false : s.disliked } : s
+        );
+      } else {
+        newSuggestionFeedbacks = [
+          ...existing.suggestionFeedbacks,
+          { suggestionKey, liked: true, disliked: false, createdAt: now }
+        ];
+      }
+      newScoreFeedbacks = scoreFeedbacks.map((f, i) =>
+        i === existingIdx ? { ...f, suggestionFeedbacks: newSuggestionFeedbacks, updatedAt: now } : f
+      );
+    } else {
+      newScoreFeedbacks = [
+        ...scoreFeedbacks,
+        {
+          scoreId,
+          suggestionFeedbacks: [{ suggestionKey, liked: true, disliked: false, createdAt: now }],
+          feedbackFeedbacks: [],
+          createdAt: now,
+          updatedAt: now,
+        }
+      ];
+    }
+    const updatedUser = { ...user, scoreFeedbacks: newScoreFeedbacks };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+  toggleDislikeSuggestion: (scoreId, suggestionKey) => {
+    const { user } = get();
+    const scoreFeedbacks = user.scoreFeedbacks || [];
+    const existingIdx = scoreFeedbacks.findIndex(f => f.scoreId === scoreId);
+    const now = new Date().toISOString();
+    let newScoreFeedbacks;
+
+    if (existingIdx >= 0) {
+      const existing = scoreFeedbacks[existingIdx];
+      const suggIdx = existing.suggestionFeedbacks.findIndex(s => s.suggestionKey === suggestionKey);
+      let newSuggestionFeedbacks;
+      if (suggIdx >= 0) {
+        const sugg = existing.suggestionFeedbacks[suggIdx];
+        const newDisliked = !sugg.disliked;
+        newSuggestionFeedbacks = existing.suggestionFeedbacks.map((s, i) =>
+          i === suggIdx ? { ...s, disliked: newDisliked, liked: newDisliked ? false : s.liked } : s
+        );
+      } else {
+        newSuggestionFeedbacks = [
+          ...existing.suggestionFeedbacks,
+          { suggestionKey, liked: false, disliked: true, createdAt: now }
+        ];
+      }
+      newScoreFeedbacks = scoreFeedbacks.map((f, i) =>
+        i === existingIdx ? { ...f, suggestionFeedbacks: newSuggestionFeedbacks, updatedAt: now } : f
+      );
+    } else {
+      newScoreFeedbacks = [
+        ...scoreFeedbacks,
+        {
+          scoreId,
+          suggestionFeedbacks: [{ suggestionKey, liked: false, disliked: true, createdAt: now }],
+          feedbackFeedbacks: [],
+          createdAt: now,
+          updatedAt: now,
+        }
+      ];
+    }
+    const updatedUser = { ...user, scoreFeedbacks: newScoreFeedbacks };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+  getSuggestionFeedback: (scoreId, suggestionKey) => {
+    const { user } = get();
+    const feedback = (user.scoreFeedbacks || []).find(f => f.scoreId === scoreId);
+    if (!feedback) return { liked: false, disliked: false };
+    const sugg = feedback.suggestionFeedbacks.find(s => s.suggestionKey === suggestionKey);
+    return { liked: sugg?.liked || false, disliked: sugg?.disliked || false };
+  },
+  toggleLikeFeedback: (scoreId, feedbackIndex) => {
+    const { user } = get();
+    const scoreFeedbacks = user.scoreFeedbacks || [];
+    const existingIdx = scoreFeedbacks.findIndex(f => f.scoreId === scoreId);
+    const now = new Date().toISOString();
+    let newScoreFeedbacks;
+
+    if (existingIdx >= 0) {
+      const existing = scoreFeedbacks[existingIdx];
+      const fbIdx = existing.feedbackFeedbacks.findIndex(f => f.index === feedbackIndex);
+      let newFeedbackFeedbacks;
+      if (fbIdx >= 0) {
+        const fb = existing.feedbackFeedbacks[fbIdx];
+        const newLiked = !fb.liked;
+        newFeedbackFeedbacks = existing.feedbackFeedbacks.map((f, i) =>
+          i === fbIdx ? { ...f, liked: newLiked, disliked: newLiked ? false : f.disliked } : f
+        );
+      } else {
+        newFeedbackFeedbacks = [
+          ...existing.feedbackFeedbacks,
+          { index: feedbackIndex, liked: true, disliked: false, createdAt: now }
+        ];
+      }
+      newScoreFeedbacks = scoreFeedbacks.map((f, i) =>
+        i === existingIdx ? { ...f, feedbackFeedbacks: newFeedbackFeedbacks, updatedAt: now } : f
+      );
+    } else {
+      newScoreFeedbacks = [
+        ...scoreFeedbacks,
+        {
+          scoreId,
+          suggestionFeedbacks: [],
+          feedbackFeedbacks: [{ index: feedbackIndex, liked: true, disliked: false, createdAt: now }],
+          createdAt: now,
+          updatedAt: now,
+        }
+      ];
+    }
+    const updatedUser = { ...user, scoreFeedbacks: newScoreFeedbacks };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+  toggleDislikeFeedback: (scoreId, feedbackIndex) => {
+    const { user } = get();
+    const scoreFeedbacks = user.scoreFeedbacks || [];
+    const existingIdx = scoreFeedbacks.findIndex(f => f.scoreId === scoreId);
+    const now = new Date().toISOString();
+    let newScoreFeedbacks;
+
+    if (existingIdx >= 0) {
+      const existing = scoreFeedbacks[existingIdx];
+      const fbIdx = existing.feedbackFeedbacks.findIndex(f => f.index === feedbackIndex);
+      let newFeedbackFeedbacks;
+      if (fbIdx >= 0) {
+        const fb = existing.feedbackFeedbacks[fbIdx];
+        const newDisliked = !fb.disliked;
+        newFeedbackFeedbacks = existing.feedbackFeedbacks.map((f, i) =>
+          i === fbIdx ? { ...f, disliked: newDisliked, liked: newDisliked ? false : f.liked } : f
+        );
+      } else {
+        newFeedbackFeedbacks = [
+          ...existing.feedbackFeedbacks,
+          { index: feedbackIndex, liked: false, disliked: true, createdAt: now }
+        ];
+      }
+      newScoreFeedbacks = scoreFeedbacks.map((f, i) =>
+        i === existingIdx ? { ...f, feedbackFeedbacks: newFeedbackFeedbacks, updatedAt: now } : f
+      );
+    } else {
+      newScoreFeedbacks = [
+        ...scoreFeedbacks,
+        {
+          scoreId,
+          suggestionFeedbacks: [],
+          feedbackFeedbacks: [{ index: feedbackIndex, liked: false, disliked: true, createdAt: now }],
+          createdAt: now,
+          updatedAt: now,
+        }
+      ];
+    }
+    const updatedUser = { ...user, scoreFeedbacks: newScoreFeedbacks };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+  getFeedbackItemFeedback: (scoreId, feedbackIndex) => {
+    const { user } = get();
+    const feedback = (user.scoreFeedbacks || []).find(f => f.scoreId === scoreId);
+    if (!feedback) return { liked: false, disliked: false };
+    const fb = feedback.feedbackFeedbacks.find(f => f.index === feedbackIndex);
+    return { liked: fb?.liked || false, disliked: fb?.disliked || false };
   },
   // 图库完全使用 Unsplash 图片，只返回 unsplash 图片
   getAllGalleryImages: () => {

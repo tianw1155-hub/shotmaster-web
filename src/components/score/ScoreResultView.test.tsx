@@ -9,7 +9,7 @@ describe('ScoreResultView', () => {
   it('renders stars, total, feedback', () => {
     const { container } = render(
       <MemoryRouter>
-        <ScoreResultView score={score} capturedImage="data:," referenceImage={{ url: 'ref', title: 'r' }} onRetake={() => {}} onNext={() => {}} onHome={() => {}} />
+        <ScoreResultView score={score} capturedImage="data:," referenceImage={{ url: 'ref', title: 'r' }} scoreId="test" onRetake={() => {}} onNext={() => {}} onHome={() => {}} />
       </MemoryRouter>,
     );
     expect(container.querySelectorAll('svg path[d*="M12 2"]')).toHaveLength(3);

@@ -115,6 +115,21 @@ export interface Score {
   quickTips?: string[];
 }
 
+export interface SuggestionFeedback {
+  suggestionKey: string;
+  liked: boolean;
+  disliked: boolean;
+  createdAt: string;
+}
+
+export interface ScoreFeedback {
+  scoreId: string;
+  suggestionFeedbacks: SuggestionFeedback[];
+  feedbackFeedbacks: { index: number; liked: boolean; disliked: boolean; createdAt: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 // 成就徽章
 export interface Achievement {
   id: string;
@@ -211,4 +226,5 @@ export interface GameUser {
   imageInteractions: ImageInteraction[]; // 图片交互记录
   shootCategories: ImageCategory[]; // 经常拍摄的类别
   shootingPlanFeedbacks: ShootingPlanFeedback[]; // 拍摄计划反馈记录
+  scoreFeedbacks: ScoreFeedback[]; // 评分建议反馈记录
 }

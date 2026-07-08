@@ -19,6 +19,7 @@ export function ScorePage() {
   const lid = parseInt(levelId || '1');
   const fromCommunity = searchParams.get('from') === 'community';
   const level = currentLevel || getLevel(lid, user.levelStars[lid] || 0, user.completedLevels.includes(lid));
+  const scoreId = `level_${lid}_${Date.now()}`;
 
   useEffect(() => {
     if (capturedImage && !score && !isScoring) {
@@ -88,6 +89,7 @@ export function ScorePage() {
         score={score}
         capturedImage={capturedImage}
         referenceImage={level.referenceImage}
+        scoreId={`score_level_${lid}`}
         fromCommunity={fromCommunity}
         onRetake={handleRetake}
         onNext={handleNext}
