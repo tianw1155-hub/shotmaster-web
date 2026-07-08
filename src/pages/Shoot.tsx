@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Camera, SwitchCamera, X, Image as ImageIcon, Grid3X3, Check, Upload, ChevronRight, AlertCircle, RefreshCw, Maximize2, Layers } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
-import { usePermissionStore } from '../stores/usePermissionStore';
 import { getLevel, chapterInfo } from '../services/levelService';
 import { CompositionOverlay } from '../components/game/GameComponents';
 import { inferCompositionRule, compositionRuleLabels } from '../utils/compositionUtils';
@@ -30,7 +29,6 @@ export function ShootPage() {
   const [isRetrying, setIsRetrying] = useState(false);
 
   const { user, setCapturedImage, weeklyChallengeImage, getAllGalleryImages, customGalleryImages } = useGameStore();
-  const { requestPermission, setPermission } = usePermissionStore();
   const lid = parseInt(levelId || '1');
   const level = getLevel(lid, user.levelStars[lid] || 0, user.completedLevels.includes(lid));
   const info = chapterInfo[level.chapter];
@@ -61,6 +59,7 @@ export function ShootPage() {
 
   // 摄像头初始化
   const initCamera = async () => {
+    // 先检测能力
     const detected = detectCameraError();
     if (detected) {
       setCameraError(detected);
@@ -71,12 +70,6 @@ export function ShootPage() {
     setCameraError(null);
 
     try {
-      const granted = await requestPermission('camera');
-      if (!granted) {
-        setCameraError('denied');
-        return;
-      }
-
       if (stream) stream.getTracks().forEach(t => t.stop());
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
@@ -84,12 +77,10 @@ export function ShootPage() {
       setStream(mediaStream);
       if (videoRef.current) videoRef.current.srcObject = mediaStream;
       setCameraError(null);
-      setPermission('camera', 'whileUsing');
     } catch (err) {
       const error = err as DOMException;
       if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
         setCameraError('denied');
-        setPermission('camera', 'denied');
       } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
         setCameraError('unavailable');
       } else {
@@ -405,12 +396,7 @@ export function ShootPage() {
         /* 上传模式 */
         <div className="min-h-screen flex flex-col items-center justify-center p-8">
           <button
-            onClick={async () => {
-              const granted = await requestPermission('photos');
-              if (granted) {
-                fileInputRef.current?.click();
-              }
-            }}
+            onClick={() => fileInputRef.current?.click()}
             className="w-full max-w-sm border-2 border-dashed border-surface-card/20 rounded-md p-12 text-center hover:border-accent/50 transition-colors"
           >
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
