@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, Star, Lock, Check, Camera, Image, Trophy, BookOpen, Users } from 'lucide-react';
+import { Flame, Star, Lock, Check, Camera, Image, Trophy, BookOpen, Users, X } from 'lucide-react';
 import { Level, Stars, CompositionRule } from '../../types';
 import { useGameStore } from '../../stores/useGameStore';
 import { chapterInfo } from '../../services/levelService';
@@ -331,6 +331,59 @@ export function RewardModal({ show, xp, stars, streak, onClose, onNext, fromComm
             </button>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// 成就解锁弹窗
+export function AchievementModal({ show, achievements, onClose }: {
+  show: boolean;
+  achievements: string[];
+  onClose: () => void;
+}) {
+  if (!show || achievements.length === 0) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-md p-6 mx-6 max-w-sm w-full animate-bounce-in text-center relative">
+        <Confetti count={30} className="absolute inset-0 pointer-events-none" />
+        
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-md text-ink-muted hover:text-ink hover:bg-surface-muted transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent to-accent-soft flex items-center justify-center shadow-lg shadow-accent/30">
+          <Trophy className="w-10 h-10 text-white" />
+        </div>
+
+        <h2 className="font-display text-xl font-bold text-ink mb-2">解锁新成就！</h2>
+        <p className="text-ink-secondary text-sm mb-6">恭喜你达成了新的里程碑</p>
+
+        <div className="space-y-3 mb-6">
+          {achievements.map((achievement, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 bg-accent/5 rounded-md p-3 animate-slide-up"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                <Star className="w-4 h-4 text-accent" />
+              </div>
+              <span className="text-ink font-medium text-sm">{achievement}</span>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onClose}
+          className="w-full px-4 py-3 rounded-md bg-accent text-white font-medium shadow-lg shadow-accent/30 hover:brightness-110 transition-all"
+        >
+          太棒了！
+        </button>
       </div>
     </div>
   );

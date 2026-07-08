@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel } from '../services/levelService';
-import { RewardModal } from '../components/game/GameComponents';
+import { RewardModal, AchievementModal } from '../components/game/GameComponents';
 import { Button } from '../components/ui/Button';
 import { PageLayout } from '../components/layout/PageLayout';
 import { ScoreResultView } from '../components/score/ScoreResultView';
@@ -105,18 +105,11 @@ export function ScorePage() {
         fromCommunity={fromCommunity}
       />
 
-      {/* 成就解锁提示 - 仅关卡模式显示 */}
-      {!fromCommunity && newAchievements.length > 0 && !showReward && (
-        <div className="fixed bottom-24 inset-x-0 z-40 px-4">
-          <div className="max-w-lg mx-auto bg-ink text-surface rounded-md p-4 shadow-elevated flex items-center gap-3">
-            <span className="text-2xl">🏆</span>
-            <div>
-              <p className="font-medium text-sm">解锁新成就！</p>
-              <p className="text-surface-muted text-xs">{newAchievements.join('、')}</p>
-            </div>
-          </div>
-        </div>
-      )}
+      <AchievementModal
+        show={newAchievements.length > 0}
+        achievements={newAchievements}
+        onClose={() => setNewAchievements([])}
+      />
     </PageLayout>
   );
 }
