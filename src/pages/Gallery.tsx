@@ -15,6 +15,7 @@ import { CompositionOverlay } from '../components/game/GameComponents';
 import { PlanSections } from '../components/lesson/PlanSections';
 import { inferCompositionRule, compositionRuleLabels } from '../utils/compositionUtils';
 import { useGameStore } from '../stores/useGameStore';
+import { usePermissionStore } from '../stores/usePermissionStore';
 import { Badge, Button } from '../components/ui/Button';
 import { GalleryImage, ShootingPlan, ShootingPlanDimension } from '../types';
 import { aiService } from '../services/aiService';
@@ -57,6 +58,7 @@ export function GalleryPage() {
     shouldRefreshUnsplash,
     refreshUnsplashImages,
   } = useGameStore();
+  const { requestPermission } = usePermissionStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [lastManualRefresh, setLastManualRefresh] = useState<number>(0);
   const [canRefresh, setCanRefresh] = useState(true);
@@ -94,6 +96,13 @@ export function GalleryPage() {
       : selectedCategory === 'all'
         ? recommendedImages
         : recommendedImages.filter((img) => img.category === selectedCategory);
+
+  const handleUploadClick = async () => {
+    const granted = await requestPermission('photos');
+    if (granted) {
+      fileInputRef.current?.click();
+    }
+  };
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -153,7 +162,7 @@ export function GalleryPage() {
         {/* 上传入口 - hairline dashed row */}
         <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={handleUploadClick}
             className="w-full"
           >
             <div className="flex items-center gap-3 py-4 px-4 border-2 border-dashed border-accent/20 rounded-md hover:bg-surface-muted/60 transition-colors">

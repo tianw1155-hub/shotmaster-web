@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/useGameStore';
+import { usePermissionStore } from '../stores/usePermissionStore';
 import { PageLayout } from '../components/layout/PageLayout';
 import { Badge, Button, ProgressBar } from '../components/ui/Button';
 import { variants } from '../lib/motion';
@@ -303,12 +304,21 @@ export function MyFavoritesPage() {
 export function ProfilePage() {
   const navigate = useNavigate();
   const { user, updateUser } = useGameStore();
+  const { requestPermission } = usePermissionStore();
   const [isUploading, setIsUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const completedCount = user.completedLevels.length;
   const unlockedAchievements = user.achievements.filter((a) => a.unlocked);
   const xpProgress = (user.xp / user.xpToNext) * 100;
   const favoriteCount = (user.favoriteImageIds || []).length;
+
+  const handleAvatarClick = async () => {
+    const granted = await requestPermission('photos');
+    if (granted) {
+      avatarInputRef.current?.click();
+    }
+  };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -372,8 +382,8 @@ export function ProfilePage() {
           <div className="flex items-center gap-5">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <label
-                htmlFor="avatar-upload"
+              <button
+                onClick={handleAvatarClick}
                 className="block cursor-pointer"
               >
                 {user.avatar && user.avatar.startsWith('data:') ? (
@@ -387,9 +397,9 @@ export function ProfilePage() {
                     <Camera className="w-10 h-10 text-accent" strokeWidth={1.25} />
                   </div>
                 )}
-              </label>
+              </button>
               <input
-                id="avatar-upload"
+                ref={avatarInputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleAvatarUpload}

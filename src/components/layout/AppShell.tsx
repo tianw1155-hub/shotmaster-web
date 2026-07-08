@@ -6,6 +6,7 @@ import { TopBar } from './TopBar';
 import { BottomNav } from './BottomNav';
 import { SmoothScroll } from './SmoothScroll';
 import { PageSkeleton } from '../ui/PageSkeleton';
+import { PermissionModal } from '../ui/PermissionModal';
 import { deriveSection } from '../../lib/navSection';
 
 const NO_NAV_PREFIXES = ['/login', '/preferences', '/admin'];
@@ -42,6 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </SmoothScroll>
+      <PermissionModal />
     </MotionConfig>
   );
 }
