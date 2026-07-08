@@ -135,6 +135,8 @@ export interface CommunityWork {
   image: string;
   votes: number;
   createdAt: string;
+  referenceImage?: string; // 参考图URL（本周挑战）
+  aiScore?: Score; // 上传时的AI评分快照
 }
 
 // 摄影偏好

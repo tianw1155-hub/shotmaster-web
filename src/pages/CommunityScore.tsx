@@ -90,6 +90,8 @@ export function CommunityScorePage() {
         image: capturedImage,
         votes: 0,
         createdAt: new Date().toISOString().slice(0, 10),
+        referenceImage,
+        aiScore: score,
       };
       addCommunityWork(newWork);
       setHasAddedWork(true);

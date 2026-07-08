@@ -1,6 +1,16 @@
 import { GalleryImage, ImageCategory, Difficulty, PhotoPreference, Chapter } from '../types';
 import { aiService } from './aiService';
 
+// 本地预存的每周挑战图（方案1：直接放仓库，由 Vercel CDN 加速）
+// 命名：week-{N}.jpg，N 为 1..WEEKLY_CHALLENGE_IMAGES.length
+// 每周由 ISO 周序号稳定轮换；新增图片只需往 public/images/challenges/ 加文件并改下面数组长度
+const WEEKLY_CHALLENGE_IMAGES: { file: string; title: string; category: ImageCategory }[] = [
+  { file: 'week-1.jpg', title: '三分法日落', category: 'composition' },
+  { file: 'week-2.jpg', title: '对称大桥', category: 'composition' },
+  { file: 'week-3.jpg', title: '林间小路', category: 'composition' },
+  { file: 'week-4.jpg', title: '窗户框架', category: 'composition' },
+];
+
 const UNSPLASH_BASE_URL = 'https://api.unsplash.com';
 const ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
 
@@ -359,8 +369,42 @@ export function hasUnsplashAccess(): boolean {
   return !!ACCESS_KEY;
 }
 
+// 计算 ISO 周序号（返回 0-51），用于稳定地按周选择默认挑战图片
+function getWeekIndex(date: Date = new Date()): number {
+  const target = new Date(date.valueOf());
+  target.setHours(0, 0, 0, 0);
+  // ISO 周：周四为该周「年」的判定日
+  const dayNr = (date.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNr + 3);
+  const firstThursday = new Date(target.getFullYear(), 0, 4);
+  const diff = target.getTime() - firstThursday.getTime();
+  return Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
+}
+
+// 从本地 week-N.jpg 列表中按周稳定挑选一张
+function pickWeeklyFallback(weekIndex: number): GalleryImage | null {
+  if (WEEKLY_CHALLENGE_IMAGES.length === 0) return null;
+  const idx = ((weekIndex % WEEKLY_CHALLENGE_IMAGES.length) + WEEKLY_CHALLENGE_IMAGES.length) % WEEKLY_CHALLENGE_IMAGES.length;
+  const item = WEEKLY_CHALLENGE_IMAGES[idx];
+  return {
+    id: `weekly_challenge_${idx + 1}`,
+    url: `/images/challenges/${item.file}`,
+    title: item.title,
+    category: item.category,
+    difficulty: 'intermediate',
+    tags: ['本周挑战'],
+    author: '',
+    authorUrl: '',
+  };
+}
+
 // 获取本周挑战图片（每周一凌晨1点更新）
 export async function fetchWeeklyChallengeImage(): Promise<GalleryImage | null> {
+  // 无 Unsplash 配置时直接用内置本地图按周轮换
+  if (!ACCESS_KEY) {
+    return pickWeeklyFallback(getWeekIndex());
+  }
+
   // 随机选择一个类别
   const categories: ImageCategory[] = ['landscape', 'portrait', 'street', 'composition', 'still'];
   const category = categories[Math.floor(Math.random() * categories.length)];
@@ -375,14 +419,16 @@ export async function fetchWeeklyChallengeImage(): Promise<GalleryImage | null> 
 
   try {
     const photos = await searchPhotos(keyword, 1, 5, orientation);
-    if (photos.length === 0) return null;
+    if (photos.length === 0) {
+      return pickWeeklyFallback(getWeekIndex());
+    }
 
     // 随机选择一张
     const photo = photos[Math.floor(Math.random() * photos.length)];
     return await unsplashToGalleryImage(photo, category, 'intermediate');
   } catch (e) {
     console.error('Failed to fetch weekly challenge image:', e);
-    return null;
+    return pickWeeklyFallback(getWeekIndex());
   }
 }
 

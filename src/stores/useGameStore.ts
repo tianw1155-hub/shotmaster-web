@@ -332,6 +332,25 @@ function saveUnsplashImagesToStorage(images: GalleryImage[], lastRefresh: string
   } catch {}
 }
 
+// 用户上传的社区作品持久化（mock 数据不入库；上传/删除/投票时增量保存）
+function loadUserCommunityWorksFromStorage(): CommunityWork[] {
+  try {
+    const currentUserId = localStorage.getItem('shotmaster_current_user_id');
+    const key = currentUserId ? `shotmaster_community_works_${currentUserId}` : 'shotmaster_community_works';
+    const stored = localStorage.getItem(key);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [];
+}
+
+function saveUserCommunityWorksToStorage(works: CommunityWork[]) {
+  try {
+    const currentUserId = localStorage.getItem('shotmaster_current_user_id');
+    const key = currentUserId ? `shotmaster_community_works_${currentUserId}` : 'shotmaster_community_works';
+    localStorage.setItem(key, JSON.stringify(works));
+  } catch {}
+}
+
 function getStoredUsers(): (GameUser & { password: string })[] {
   try {
     const stored = localStorage.getItem('shotmaster_users');
@@ -584,29 +603,31 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastWeeklyRefresh: initialLastWeeklyRefresh,
   setWeeklyChallengeImage: (url: string) => set({ weeklyChallengeImage: url }),
   refreshWeeklyChallenge: async () => {
-    const { shouldRefreshWeeklyChallenge } = await import('../services/unsplashService');
-    const { fetchWeeklyChallengeImage } = await import('../services/unsplashService');
+    const { shouldRefreshWeeklyChallenge, fetchWeeklyChallengeImage } = await import('../services/unsplashService');
 
     if (!shouldRefreshWeeklyChallenge(get().lastWeeklyRefresh)) {
       return;
     }
 
     const newImage = await fetchWeeklyChallengeImage();
-    if (newImage) {
-      const now = new Date().toISOString();
-      const currentUserId = localStorage.getItem('shotmaster_current_user_id');
-      const refreshKey = currentUserId ? `lastWeeklyRefresh_${currentUserId}` : 'lastWeeklyRefresh';
-      const infoKey = currentUserId ? `weeklyChallengeInfo_${currentUserId}` : 'weeklyChallengeInfo';
+    // 即使返回 null 也记录刷新时间，避免每次启动都重试（无 key/网络失败场景）
+    const now = new Date().toISOString();
+    const currentUserId = localStorage.getItem('shotmaster_current_user_id');
+    const refreshKey = currentUserId ? `lastWeeklyRefresh_${currentUserId}` : 'lastWeeklyRefresh';
+    const infoKey = currentUserId ? `weeklyChallengeInfo_${currentUserId}` : 'weeklyChallengeInfo';
 
+    if (newImage) {
       set({
         weeklyChallengeImage: newImage.url,
         weeklyChallengeInfo: newImage,
         lastWeeklyRefresh: now,
       });
-
-      // 保存到本地存储（用户独立）
       localStorage.setItem(refreshKey, now);
       localStorage.setItem(infoKey, JSON.stringify(newImage));
+    } else {
+      // 仅记录刷新时间，不覆盖已有图片
+      set({ lastWeeklyRefresh: now });
+      localStorage.setItem(refreshKey, now);
     }
   },
 
@@ -1215,17 +1236,24 @@ export const useGameStore = create<GameState>((set, get) => ({
     unlocked: c.requiredLevel <= defaultUser.level,
   })),
 
-  // 社区
-  communityWorks: mockCommunityWorks,
+  // 社区（mock + 当前用户上传历史）
+  communityWorks: [...loadUserCommunityWorksFromStorage(), ...mockCommunityWorks],
   addCommunityWork: (work) => {
-    set(state => ({
-      communityWorks: [work, ...state.communityWorks]
-    }));
+    set(state => {
+      const nextWorks = [work, ...state.communityWorks];
+      // 仅持久化当前用户上传的作品（mock 不入库）
+      const userWorks = nextWorks.filter(w => w.authorId === get().user.id);
+      saveUserCommunityWorksToStorage(userWorks);
+      return { communityWorks: nextWorks };
+    });
   },
   removeCommunityWork: (workId) => {
-    set(state => ({
-      communityWorks: state.communityWorks.filter(w => w.id !== workId)
-    }));
+    set(state => {
+      const nextWorks = state.communityWorks.filter(w => w.id !== workId);
+      const userWorks = nextWorks.filter(w => w.authorId === get().user.id);
+      saveUserCommunityWorksToStorage(userWorks);
+      return { communityWorks: nextWorks };
+    });
   },
   voteWork: (workId) => {
     const { user } = get();
@@ -1234,22 +1262,28 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     if (hasVoted) {
       // 取消点赞
-      set(state => ({
-        communityWorks: state.communityWorks.map(w =>
+      set(state => {
+        const nextWorks = state.communityWorks.map(w =>
           w.id === workId ? { ...w, votes: Math.max(0, w.votes - 1) } : w
-        )
-      }));
+        );
+        const userWorks = nextWorks.filter(w => w.authorId === user.id);
+        saveUserCommunityWorksToStorage(userWorks);
+        return { communityWorks: nextWorks };
+      });
       const newVotedWorks = votedWorks.filter(id => id !== workId);
       const updatedUser = { ...user, votedWorks: newVotedWorks };
       saveUserToStorage(updatedUser);
       set({ user: updatedUser });
     } else {
       // 点赞
-      set(state => ({
-        communityWorks: state.communityWorks.map(w =>
+      set(state => {
+        const nextWorks = state.communityWorks.map(w =>
           w.id === workId ? { ...w, votes: w.votes + 1 } : w
-        )
-      }));
+        );
+        const userWorks = nextWorks.filter(w => w.authorId === user.id);
+        saveUserCommunityWorksToStorage(userWorks);
+        return { communityWorks: nextWorks };
+      });
       const newVotedWorks = [...votedWorks, workId];
       const updatedUser = { ...user, votedWorks: newVotedWorks };
       saveUserToStorage(updatedUser);

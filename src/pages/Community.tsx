@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Trophy, Clock, Camera, X, UserPlus, UserCheck, Flame, Star, Target, Users, User, Sparkles, Trash2 } from 'lucide-react';
+import { Heart, Trophy, Clock, Camera, X, UserPlus, UserCheck, Flame, Star, Target, Users, User, Sparkles, Trash2, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/useGameStore';
 import { PageLayout } from '../components/layout/PageLayout';
@@ -200,6 +200,173 @@ function UserDetailModal({
   );
 }
 
+// 作品详情弹窗（含AI评分）
+function WorkDetailModal({
+  work,
+  currentUserId,
+  onClose,
+  onVote,
+  isVoted,
+  onDelete,
+}: {
+  work: CommunityWork;
+  currentUserId: string;
+  onClose: () => void;
+  onVote: () => void;
+  isVoted: boolean;
+  onDelete: () => void;
+}) {
+  const score = work.aiScore;
+  const isOwner = work.authorId === currentUserId;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[105] flex items-end justify-center bg-ink/40 backdrop-blur-sm"
+      variants={variants.fadeIn}
+      initial="hidden"
+      animate="show"
+      exit="hidden"
+      onClick={onClose}
+    >
+      <motion.div
+        className="relative w-full max-w-lg bg-surface-card rounded-md max-h-[90vh] overflow-y-auto"
+        variants={variants.scaleIn}
+        initial="hidden"
+        animate="show"
+        exit="hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 关闭按钮 */}
+        <button
+          onClick={onClose}
+          aria-label="关闭"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-ink-secondary hover:bg-ink-muted/15 transition-colors z-20"
+        >
+          <X className="w-4 h-4" strokeWidth={1.25} />
+        </button>
+
+        {/* 作品图片 */}
+        <div className="relative">
+          <img src={work.image} alt="" className="w-full aspect-square object-cover rounded-t-md" loading="lazy" />
+          {/* 下架按钮（仅自己的作品） */}
+          {isOwner && (
+            <button
+              onClick={onDelete}
+              aria-label="下架作品"
+              className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-danger/85 text-surface text-sm font-medium hover:bg-danger transition-colors flex items-center gap-1.5"
+            >
+              <Trash2 className="w-4 h-4" strokeWidth={1.25} />
+              下架
+            </button>
+          )}
+        </div>
+
+        <div className="px-6 py-4 space-y-4">
+          {/* 作者信息 + 投票 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{work.avatar || '👤'}</span>
+              <div>
+                <span className="font-medium text-ink">{work.author}</span>
+                <span className="text-ink-muted text-xs ml-2">{work.createdAt}</span>
+              </div>
+            </div>
+            <button
+              onClick={onVote}
+              disabled={isVoted}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                isVoted
+                  ? 'bg-accent/12 text-accent cursor-not-allowed'
+                  : 'bg-accent/5 text-accent hover:bg-accent/10'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${isVoted ? 'fill-accent' : ''}`} strokeWidth={1.25} />
+              {work.votes} 票
+            </button>
+          </div>
+
+          {/* AI 评分详情 */}
+          {score && (
+            <>
+              <div className="border-t border-line pt-4">
+                <h3 className="font-display font-bold text-ink mb-3 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-accent" strokeWidth={1.25} />
+                  AI 评分
+                </h3>
+
+                {/* 星级 + 总分 */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map(i => (
+                      <svg
+                        key={i}
+                        className={`w-6 h-6 ${i <= (score.stars || 0) ? 'text-gold' : 'text-line'}`}
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-lg font-bold text-ink">{score.overall} 分</span>
+                </div>
+
+                {/* 各维度得分 */}
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { label: '相似度', value: score.similarity, color: 'bg-accent' },
+                    { label: '构图', value: score.composition, color: 'bg-ink-muted' },
+                    { label: '光线', value: score.lighting, color: 'bg-gold' },
+                    { label: '色彩', value: score.color, color: 'bg-ink-muted' },
+                  ].map(dim => (
+                    <div key={dim.label}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-ink-secondary">{dim.label}</span>
+                        <span className="text-sm font-bold text-ink">{dim.value}</span>
+                      </div>
+                      <div className="h-2 bg-surface-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${dim.color} rounded-full transition-all duration-700`}
+                          style={{ width: `${dim.value}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* AI 改进建议 */}
+              {score.feedback && score.feedback.length > 0 && (
+                <div className="border-t border-line pt-4">
+                  <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-accent" strokeWidth={1.25} />
+                    AI 改进建议
+                  </h3>
+                  <ul className="space-y-2">
+                    {score.feedback.map((f, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-ink-secondary">
+                        <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" strokeWidth={1.25} />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* 无评分的提示（旧数据/mock） */}
+          {!score && (
+            <div className="border-t border-line pt-4">
+              <p className="text-ink-muted text-sm text-center">暂无 AI 评分数据</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function WeeklyChallengeCard({
   weeklyChallenge,
   onChallengeClick,
@@ -235,13 +402,17 @@ function WeeklyChallengeCard({
 
 export function CommunityPage() {
   const navigate = useNavigate();
-  const { communityWorks = [], voteWork, galleryImages = [], toggleFollow, isFollowing, isVoted, removeCommunityWork, user } = useGameStore();
+  const { communityWorks = [], voteWork, weeklyChallengeImage, weeklyChallengeInfo, toggleFollow, isFollowing, isVoted, removeCommunityWork, user } = useGameStore();
   const [selectedWork, setSelectedWork] = useState<CommunityWork | null>(null);
+  const [selectedWorkDetail, setSelectedWorkDetail] = useState<CommunityWork | null>(null);
   const [activeTab, setActiveTab] = useState<'hot' | 'new' | 'mine'>('hot');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [workToDelete, setWorkToDelete] = useState<CommunityWork | null>(null);
 
-  const weeklyChallenge = galleryImages[0] || { url: '', title: '加载中...' };
+  const weeklyChallenge = {
+    url: weeklyChallengeImage || '',
+    title: weeklyChallengeInfo?.title || '本周挑战',
+  };
 
   // 根据标签页筛选作品
   const filteredWorks = useMemo(() => {
@@ -270,6 +441,7 @@ export function CommunityPage() {
     }
     setShowDeleteConfirm(false);
     setWorkToDelete(null);
+    setSelectedWorkDetail(null);
   };
 
   const cancelDelete = () => {
@@ -413,7 +585,10 @@ export function CommunityPage() {
                       >
                         {work.avatar}
                       </button>
-                      <div className="rounded-md overflow-hidden shadow-elevated">
+                      <div
+                        className="rounded-md overflow-hidden shadow-elevated cursor-pointer"
+                        onClick={() => setSelectedWorkDetail(work)}
+                      >
                         <img src={work.image} alt="" className="w-full aspect-square object-cover" loading="lazy" />
                       </div>
                       <div className="flex items-center justify-center mt-1">
@@ -447,7 +622,12 @@ export function CommunityPage() {
                   initial="hidden"
                   animate="show"
                 >
-                  <img src={work.image} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+                  <img
+                    src={work.image} alt=""
+                    className="w-full aspect-square object-cover cursor-pointer"
+                    loading="lazy"
+                    onClick={() => setSelectedWorkDetail(work)}
+                  />
                   <div className="p-2">
                     <div className="flex items-center justify-between">
                       {/* 头像可点击 */}
@@ -491,7 +671,12 @@ export function CommunityPage() {
                   animate="show"
                 >
                   <div className="relative">
-                    <img src={work.image} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+                    <img
+                      src={work.image} alt=""
+                      className="w-full aspect-square object-cover cursor-pointer"
+                      loading="lazy"
+                      onClick={() => setSelectedWorkDetail(work)}
+                    />
                     {/* 我的标签页：下架按钮 */}
                     {activeTab === 'mine' && work.authorId === user.id && (
                       <button
@@ -608,6 +793,21 @@ export function CommunityPage() {
           isFollowing={typeof isFollowing === 'function' ? isFollowing(selectedWork?.authorId || '') : false}
           isVoted={typeof isVoted === 'function' ? isVoted(selectedWork?.id || '') : false}
           onVote={() => selectedWork?.id && voteWork(selectedWork.id)}
+        />
+      )}
+
+      {/* 作品详情弹窗（含AI评分） */}
+      {selectedWorkDetail && (
+        <WorkDetailModal
+          work={selectedWorkDetail}
+          currentUserId={user.id}
+          onClose={() => setSelectedWorkDetail(null)}
+          onVote={() => selectedWorkDetail?.id && voteWork(selectedWorkDetail.id)}
+          isVoted={typeof isVoted === 'function' ? isVoted(selectedWorkDetail?.id || '') : false}
+          onDelete={() => {
+            setWorkToDelete(selectedWorkDetail);
+            setShowDeleteConfirm(true);
+          }}
         />
       )}
 
