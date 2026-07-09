@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Camera, Sliders, Aperture } from 'lucide-react';
+import { Check, Camera, Sliders, Aperture, Layers } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel } from '../services/levelService';
 import { PageLayout } from '../components/layout/PageLayout';
@@ -25,6 +25,7 @@ const chapterOf = (id: number) => CHAPTERS[Math.min(Math.floor((id - 1) / PER), 
 export function LevelMapPage() {
   const navigate = useNavigate();
   const { user, maxUnlockedLevel } = useGameStore();
+  const [showGuideLines, setShowGuideLines] = useState(true);
 
   const chapters = useMemo(() => {
     const total = Math.max(maxUnlockedLevel + 5, 50);
@@ -84,11 +85,35 @@ export function LevelMapPage() {
             </motion.div>
           </div>
           <motion.div variants={variants.heroImage} initial="hidden" animate="show" className="relative aspect-[4/5] rounded-md overflow-hidden border border-line bg-ink">
-            <img src={curLevel.referenceImage.url} alt={curLevel.title} className="w-full h-full object-cover" loading="eager" />
-            <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px)', backgroundSize: '33.3% 33.3%' }} />
+            <img
+              src={
+                showGuideLines
+                  ? curLevel.referenceImage.url
+                  : (curLevel.referenceImage.url.includes('/images/levels/')
+                      ? curLevel.referenceImage.url.replace('/images/levels/', '/images/raw/')
+                      : curLevel.referenceImage.url)
+              }
+              alt={curLevel.title}
+              className="w-full h-full object-cover"
+              loading="eager"
+            />
+            {curLevel.referenceImage.url.includes('/images/levels/') && (
+              <button
+                onClick={() => setShowGuideLines(!showGuideLines)}
+                aria-label="参考线"
+                className={`absolute top-3 right-3 w-9 h-9 rounded-full backdrop-blur flex items-center justify-center shadow-sm z-10 transition-colors ${
+                  showGuideLines ? 'bg-accent text-white' : 'bg-surface-card/80 text-ink'
+                }`}
+                title={showGuideLines ? '隐藏参考线' : '显示参考线'}
+              >
+                <Layers className="w-4 h-4" strokeWidth={1.25} />
+              </button>
+            )}
             <div className="absolute left-3 bottom-3 flex items-center gap-2">
               <span className="text-white/90 text-[10px] font-mono tracking-wide bg-ink/55 backdrop-blur px-2 py-1 rounded">{curLevel.title} · 参考</span>
-              <span className="text-white text-[10px] font-mono tracking-wide bg-accent/80 backdrop-blur px-2 py-1 rounded">{compositionRuleLabels[inferCompositionRule(curLevel.referenceImage)]}</span>
+              {showGuideLines && (
+                <span className="text-white text-[10px] font-mono tracking-wide bg-accent/80 backdrop-blur px-2 py-1 rounded">{compositionRuleLabels[inferCompositionRule(curLevel.referenceImage)]}</span>
+              )}
             </div>
           </motion.div>
         </section>

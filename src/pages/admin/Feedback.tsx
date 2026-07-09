@@ -723,7 +723,7 @@ export const FeedbackPage: React.FC = () => {
                       </div>
                       <div>
                         <p className="text-sm text-slate-500">用户</p>
-                        <p className="font-medium text-slate-800">{selectedTextFeedback.username || '匿名用户'} <span className="text-xs text-slate-400">({selectedTextFeedback.userId})</span></p>
+                        <p className="font-medium text-slate-800">{selectedTextFeedback.username || '匿名用户'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
