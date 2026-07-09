@@ -219,12 +219,12 @@ export function AchievementsPage() {
 // ==================== 我的收藏页面 ====================
 export function MyFavoritesPage() {
   const navigate = useNavigate();
-  const { user, galleryImages, customGalleryImages, communityWorks, toggleFavoriteImage, isFavoriteImage, toggleFavoriteWork, isFavoriteWork } =
+  const { user, customGalleryImages, getAllGalleryImages, communityWorks, toggleFavoriteImage, isFavoriteImage, toggleFavoriteWork, isFavoriteWork } =
     useGameStore();
   const [activeTab, setActiveTab] = useState<'gallery' | 'community'>('gallery');
   const [selectedWork, setSelectedWork] = useState<CommunityWork | null>(null);
 
-  const allImages = [...customGalleryImages, ...galleryImages];
+  const allImages = [...customGalleryImages, ...getAllGalleryImages()];
   const favoriteImages = allImages.filter((img) => isFavoriteImage(img.id));
   const favoriteWorks = communityWorks.filter((work) => isFavoriteWork(work.id));
 
