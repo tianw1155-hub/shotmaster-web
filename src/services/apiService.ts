@@ -301,6 +301,21 @@ export async function updateTextFeedbackStatus(token: string, id: number, status
   return await response.json();
 }
 
+// 关注/取消关注用户
+export async function toggleUserFollow(followerId: string, targetId: string): Promise<{
+  success: boolean;
+  isFollowing: boolean;
+  message: string;
+}> {
+  const response = await fetch(`${API_BASE_URL}/users/toggle-follow`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ followerId, targetId }),
+  });
+  if (!response.ok) throw new Error('关注操作失败');
+  return await response.json();
+}
+
 // 评测集管理 API
 export interface EvalSet {
   id: number;

@@ -40,6 +40,7 @@ func InitDB() {
 	err = DB.AutoMigrate(
 		&Admin{},
 		&User{},
+		&UserFollow{},
 		&ShootingPlanFeedback{},
 		&ScoreSuggestionFeedback{},
 		&UserTextFeedback{},

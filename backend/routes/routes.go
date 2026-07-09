@@ -26,6 +26,7 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/api/users/sync", controllers.SyncUserData)
 	r.POST("/api/users/sync-feedbacks", controllers.SyncFeedbacks)
 	r.POST("/api/users/sync-score-feedbacks", controllers.SyncScoreFeedbacks)
+	r.POST("/api/users/toggle-follow", controllers.ToggleFollow)
 	r.POST("/api/feedback/submit", controllers.SubmitTextFeedback)
 
 	// 拍摄建议缓存（前台调用，不需要管理员权限）

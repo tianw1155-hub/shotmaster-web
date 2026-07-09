@@ -14,6 +14,8 @@ interface User {
   totalStars: number;
   worksCount: number;
   avgScore: number;
+  followers: number; // 粉丝数
+  following: number; // 关注数
   isGuest: boolean;
   lastActive: string;
   createdAt: string;
@@ -113,7 +115,10 @@ export const UsersPage: React.FC = () => {
                       经验值
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      连续签到
+                      粉丝数
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                      关注数
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                       作品数
@@ -132,7 +137,7 @@ export const UsersPage: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {data?.list?.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-6 py-16 text-center">
+                      <td colSpan={9} className="px-6 py-16 text-center">
                         <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                         <p className="text-slate-500">暂无用户数据</p>
                       </td>
@@ -171,7 +176,8 @@ export const UsersPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-slate-600">{user.xp.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-sm text-slate-600">{user.streak} 天</td>
+                        <td className="px-6 py-4 text-sm text-slate-600">{user.followers || 0}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600">{user.following || 0}</td>
                         <td className="px-6 py-4 text-sm text-slate-600">{user.worksCount}</td>
                         <td className="px-6 py-4">
                           <span className="text-sm font-medium text-green-600">

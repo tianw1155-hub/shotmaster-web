@@ -4,7 +4,7 @@ import { mockGalleryImages, mockCourses, mockAchievements, mockCommunityWorks } 
 import type { CommunityWork } from '../types';
 import { getLevel } from '../services/levelService';
 import { aiService } from '../services/aiService';
-import { syncUserData, syncFeedbacks, syncScoreFeedbacks } from '../services/apiService';
+import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow } from '../services/apiService';
 import { fetchRecommendedImages, hasUnsplashAccess } from '../services/unsplashService';
 
 // 默认 Unsplash 图片（当未配置 API key 时使用）- 共50张
@@ -163,7 +163,7 @@ interface GameState {
   isFavoriteWork: (workId: string) => boolean;
 
   // 关注
-  toggleFollow: (userId: string) => void;
+  toggleFollow: (userId: string) => Promise<void>;
   isFollowing: (userId: string) => boolean;
 }
 
@@ -425,6 +425,7 @@ const defaultUser: GameUser = loadUserFromStorage() || {
   achievements: mockAchievements,
   completedLevels: [],
   levelStars: {},
+  followers: 0,
   following: [],
   votedWorks: [],
   isLoggedIn: false,
@@ -1526,16 +1527,22 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   // 关注
-  toggleFollow: (userId) => {
+  toggleFollow: async (userId) => {
     const { user } = get();
-    const following = user.following || [];
-    const isCurrentlyFollowing = following.includes(userId);
-    const newFollowing = isCurrentlyFollowing
-      ? following.filter(id => id !== userId)
-      : [...following, userId];
-    const updatedUser = { ...user, following: newFollowing };
-    saveUserToStorage(updatedUser);
-    set({ user: updatedUser });
+    try {
+      const res = await toggleUserFollow(user.id, userId);
+      if (res.success) {
+        const following = user.following || [];
+        const newFollowing = res.isFollowing
+          ? [...following, userId]
+          : following.filter(id => id !== userId);
+        const updatedUser = { ...user, following: newFollowing };
+        saveUserToStorage(updatedUser);
+        set({ user: updatedUser });
+      }
+    } catch (e) {
+      console.error('关注操作失败', e);
+    }
   },
   isFollowing: (userId: string) => {
     if (!userId) return false;

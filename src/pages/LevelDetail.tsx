@@ -343,7 +343,6 @@ export function LevelDetailPage() {
           <motion.div layoutId={`lvl-${levelId}`}>
             <img src={level.referenceImage.url} alt={level.title} className="w-full max-h-[70vh] object-contain mx-auto" loading="lazy" />
           </motion.div>
-          <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent pointer-events-none" />
           <HeroBack onClick={() => navigate('/')} />
           {level.referenceImage.author && (
             <a

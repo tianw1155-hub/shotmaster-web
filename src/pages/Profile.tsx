@@ -19,6 +19,8 @@ import {
   Swords,
   Award,
   Triangle,
+  LogOut,
+  User as UserIcon,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/useGameStore';
@@ -463,8 +465,9 @@ export function MyFavoritesPage() {
 // ==================== 主个人中心页面 ====================
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { user, updateUser } = useGameStore();
+  const { user, updateUser, logout } = useGameStore();
   const [isUploading, setIsUploading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const completedCount = user.completedLevels.length;
   const unlockedAchievements = user.achievements.filter((a) => a.unlocked);
@@ -636,7 +639,7 @@ export function ProfilePage() {
         >
           <h3 className="text-ink-muted text-sm px-4 py-2 bg-surface-muted/50">更多</h3>
           {[
-            { icon: Settings, label: '设置' },
+            { icon: Settings, label: '设置', onClick: () => setShowSettings(true) },
             { icon: HelpCircle, label: '帮助与反馈', path: '/feedback' },
           ].map((item, idx) => {
             const IconComponent = item.icon;
@@ -644,7 +647,10 @@ export function ProfilePage() {
               <motion.div
                 key={item.label}
                 variants={variants.fadeUp}
-                onClick={() => item.path && navigate(item.path)}
+                onClick={() => {
+                  if (item.onClick) item.onClick();
+                  else if (item.path) navigate(item.path);
+                }}
                 className="flex items-center justify-between p-4 bg-surface-card hover:bg-surface-muted/60 transition-colors cursor-pointer border-b border-line last:border-b-0"
               >
                 <div className="flex items-center gap-3">
@@ -663,6 +669,84 @@ export function ProfilePage() {
           ShotMaster v1.0.0 &middot; 让摄影学习更有趣
         </p>
       </div>
+
+      {/* 设置弹窗 */}
+      {showSettings && (
+        <div
+          className="fixed inset-0 bg-ink/40 z-50 flex items-end justify-center"
+          onClick={() => setShowSettings(false)}
+        >
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="w-full max-w-md bg-surface-card rounded-t-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+              <h3 className="font-semibold text-ink">设置</h3>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center"
+              >
+                <X className="w-4 h-4 text-ink-secondary" strokeWidth={1.5} />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-2">
+              <button
+                onClick={() => {
+                  setShowSettings(false);
+                  logout();
+                  navigate('/login', { replace: true });
+                }}
+                className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-surface-muted/60 transition-colors text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                  <UserIcon className="w-5 h-5 text-amber-600" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-ink">切换账号</p>
+                  <p className="text-xs text-ink-muted mt-0.5">使用其他账号登录</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-ink-muted" strokeWidth={1.5} />
+              </button>
+
+              <button
+                onClick={() => {
+                  if (confirm('确定要退出登录吗？')) {
+                    setShowSettings(false);
+                    logout();
+                    navigate('/login', { replace: true });
+                  }
+                }}
+                className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-red-50/60 transition-colors text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+                  <LogOut className="w-5 h-5 text-red-500" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-red-500">退出登录</p>
+                  <p className="text-xs text-ink-muted mt-0.5">
+                    当前账号：{user.name || '未命名用户'}
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-ink-muted" strokeWidth={1.5} />
+              </button>
+            </div>
+
+            <div className="p-4 pt-0">
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-full py-3 rounded-xl bg-surface-muted text-ink-secondary font-medium hover:bg-surface-muted/80 transition-colors"
+              >
+                取消
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </PageLayout>
   );
 }

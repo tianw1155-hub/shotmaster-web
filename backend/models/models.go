@@ -27,12 +27,22 @@ type User struct {
 	TotalStars  int       `json:"totalStars"`
 	WorksCount  int       `json:"worksCount"`
 	AvgScore    float64   `json:"avgScore"`
+	Followers   int       `json:"followers"`   // 粉丝数
+	Following   int       `json:"following"`   // 关注数
 	IsLoggedIn  bool      `json:"isLoggedIn"`
 	IsGuest     bool      `json:"isGuest"`
 	Preferences string    `gorm:"type:text" json:"preferences"` // JSON数组
 	LastActive  time.Time `json:"lastActive"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+// 用户关注记录
+type UserFollow struct {
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	FollowerID string    `gorm:"size:100;index" json:"followerId"` // 发起关注的用户
+	TargetID   string    `gorm:"size:100;index" json:"targetId"`   // 被关注的用户
+	CreatedAt  time.Time `json:"createdAt"`
 }
 
 // 用户拍摄计划维度反馈
