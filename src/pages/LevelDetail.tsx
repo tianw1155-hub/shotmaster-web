@@ -151,7 +151,7 @@ function ScoreDetailCard({
                     <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-line/50">
                       <span className="text-[10px] text-ink-muted mr-0.5">有用吗？</span>
                       <button
-                        onClick={() => toggleLikeSuggestion(scoreId, suggestionKey)}
+                        onClick={() => toggleLikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
                         className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
                           feedback.liked
                             ? 'bg-accent/12 text-accent'
@@ -162,7 +162,7 @@ function ScoreDetailCard({
                         有用
                       </button>
                       <button
-                        onClick={() => toggleDislikeSuggestion(scoreId, suggestionKey)}
+                        onClick={() => toggleDislikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
                         className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
                           feedback.disliked
                             ? 'bg-red-50 text-red-500'

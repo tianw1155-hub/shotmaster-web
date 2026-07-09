@@ -120,6 +120,8 @@ export interface SuggestionFeedback {
   liked: boolean;
   disliked: boolean;
   createdAt: string;
+  title?: string;
+  dimension?: string;
 }
 
 export interface ScoreFeedback {

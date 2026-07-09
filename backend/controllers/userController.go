@@ -69,6 +69,21 @@ type FeedbackSyncRequest struct {
 	Feedbacks []FeedbackSyncItem `json:"feedbacks"`
 }
 
+type ScoreFeedbackSyncItem struct {
+	ScoreID       string `json:"scoreId"`
+	SuggestionKey string `json:"suggestionKey"`
+	Title         string `json:"title"`
+	Dimension     string `json:"dimension"`
+	Liked         bool   `json:"liked"`
+	Disliked      bool   `json:"disliked"`
+	UpdatedAt     string `json:"updatedAt"`
+}
+
+type ScoreFeedbackSyncRequest struct {
+	UserID    string                  `json:"userId" binding:"required"`
+	Feedbacks []ScoreFeedbackSyncItem `json:"feedbacks"`
+}
+
 // 用户数据同步
 func SyncUserData(c *gin.Context) {
 	var req UserSyncRequest
@@ -178,6 +193,51 @@ func SyncFeedbacks(c *gin.Context) {
 		"success":  true,
 		"synced":   len(req.Feedbacks),
 		"message":  "反馈数据同步成功",
+	})
+}
+
+// 同步评分建议反馈数据
+func SyncScoreFeedbacks(c *gin.Context) {
+	var req ScoreFeedbackSyncRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
+		return
+	}
+
+	for _, item := range req.Feedbacks {
+		var feedback models.ScoreSuggestionFeedback
+		result := models.DB.Where("user_id = ? AND score_id = ? AND suggestion_key = ?",
+			req.UserID, item.ScoreID, item.SuggestionKey).First(&feedback)
+
+		now := nowInShanghai()
+
+		if result.Error != nil {
+			feedback = models.ScoreSuggestionFeedback{
+				UserID:          req.UserID,
+				ScoreID:         item.ScoreID,
+				SuggestionKey:   item.SuggestionKey,
+				SuggestionTitle: item.Title,
+				Dimension:       item.Dimension,
+				Liked:           item.Liked,
+				Disliked:        item.Disliked,
+				CreatedAt:       now,
+				UpdatedAt:       now,
+			}
+			models.DB.Create(&feedback)
+		} else {
+			feedback.Liked = item.Liked
+			feedback.Disliked = item.Disliked
+			feedback.SuggestionTitle = item.Title
+			feedback.Dimension = item.Dimension
+			feedback.UpdatedAt = now
+			models.DB.Save(&feedback)
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"synced":  len(req.Feedbacks),
+		"message": "评分反馈数据同步成功",
 	})
 }
 

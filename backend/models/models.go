@@ -50,6 +50,20 @@ type ShootingPlanFeedback struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+// 用户评图建议反馈
+type ScoreSuggestionFeedback struct {
+	ID              uint      `gorm:"primaryKey" json:"id"`
+	UserID          string    `gorm:"size:100;index" json:"userId"`
+	ScoreID         string    `gorm:"size:100;index" json:"scoreId"`
+	SuggestionKey   string    `gorm:"size:200;index" json:"suggestionKey"`
+	SuggestionTitle string    `gorm:"size:200" json:"suggestionTitle"`
+	Dimension       string    `gorm:"size:50;index" json:"dimension"`
+	Liked           bool      `json:"liked"`
+	Disliked        bool      `json:"disliked"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+}
+
 // 评测集
 type EvalSet struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`

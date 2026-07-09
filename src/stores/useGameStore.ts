@@ -4,7 +4,7 @@ import { mockGalleryImages, mockCourses, mockAchievements, mockCommunityWorks } 
 import type { CommunityWork } from '../types';
 import { getLevel } from '../services/levelService';
 import { aiService } from '../services/aiService';
-import { syncUserData, syncFeedbacks } from '../services/apiService';
+import { syncUserData, syncFeedbacks, syncScoreFeedbacks } from '../services/apiService';
 import { fetchRecommendedImages, hasUnsplashAccess } from '../services/unsplashService';
 
 // 默认 Unsplash 图片（当未配置 API key 时使用）- 共50张
@@ -143,8 +143,8 @@ interface GameState {
   getDimensionFeedback: (imageId: string, dimension: ShootingPlanDimension) => { liked: boolean; disliked: boolean };
 
   // 评分建议反馈
-  toggleLikeSuggestion: (scoreId: string, suggestionKey: string) => void;
-  toggleDislikeSuggestion: (scoreId: string, suggestionKey: string) => void;
+  toggleLikeSuggestion: (scoreId: string, suggestionKey: string, suggestionInfo?: { title?: string; dimension?: string }) => void;
+  toggleDislikeSuggestion: (scoreId: string, suggestionKey: string, suggestionInfo?: { title?: string; dimension?: string }) => void;
   getSuggestionFeedback: (scoreId: string, suggestionKey: string) => { liked: boolean; disliked: boolean };
   toggleLikeFeedback: (scoreId: string, feedbackIndex: number) => void;
   toggleDislikeFeedback: (scoreId: string, feedbackIndex: number) => void;
@@ -294,6 +294,47 @@ function syncFeedbacksToBackend(user: GameUser) {
 
     if (allFeedbacks.length > 0) {
       syncFeedbacks(user.id, allFeedbacks);
+    }
+  }, 3000);
+}
+
+// 同步评分建议反馈到后端
+let scoreFeedbackSyncTimer: number | undefined;
+function syncScoreFeedbacksToBackend(user: GameUser) {
+  if (user.isGuest || !user.scoreFeedbacks) return;
+
+  if (scoreFeedbackSyncTimer) {
+    clearTimeout(scoreFeedbackSyncTimer);
+  }
+  scoreFeedbackSyncTimer = window.setTimeout(() => {
+    const allScoreFeedbacks: Array<{
+      scoreId: string;
+      suggestionKey: string;
+      title: string;
+      dimension: string;
+      liked: boolean;
+      disliked: boolean;
+      updatedAt: string;
+    }> = [];
+
+    for (const fb of user.scoreFeedbacks) {
+      for (const sugg of fb.suggestionFeedbacks || []) {
+        if (sugg.liked || sugg.disliked) {
+          allScoreFeedbacks.push({
+            scoreId: fb.scoreId,
+            suggestionKey: sugg.suggestionKey,
+            title: sugg.title || '',
+            dimension: sugg.dimension || '',
+            liked: sugg.liked,
+            disliked: sugg.disliked,
+            updatedAt: fb.updatedAt || fb.createdAt,
+          });
+        }
+      }
+    }
+
+    if (allScoreFeedbacks.length > 0) {
+      syncScoreFeedbacks(user.id, allScoreFeedbacks);
     }
   }, 3000);
 }
@@ -992,7 +1033,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     return { liked: dim?.liked || false, disliked: dim?.disliked || false };
   },
   // 评分建议反馈
-  toggleLikeSuggestion: (scoreId, suggestionKey) => {
+  toggleLikeSuggestion: (scoreId, suggestionKey, suggestionInfo) => {
     const { user } = get();
     const scoreFeedbacks = user.scoreFeedbacks || [];
     const existingIdx = scoreFeedbacks.findIndex(f => f.scoreId === scoreId);
@@ -1007,12 +1048,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         const sugg = existing.suggestionFeedbacks[suggIdx];
         const newLiked = !sugg.liked;
         newSuggestionFeedbacks = existing.suggestionFeedbacks.map((s, i) =>
-          i === suggIdx ? { ...s, liked: newLiked, disliked: newLiked ? false : s.disliked } : s
+          i === suggIdx ? { ...s, liked: newLiked, disliked: newLiked ? false : s.disliked, title: suggestionInfo?.title || s.title, dimension: suggestionInfo?.dimension || s.dimension } : s
         );
       } else {
         newSuggestionFeedbacks = [
           ...existing.suggestionFeedbacks,
-          { suggestionKey, liked: true, disliked: false, createdAt: now }
+          { suggestionKey, liked: true, disliked: false, createdAt: now, title: suggestionInfo?.title, dimension: suggestionInfo?.dimension }
         ];
       }
       newScoreFeedbacks = scoreFeedbacks.map((f, i) =>
@@ -1023,7 +1064,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         ...scoreFeedbacks,
         {
           scoreId,
-          suggestionFeedbacks: [{ suggestionKey, liked: true, disliked: false, createdAt: now }],
+          suggestionFeedbacks: [{ suggestionKey, liked: true, disliked: false, createdAt: now, title: suggestionInfo?.title, dimension: suggestionInfo?.dimension }],
           feedbackFeedbacks: [],
           createdAt: now,
           updatedAt: now,
@@ -1033,8 +1074,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     const updatedUser = { ...user, scoreFeedbacks: newScoreFeedbacks };
     saveUserToStorage(updatedUser);
     set({ user: updatedUser });
+    syncScoreFeedbacksToBackend(updatedUser);
   },
-  toggleDislikeSuggestion: (scoreId, suggestionKey) => {
+  toggleDislikeSuggestion: (scoreId, suggestionKey, suggestionInfo) => {
     const { user } = get();
     const scoreFeedbacks = user.scoreFeedbacks || [];
     const existingIdx = scoreFeedbacks.findIndex(f => f.scoreId === scoreId);
@@ -1049,12 +1091,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         const sugg = existing.suggestionFeedbacks[suggIdx];
         const newDisliked = !sugg.disliked;
         newSuggestionFeedbacks = existing.suggestionFeedbacks.map((s, i) =>
-          i === suggIdx ? { ...s, disliked: newDisliked, liked: newDisliked ? false : s.liked } : s
+          i === suggIdx ? { ...s, disliked: newDisliked, liked: newDisliked ? false : s.liked, title: suggestionInfo?.title || s.title, dimension: suggestionInfo?.dimension || s.dimension } : s
         );
       } else {
         newSuggestionFeedbacks = [
           ...existing.suggestionFeedbacks,
-          { suggestionKey, liked: false, disliked: true, createdAt: now }
+          { suggestionKey, liked: false, disliked: true, createdAt: now, title: suggestionInfo?.title, dimension: suggestionInfo?.dimension }
         ];
       }
       newScoreFeedbacks = scoreFeedbacks.map((f, i) =>
@@ -1065,7 +1107,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         ...scoreFeedbacks,
         {
           scoreId,
-          suggestionFeedbacks: [{ suggestionKey, liked: false, disliked: true, createdAt: now }],
+          suggestionFeedbacks: [{ suggestionKey, liked: false, disliked: true, createdAt: now, title: suggestionInfo?.title, dimension: suggestionInfo?.dimension }],
           feedbackFeedbacks: [],
           createdAt: now,
           updatedAt: now,
@@ -1075,6 +1117,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const updatedUser = { ...user, scoreFeedbacks: newScoreFeedbacks };
     saveUserToStorage(updatedUser);
     set({ user: updatedUser });
+    syncScoreFeedbacksToBackend(updatedUser);
   },
   getSuggestionFeedback: (scoreId, suggestionKey) => {
     const { user } = get();

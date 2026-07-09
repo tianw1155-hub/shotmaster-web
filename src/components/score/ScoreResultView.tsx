@@ -215,7 +215,7 @@ export function ScoreResultView({ score, capturedImage, referenceImage, scoreId,
                     <div className="flex items-center gap-2 mt-3 pt-2 border-t border-line/50">
                       <span className="text-xs text-ink-muted mr-1">这条建议有用吗？</span>
                       <button
-                        onClick={() => toggleLikeSuggestion(scoreId, suggestionKey)}
+                        onClick={() => toggleLikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
                         className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                           feedback.liked
                             ? 'bg-accent/12 text-accent'
@@ -226,7 +226,7 @@ export function ScoreResultView({ score, capturedImage, referenceImage, scoreId,
                         有用
                       </button>
                       <button
-                        onClick={() => toggleDislikeSuggestion(scoreId, suggestionKey)}
+                        onClick={() => toggleDislikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
                         className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                           feedback.disliked
                             ? 'bg-red-50 text-red-500'

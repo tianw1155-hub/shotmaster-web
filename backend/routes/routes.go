@@ -25,6 +25,7 @@ func SetupRoutes(r *gin.Engine) {
 	// 用户数据同步（前台调用，不需要管理员权限）
 	r.POST("/api/users/sync", controllers.SyncUserData)
 	r.POST("/api/users/sync-feedbacks", controllers.SyncFeedbacks)
+	r.POST("/api/users/sync-score-feedbacks", controllers.SyncScoreFeedbacks)
 
 	// 拍摄建议缓存（前台调用，不需要管理员权限）
 	r.POST("/api/shooting-plan/cache", controllers.GetShootingPlanCache)
@@ -48,6 +49,8 @@ func SetupRoutes(r *gin.Engine) {
 		admin.GET("/feedback/analysis", controllers.GetFeedbackAnalysis)
 		admin.GET("/feedback/trend", controllers.GetFeedbackTrend)
 		admin.GET("/feedback/low-rated", controllers.GetLowRatedFeedback)
+		admin.GET("/feedback/score/list", controllers.GetScoreFeedbackList)
+		admin.GET("/feedback/score/stats", controllers.GetScoreFeedbackStats)
 
 		// 评测集管理
 		admin.POST("/eval-sets", controllers.CreateEvalSet)

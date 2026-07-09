@@ -169,6 +169,123 @@ func GetLowRatedFeedback(c *gin.Context) {
 	})
 }
 
+// 获取评图建议反馈列表
+func GetScoreFeedbackList(c *gin.Context) {
+	feedbackType := c.Query("type")       // liked / disliked / all
+	dimension := c.Query("dimension")      // 按维度筛选
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+
+	query := models.DB.Model(&models.ScoreSuggestionFeedback{})
+
+	if feedbackType == "liked" {
+		query = query.Where("liked = ?", true)
+	} else if feedbackType == "disliked" {
+		query = query.Where("disliked = ?", true)
+	}
+
+	if dimension != "" {
+		query = query.Where("dimension = ?", dimension)
+	}
+
+	if startDateStr != "" && endDateStr != "" {
+		startDate, err1 := feedbackParseDate(startDateStr)
+		endDate, err2 := feedbackParseDate(endDateStr)
+		if err1 == nil && err2 == nil {
+			endDate = endDate.AddDate(0, 0, 1)
+			query = query.Where("created_at >= ? AND created_at < ?", startDate, endDate)
+		}
+	}
+
+	var feedbacks []models.ScoreSuggestionFeedback
+	query.Order("created_at DESC").Limit(500).Find(&feedbacks)
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  feedbacks,
+		"total": len(feedbacks),
+	})
+}
+
+// 获取评图建议反馈统计（用于柱状图）
+func GetScoreFeedbackStats(c *gin.Context) {
+	feedbackType := c.Query("type")    // liked / disliked / all
+	dimension := c.Query("dimension")   // 按维度筛选
+	startDateStr := c.Query("startDate")
+	endDateStr := c.Query("endDate")
+
+	query := models.DB.Model(&models.ScoreSuggestionFeedback{})
+
+	if feedbackType == "liked" {
+		query = query.Where("liked = ?", true)
+	} else if feedbackType == "disliked" {
+		query = query.Where("disliked = ?", true)
+	}
+
+	if dimension != "" {
+		query = query.Where("dimension = ?", dimension)
+	}
+
+	if startDateStr != "" && endDateStr != "" {
+		startDate, err1 := feedbackParseDate(startDateStr)
+		endDate, err2 := feedbackParseDate(endDateStr)
+		if err1 == nil && err2 == nil {
+			endDate = endDate.AddDate(0, 0, 1)
+			query = query.Where("created_at >= ? AND created_at < ?", startDate, endDate)
+		}
+	}
+
+	var feedbacks []models.ScoreSuggestionFeedback
+	query.Find(&feedbacks)
+
+	// 按 suggestionKey 分组统计
+	type StatItem struct {
+		SuggestionKey   string `json:"suggestionKey"`
+		SuggestionTitle string `json:"suggestionTitle"`
+		Dimension       string `json:"dimension"`
+		Liked           int    `json:"liked"`
+		Disliked        int    `json:"disliked"`
+		Total           int    `json:"total"`
+	}
+
+	statsMap := make(map[string]*StatItem)
+	for _, fb := range feedbacks {
+		key := fb.SuggestionKey
+		if _, exists := statsMap[key]; !exists {
+			statsMap[key] = &StatItem{
+				SuggestionKey:   key,
+				SuggestionTitle: fb.SuggestionTitle,
+				Dimension:       fb.Dimension,
+			}
+		}
+		if fb.Liked {
+			statsMap[key].Liked++
+		}
+		if fb.Disliked {
+			statsMap[key].Disliked++
+		}
+		statsMap[key].Total++
+	}
+
+	// 转为切片并按总数排序
+	stats := make([]StatItem, 0, len(statsMap))
+	for _, s := range statsMap {
+		stats = append(stats, *s)
+	}
+	// 按总数降序排序
+	for i := 0; i < len(stats); i++ {
+		for j := i + 1; j < len(stats); j++ {
+			if stats[j].Total > stats[i].Total {
+				stats[i], stats[j] = stats[j], stats[i]
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  stats,
+		"total": len(stats),
+	})
+}
+
 func parseIntOrDefault(s string, defaultVal int) int {
 	var result int
 	for _, c := range s {

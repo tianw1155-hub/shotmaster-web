@@ -72,6 +72,33 @@ export async function syncFeedbacks(userId: string, feedbacks: Array<{
   }
 }
 
+export async function syncScoreFeedbacks(userId: string, feedbacks: Array<{
+  scoreId: string;
+  suggestionKey: string;
+  title: string;
+  dimension: string;
+  liked: boolean;
+  disliked: boolean;
+  updatedAt: string;
+}>): Promise<SyncFeedbackResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/sync-score-feedbacks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        feedbacks,
+      }),
+    });
+    return await response.json();
+  } catch (e) {
+    console.error('Sync score feedbacks failed:', e);
+    return { success: false, synced: 0, message: '网络错误' };
+  }
+}
+
 // 后台管理 API
 export interface AdminLoginResponse {
   token: string;
@@ -175,6 +202,52 @@ export async function getLowRatedFeedback(token: string, limit?: number): Promis
   });
   if (!response.ok) {
     throw new Error('获取低评分反馈失败');
+  }
+  return await response.json();
+}
+
+export async function getScoreFeedbackList(token: string, filters?: {
+  type?: string;
+  dimension?: string;
+  startDate?: string;
+  endDate?: string;
+}): Promise<any> {
+  const params = new URLSearchParams();
+  if (filters?.type) params.append('type', filters.type);
+  if (filters?.dimension) params.append('dimension', filters.dimension);
+  if (filters?.startDate) params.append('startDate', filters.startDate);
+  if (filters?.endDate) params.append('endDate', filters.endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${API_BASE_URL}/admin/feedback/score/list${query}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('获取评图反馈列表失败');
+  }
+  return await response.json();
+}
+
+export async function getScoreFeedbackStats(token: string, filters?: {
+  type?: string;
+  dimension?: string;
+  startDate?: string;
+  endDate?: string;
+}): Promise<any> {
+  const params = new URLSearchParams();
+  if (filters?.type) params.append('type', filters.type);
+  if (filters?.dimension) params.append('dimension', filters.dimension);
+  if (filters?.startDate) params.append('startDate', filters.startDate);
+  if (filters?.endDate) params.append('endDate', filters.endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${API_BASE_URL}/admin/feedback/score/stats${query}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error('获取评图反馈统计失败');
   }
   return await response.json();
 }
