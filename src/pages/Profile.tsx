@@ -637,13 +637,14 @@ export function ProfilePage() {
           <h3 className="text-ink-muted text-sm px-4 py-2 bg-surface-muted/50">更多</h3>
           {[
             { icon: Settings, label: '设置' },
-            { icon: HelpCircle, label: '帮助与反馈' },
+            { icon: HelpCircle, label: '帮助与反馈', path: '/feedback' },
           ].map((item, idx) => {
             const IconComponent = item.icon;
             return (
               <motion.div
                 key={item.label}
                 variants={variants.fadeUp}
+                onClick={() => item.path && navigate(item.path)}
                 className="flex items-center justify-between p-4 bg-surface-card hover:bg-surface-muted/60 transition-colors cursor-pointer border-b border-line last:border-b-0"
               >
                 <div className="flex items-center gap-3">

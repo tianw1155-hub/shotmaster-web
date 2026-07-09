@@ -252,6 +252,55 @@ export async function getScoreFeedbackStats(token: string, filters?: {
   return await response.json();
 }
 
+// ==================== 用户文字反馈 ====================
+
+export async function submitTextFeedback(data: {
+  userId: string;
+  username: string;
+  category: string;
+  content: string;
+  contact?: string;
+}): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/feedback/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return await response.json();
+}
+
+export async function getTextFeedbackList(token: string, filters?: {
+  category?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}): Promise<any> {
+  const params = new URLSearchParams();
+  if (filters?.category) params.append('category', filters.category);
+  if (filters?.status) params.append('status', filters.status);
+  if (filters?.startDate) params.append('startDate', filters.startDate);
+  if (filters?.endDate) params.append('endDate', filters.endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${API_BASE_URL}/admin/feedback/text/list${query}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('获取文字反馈列表失败');
+  return await response.json();
+}
+
+export async function updateTextFeedbackStatus(token: string, id: number, status: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/admin/feedback/text/${id}/status`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error('更新反馈状态失败');
+  return await response.json();
+}
+
 // 评测集管理 API
 export interface EvalSet {
   id: number;

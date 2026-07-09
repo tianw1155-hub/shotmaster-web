@@ -42,6 +42,7 @@ func InitDB() {
 		&User{},
 		&ShootingPlanFeedback{},
 		&ScoreSuggestionFeedback{},
+		&UserTextFeedback{},
 		&EvalSet{},
 		&EvalImage{},
 		&EvaluationJob{},

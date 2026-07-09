@@ -64,6 +64,19 @@ type ScoreSuggestionFeedback struct {
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
+// 用户文字反馈
+type UserTextFeedback struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    string    `gorm:"size:100;index" json:"userId"`
+	Username  string    `gorm:"size:50" json:"username"`
+	Category  string    `gorm:"size:30;index" json:"category"` // bug/suggestion/question/praise/other
+	Content   string    `gorm:"type:text;not null" json:"content"`
+	Contact   string    `gorm:"size:100" json:"contact"`
+	Status    string    `gorm:"size:20;default:'pending';index" json:"status"` // pending/processing/resolved
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 // 评测集
 type EvalSet struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`

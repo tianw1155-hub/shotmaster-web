@@ -20,6 +20,7 @@ const ProfilePage = React.lazy(() => import('./pages/Profile').then(m => ({ defa
 const MyWorksPage = React.lazy(() => import('./pages/Profile').then(m => ({ default: m.MyWorksPage })));
 const AchievementsPage = React.lazy(() => import('./pages/Profile').then(m => ({ default: m.AchievementsPage })));
 const MyFavoritesPage = React.lazy(() => import('./pages/Profile').then(m => ({ default: m.MyFavoritesPage })));
+const UserFeedbackPage = React.lazy(() => import('./pages/Feedback').then(m => ({ default: m.FeedbackPage })));
 const LoginPage = React.lazy(() => import('./pages/Login').then(m => ({ default: m.LoginPage })));
 const PreferencesPage = React.lazy(() => import('./pages/Preferences').then(m => ({ default: m.PreferencesPage })));
 const AdminLoginPage = React.lazy(() => import('./pages/admin/Login').then(m => ({ default: m.AdminLoginPage })));
@@ -89,6 +90,7 @@ function App() {
           <Route path="/profile/works" element={<AuthGuard><MyWorksPage /></AuthGuard>} />
           <Route path="/profile/achievements" element={<AuthGuard><AchievementsPage /></AuthGuard>} />
           <Route path="/profile/favorites" element={<AuthGuard><MyFavoritesPage /></AuthGuard>} />
+          <Route path="/feedback" element={<AuthGuard><UserFeedbackPage /></AuthGuard>} />
 
           {/* 后台路由 */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
