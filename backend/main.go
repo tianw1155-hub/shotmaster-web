@@ -15,6 +15,9 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
+	// 输出非敏感启动配置，便于排查部署后崩溃
+	config.LogStartup()
+
 	// 初始化数据库
 	models.InitDB()
 

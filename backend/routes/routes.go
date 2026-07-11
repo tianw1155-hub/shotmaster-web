@@ -11,6 +11,14 @@ func SetupRoutes(r *gin.Engine) {
 	// CORS 中间件
 	r.Use(middleware.CORSMiddleware())
 
+	// 根路径，兼容部分 PaaS 的默认健康检查
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status":  "ok",
+			"message": "ShotMaster Backend is running",
+		})
+	})
+
 	// 健康检查
 	r.GET("/api/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{

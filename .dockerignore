@@ -1,0 +1,31 @@
+# 前端与构建产物
+node_modules
+npm-debug.log
+dist
+build
+
+# 源码与文档（后端已通过 backend/ 目录复制）
+src
+public
+tests
+docs
+scripts
+
+# 环境文件，避免把密钥打包进镜像
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.env.*
+
+# Git 与编辑器
+.git
+.gitignore
+.idea
+.vscode
+.claude
+.superpowers
+
+# 其他
+README.md
+*.md

@@ -13,15 +13,18 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-		config.AppConfig.DBHost,
-		config.AppConfig.DBUser,
-		config.AppConfig.DBPassword,
-		config.AppConfig.DBName,
-		config.AppConfig.DBPort,
-		config.AppConfig.DBSSLMode,
-	)
+	dsn := config.AppConfig.DatabaseURL
+	if dsn == "" {
+		dsn = fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
+			config.AppConfig.DBHost,
+			config.AppConfig.DBUser,
+			config.AppConfig.DBPassword,
+			config.AppConfig.DBName,
+			config.AppConfig.DBPort,
+			config.AppConfig.DBSSLMode,
+		)
+	}
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
