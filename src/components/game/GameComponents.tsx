@@ -131,6 +131,124 @@ export function CompositionOverlay({ rule, showLabel = true }: { rule: Compositi
   );
 }
 
+// 拍摄界面参考线叠加组件（风格与参考图一致）
+export function ShootGuideOverlay({ rule }: { rule: CompositionRule }) {
+  const labelStyle = 'px-2 py-1 bg-ink/60 backdrop-blur rounded-sm text-white text-sm font-medium';
+
+  switch (rule) {
+    case 'rule_of_thirds':
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="w-full h-full grid grid-cols-3 grid-rows-3">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className="border border-dashed border-white/50" />
+            ))}
+          </div>
+          <div className="absolute top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-amber-400" />
+          <div className="absolute top-1/3 left-2/3 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-amber-400" />
+          <div className="absolute top-2/3 left-1/3 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-amber-400" />
+          <div className="absolute top-2/3 left-2/3 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-amber-400" />
+        </div>
+      );
+
+    case 'symmetry':
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 bottom-0 left-1/2 w-0 -translate-x-1/2 border-l-2 border-dashed border-amber-400/80" />
+          <div className="absolute top-1/2 left-0 right-0 h-0 -translate-y-1/2 border-t-2 border-dashed border-white/50" />
+          <div className={`absolute bottom-8 left-8 ${labelStyle}`}>主体</div>
+          <div className={`absolute bottom-8 right-8 ${labelStyle}`}>主体</div>
+        </div>
+      );
+
+    case 'leading_lines':
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <line x1="0" y1="100" x2="50" y2="10" stroke="rgba(251,191,36,0.8)" strokeWidth="0.5" strokeDasharray="2,2" />
+            <line x1="100" y1="100" x2="50" y2="10" stroke="rgba(251,191,36,0.8)" strokeWidth="0.5" strokeDasharray="2,2" />
+            <line x1="25" y1="100" x2="50" y2="25" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" strokeDasharray="2,2" />
+            <line x1="75" y1="100" x2="50" y2="25" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" strokeDasharray="2,2" />
+          </svg>
+          <div className={`absolute top-8 left-8 ${labelStyle}`}>引导线</div>
+        </div>
+      );
+
+    case 'framing':
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-10 border-2 border-dashed border-amber-400/80 rounded-sm" />
+          <div className={`absolute top-6 left-1/2 -translate-x-1/2 ${labelStyle}`}>框架</div>
+          <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${labelStyle}`}>主体</div>
+        </div>
+      );
+
+    case 'foreground':
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-0 right-0 h-0 border-t-2 border-dashed border-white/50" />
+          <div className="absolute top-2/3 left-0 right-0 h-0 border-t-2 border-dashed border-amber-400/70" />
+          <div className={`absolute bottom-8 left-8 ${labelStyle}`}>前景</div>
+          <div className={`absolute top-1/2 right-8 -translate-y-1/2 ${labelStyle}`}>主体</div>
+        </div>
+      );
+
+    case 'negative_space':
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-8 left-8 w-2/5 h-1/3 border-2 border-dashed border-amber-400/90 rounded-sm">
+            <div className={`absolute top-3 left-3 ${labelStyle}`}>留白</div>
+          </div>
+          <div className={`absolute bottom-24 right-8 ${labelStyle}`}>主体</div>
+        </div>
+      );
+
+    case 'golden_ratio':
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 bottom-0 left-[61.8%] w-0 border-l-2 border-dashed border-white/50" />
+          <div className="absolute top-[61.8%] left-0 right-0 h-0 border-t-2 border-dashed border-white/50" />
+          <div className="absolute top-[38.2%] left-0 right-0 h-0 border-t border-dashed border-white/30" />
+          <div className="absolute top-0 bottom-0 left-[38.2%] w-0 border-l border-dashed border-white/30" />
+          <div className={`absolute top-6 right-6 ${labelStyle}`}>黄金比例</div>
+        </div>
+      );
+
+    case 'diagonal':
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <line x1="0" y1="100" x2="100" y2="0" stroke="rgba(251,191,36,0.8)" strokeWidth="0.6" strokeDasharray="3,2" />
+            <line x1="0" y1="0" x2="100" y2="100" stroke="rgba(255,255,255,0.5)" strokeWidth="0.5" strokeDasharray="3,2" />
+          </svg>
+          <div className={`absolute top-8 right-8 ${labelStyle}`}>对角线</div>
+        </div>
+      );
+
+    case 'minimalism':
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-1/4 h-1/4 border-2 border-dashed border-amber-400/80 rounded-full" />
+          <div className={`absolute bottom-1/3 left-1/2 -translate-x-1/2 ${labelStyle}`}>极简主体</div>
+        </div>
+      );
+
+    case 'triangles':
+      return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polygon points="50,15 10,90 90,90" fill="none" stroke="rgba(251,191,36,0.8)" strokeWidth="0.6" strokeDasharray="3,2" />
+            <polygon points="50,30 25,85 75,85" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" strokeDasharray="2,2" />
+          </svg>
+          <div className={`absolute top-8 left-8 ${labelStyle}`}>三角形</div>
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
+
 // 顶部状态栏
 export function TopBar({ title }: { title?: string }) {
   const { user } = useGameStore();

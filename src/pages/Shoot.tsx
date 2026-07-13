@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { Camera, SwitchCamera, X, Image as ImageIcon, Grid3X3, Check, Upload, ChevronRight, AlertCircle, RefreshCw, Maximize2, Layers } from 'lucide-react';
+import { Camera, SwitchCamera, X, Image as ImageIcon, Grid3X3, Check, Upload, ChevronRight, AlertCircle, RefreshCw, Maximize2, Layers, Info } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { getLevel, chapterInfo } from '../services/levelService';
-import { CompositionOverlay } from '../components/game/GameComponents';
+import { CompositionOverlay, ShootGuideOverlay } from '../components/game/GameComponents';
 import { inferCompositionRule, compositionRuleLabels } from '../utils/compositionUtils';
 import { PageLayout } from '../components/layout/PageLayout';
 
@@ -21,6 +21,7 @@ export function ShootPage() {
   const [showGrid, setShowGrid] = useState(true);
   const [showReference, setShowReference] = useState(true);
   const [showGuideLines, setShowGuideLines] = useState(true);
+  const [showLevelInfo, setShowLevelInfo] = useState(true);
   const [referenceExpanded, setReferenceExpanded] = useState(false);
   const [mode, setMode] = useState<'camera' | 'upload'>(searchParams.get('mode') === 'upload' ? 'upload' : 'camera');
   const fromParam = searchParams.get('from') ? `&from=${searchParams.get('from')}` : '';
@@ -212,6 +213,14 @@ export function ShootPage() {
                 <Layers className="w-5 h-5" />
               </button>
               <button
+                onClick={() => setShowLevelInfo(!showLevelInfo)}
+                aria-label="关卡提示"
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${showLevelInfo ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
+                title="关卡提示"
+              >
+                <Info className="w-5 h-5" />
+              </button>
+              <button
                 onClick={() => setShowReference(!showReference)}
                 aria-label="参考图"
                 className={`w-10 h-10 rounded-full flex items-center justify-center ${showReference ? 'bg-accent' : 'bg-ink/30 backdrop-blur'} text-surface`}
@@ -280,7 +289,7 @@ export function ShootPage() {
           <video ref={videoRef} autoPlay playsInline muted className="w-full h-screen object-cover" />
           <canvas ref={canvasRef} className="hidden" />
 
-          {/* 构图辅助线 */}
+          {/* 构图辅助线（九宫格） */}
           {showGrid && (
             <div className="absolute inset-0 pointer-events-none">
               <div className="w-full h-full grid grid-cols-3 grid-rows-3">
@@ -294,6 +303,9 @@ export function ShootPage() {
             </div>
           )}
 
+          {/* 参考线叠加（与参考图风格一致，根据构图类型动态显示） */}
+          {showGuideLines && <ShootGuideOverlay rule={compositionRule} />}
+
           {/* 参考图叠加 */}
           {showReference && (
             <div className="absolute top-20 right-4 w-32 rounded-md overflow-hidden border-2 border-white/40 shadow-xl cursor-pointer"
@@ -301,18 +313,12 @@ export function ShootPage() {
             >
               <div className="relative">
                 <img src={referenceImage.url} alt="参考" className="w-full aspect-square object-cover" loading="lazy" />
-                {showGuideLines && (
-                  <CompositionOverlay rule={compositionRule} showLabel={false} />
-                )}
                 <div className="absolute top-1 right-1 w-6 h-6 bg-ink/50 rounded-full flex items-center justify-center">
                   <Maximize2 className="w-3.5 h-3.5 text-surface" />
                 </div>
               </div>
               <div className="bg-ink/60 backdrop-blur px-2 py-1">
                 <p className="text-surface text-xs truncate">{referenceImage.title}</p>
-                {showGuideLines && (
-                  <p className="text-accent-soft text-xs">{compositionRuleLabels[compositionRule]}</p>
-                )}
               </div>
             </div>
           )}
@@ -326,14 +332,11 @@ export function ShootPage() {
               <div className="relative max-w-lg w-full max-h-[80vh]" onClick={e => e.stopPropagation()}>
                 <div className="relative rounded-md overflow-hidden">
                   <img src={referenceImage.url} alt="参考图" className="w-full h-auto max-h-[70vh] object-contain bg-ink" loading="lazy" />
-                  {showGuideLines && (
-                    <CompositionOverlay rule={compositionRule} showLabel={true} />
-                  )}
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   <div>
                     <h3 className="text-surface font-medium">{referenceImage.title}</h3>
-                    <p className="text-surface/60 text-sm">{compositionRuleLabels[compositionRule]} · {info.label}</p>
+                    <p className="text-surface/60 text-sm">{info.label}</p>
                   </div>
                   <button
                     onClick={() => setReferenceExpanded(false)}
@@ -355,16 +358,25 @@ export function ShootPage() {
           )}
 
           {/* AI 提示 */}
-          <div className="absolute top-32 left-4 right-32 space-y-2">
-            <div className="bg-ink/40 backdrop-blur rounded-xl px-3 py-2">
-              <p className="text-surface text-sm">📷 {info.label} · {level.title}</p>
-            </div>
-            {level.constraints?.map((c, i) => (
-              <div key={i} className="bg-accent/30 backdrop-blur rounded-xl px-3 py-2">
-                <p className="text-surface text-sm">🎯 {c}</p>
+          {showLevelInfo && (
+            <div className="absolute top-32 left-4 right-32 space-y-2">
+              <div className="relative bg-ink/40 backdrop-blur rounded-xl px-3 py-2 pr-9">
+                <p className="text-surface text-sm">📷 {info.label} · {level.title}</p>
+                <button
+                  onClick={() => setShowLevelInfo(false)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-ink/60 backdrop-blur rounded-full flex items-center justify-center text-surface/70 hover:text-surface"
+                  aria-label="隐藏提示"
+                >
+                  <X className="w-3 h-3" />
+                </button>
               </div>
-            ))}
-          </div>
+              {level.constraints?.map((c, i) => (
+                <div key={i} className="bg-accent/30 backdrop-blur rounded-xl px-3 py-2">
+                  <p className="text-surface text-sm">🎯 {c}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* 底部控制 */}
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-ink/80 to-transparent">

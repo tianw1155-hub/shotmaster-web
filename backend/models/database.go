@@ -6,7 +6,7 @@ import (
 	"shotmaster-backend/config"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -18,25 +18,23 @@ func InitDB() {
 		dsn = config.AppConfig.DatabaseURL
 	} else {
 		dsn = fmt.Sprintf(
-			"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
-			config.AppConfig.DBHost,
+			"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FShanghai&tls=skip-verify",
 			config.AppConfig.DBUser,
 			config.AppConfig.DBPassword,
-			config.AppConfig.DBName,
+			config.AppConfig.DBHost,
 			config.AppConfig.DBPort,
-			config.AppConfig.DBSSLMode,
+			config.AppConfig.DBName,
 		)
 	}
 
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
 	log.Println("Database connected successfully")
 
-	// 自动迁移
 	err = DB.AutoMigrate(
 		&Admin{},
 		&User{},
@@ -57,10 +55,7 @@ func InitDB() {
 
 	log.Println("Database migrated successfully")
 
-	// 初始化默认管理员
 	initDefaultAdmin()
-
-	// 初始化默认配置
 	initDefaultConfigs()
 }
 
@@ -93,14 +88,14 @@ func initDefaultAdmin() {
 
 func initDefaultConfigs() {
 	defaultConfigs := []SystemConfig{
-		{Key: "ai_model_version", Value: "v1.0.0", Remark: "当前AI模型版本"},
-		{Key: "daily_free_quota", Value: "0", Remark: "每日免费评图次数（0表示不限制）"},
-		{Key: "gallery_refresh_hours", Value: "48", Remark: "图库刷新间隔（小时）"},
+		{ConfigKey: "ai_model_version", Value: "v1.0.0", Remark: "当前AI模型版本"},
+		{ConfigKey: "daily_free_quota", Value: "0", Remark: "每日免费评图次数（0表示不限制）"},
+		{ConfigKey: "gallery_refresh_hours", Value: "48", Remark: "图库刷新间隔（小时）"},
 	}
 
 	for _, cfg := range defaultConfigs {
 		var existing SystemConfig
-		result := DB.Where("key = ?", cfg.Key).First(&existing)
+		result := DB.Where("config_key = ?", cfg.ConfigKey).First(&existing)
 		if result.Error == gorm.ErrRecordNotFound {
 			DB.Create(&cfg)
 		}

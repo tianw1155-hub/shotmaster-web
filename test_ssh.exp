@@ -1,0 +1,12 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no ubuntu@43.167.205.61
+expect {
+    "password:" {
+        send "Go15561245367~\r"
+    }
+}
+expect "$ "
+send "echo 'SSH连接成功'\r"
+expect "$ "
+send "exit\r"

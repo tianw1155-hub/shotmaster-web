@@ -1,0 +1,80 @@
+#!/usr/bin/expect -f
+set timeout 300
+set SERVER_IP "43.167.205.61"
+set USERNAME "ubuntu"
+set PASSWORD "Go15561245367~"
+set APP_DIR "/opt/shotmaster"
+
+puts "========================================="
+puts "  ShotMaster 腾讯云部署"
+puts "  服务器: $SERVER_IP"
+puts "========================================="
+
+puts "\n1/7 连接服务器..."
+spawn ssh -o StrictHostKeyChecking=no $USERNAME@$SERVER_IP
+expect "password:" { send "$PASSWORD\r" }
+expect "$ "
+
+puts "\n2/7 更新系统..."
+send "sudo apt-get update -y\r"
+expect {
+    "password" { send "$PASSWORD\r"; exp_continue }
+    "$ " {}
+}
+
+puts "\n3/7 安装 Docker..."
+send "curl -fsSL https://get.docker.com | sudo -S sh\r"
+expect {
+    "password" { send "$PASSWORD\r"; exp_continue }
+    "$ " {}
+}
+
+puts "\n4/7 安装 Docker Compose 插件..."
+send "sudo apt-get install -y docker-compose-plugin\r"
+expect {
+    "password" { send "$PASSWORD\r"; exp_continue }
+    "$ " {}
+}
+
+puts "\n5/7 启动 Docker 服务..."
+send "sudo systemctl enable docker && sudo systemctl start docker\r"
+expect "$ "
+
+puts "\n6/7 创建应用目录..."
+send "sudo mkdir -p $APP_DIR && sudo chown ubuntu:ubuntu $APP_DIR && cd $APP_DIR\r"
+expect "$ "
+
+puts "\n7/7 拉取代码并启动..."
+send "git clone https://github.com/tianwei7/shotmaster-web.git .\r"
+expect {
+    "Username" {
+        puts "\n需要 GitHub 登录，等待用户输入..."
+        interact
+    }
+    "$ " {}
+}
+
+send "cp .env.production .env\r"
+expect "$ "
+
+send "docker compose up -d --build\r"
+expect "$ "
+
+puts "\n等待服务启动..."
+send "sleep 30\r"
+expect "$ "
+
+send "docker compose ps\r"
+expect "$ "
+
+send "curl -s http://localhost:8080/api/health\r"
+expect "$ "
+
+puts "\n========================================="
+puts "  部署完成！"
+puts "========================================="
+puts "  前台: http://$SERVER_IP"
+puts "  后台: http://$SERVER_IP/admin/login"
+puts "========================================="
+
+send "exit\r"

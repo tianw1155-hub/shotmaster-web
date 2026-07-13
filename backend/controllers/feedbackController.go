@@ -316,10 +316,10 @@ func UpdateSystemConfig(c *gin.Context) {
 	key := c.Param("key")
 
 	var config models.SystemConfig
-	if err := models.DB.Where("key = ?", key).First(&config).Error; err != nil {
+	if err := models.DB.Where("config_key = ?", key).First(&config).Error; err != nil {
 		// 如果不存在，创建新的
 		config = models.SystemConfig{
-			Key:       key,
+			ConfigKey: key,
 			CreatedAt: feedbackNow(),
 		}
 	}
@@ -366,9 +366,9 @@ func BatchUpdateSystemConfigs(c *gin.Context) {
 	now := feedbackNow()
 	for _, cfg := range req.Configs {
 		var config models.SystemConfig
-		if err := models.DB.Where("key = ?", cfg.Key).First(&config).Error; err != nil {
+		if err := models.DB.Where("config_key = ?", cfg.Key).First(&config).Error; err != nil {
 			config = models.SystemConfig{
-				Key:       cfg.Key,
+				ConfigKey: cfg.Key,
 				Value:     cfg.Value,
 				CreatedAt: now,
 				UpdatedAt: now,

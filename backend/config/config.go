@@ -13,7 +13,6 @@ type Config struct {
 	DBUser      string
 	DBPassword  string
 	DBName      string
-	DBSSLMode   string
 
 	JWTSecret      string
 	JWTExpireHours string
@@ -32,11 +31,10 @@ func LoadConfig() error {
 	AppConfig = Config{
 		DatabaseURL: getEnv("DATABASE_URL", ""),
 		DBHost:      getEnv("DB_HOST", "localhost"),
-		DBPort:      getEnv("DB_PORT", "5432"),
-		DBUser:      getEnv("DB_USER", "postgres"),
-		DBPassword:  getEnv("DB_PASSWORD", "postgres"),
+		DBPort:      getEnv("DB_PORT", "3306"),
+		DBUser:      getEnv("DB_USER", "root"),
+		DBPassword:  getEnv("DB_PASSWORD", "password"),
 		DBName:      getEnv("DB_NAME", "shotmaster"),
-		DBSSLMode:   getEnv("DB_SSLMODE", "disable"),
 
 		JWTSecret:      getEnv("JWT_SECRET", "shotmaster-secret"),
 		JWTExpireHours: getEnv("JWT_EXPIRE_HOURS", "24"),
