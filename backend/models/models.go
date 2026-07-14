@@ -16,7 +16,8 @@ type Admin struct {
 // 用户
 type User struct {
 	ID          string    `gorm:"primaryKey;size:100" json:"id"`
-	Username    string    `gorm:"size:50;index" json:"username"`
+	Username    string    `gorm:"size:50;uniqueIndex" json:"username"`
+	Password    string    `gorm:"size:255" json:"-"` // bcrypt哈希密码，不返回给前端
 	Phone       string    `gorm:"size:20" json:"phone"`
 	Avatar      string    `gorm:"size:255" json:"avatar"`
 	Level       int       `json:"level"`
@@ -31,6 +32,7 @@ type User struct {
 	Following   int       `json:"following"`   // 关注数
 	IsLoggedIn  bool      `json:"isLoggedIn"`
 	IsGuest     bool      `json:"isGuest"`
+	HasCompletedOnboarding bool   `json:"hasCompletedOnboarding"`
 	Preferences string    `gorm:"type:text" json:"preferences"` // JSON数组
 	LastActive  time.Time `json:"lastActive"`
 	CreatedAt   time.Time `json:"createdAt"`

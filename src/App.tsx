@@ -31,6 +31,7 @@ const FeedbackPage = React.lazy(() => import('./pages/admin/Feedback').then(m =>
 const EvalSetsPage = React.lazy(() => import('./pages/admin/EvalSets').then(m => ({ default: m.EvalSetsPage })));
 const AIEvalPage = React.lazy(() => import('./pages/admin/AIEval').then(m => ({ default: m.AIEvalPage })));
 const SettingsPage = React.lazy(() => import('./pages/admin/Settings').then(m => ({ default: m.SettingsPage })));
+const WeeklyChallengePage = React.lazy(() => import('./pages/admin/WeeklyChallenge').then(m => ({ default: m.WeeklyChallengePage })));
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, refreshWeeklyChallenge } = useGameStore();
@@ -102,6 +103,7 @@ function App() {
             <Route path="eval" element={<EvalSetsPage />} />
             <Route path="ai-eval" element={<AIEvalPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="weekly-challenge" element={<WeeklyChallengePage />} />
           </Route>
         </AppShell>
       </ErrorBoundary>

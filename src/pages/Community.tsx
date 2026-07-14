@@ -235,13 +235,17 @@ function WeeklyChallengeCard({
 
 export function CommunityPage() {
   const navigate = useNavigate();
-  const { communityWorks = [], voteWork, galleryImages = [], toggleFollow, isFollowing, isVoted, removeCommunityWork, user } = useGameStore();
+  const { communityWorks = [], voteWork, galleryImages = [], toggleFollow, isFollowing, isVoted, removeCommunityWork, user, weeklyChallengeImage, weeklyChallengeInfo, refreshWeeklyChallenge } = useGameStore();
   const [selectedWork, setSelectedWork] = useState<CommunityWork | null>(null);
   const [activeTab, setActiveTab] = useState<'hot' | 'new' | 'mine'>('hot');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [workToDelete, setWorkToDelete] = useState<CommunityWork | null>(null);
 
-  const weeklyChallenge = galleryImages[0] || { url: '', title: '加载中...' };
+  React.useEffect(() => {
+    refreshWeeklyChallenge();
+  }, [refreshWeeklyChallenge]);
+
+  const weeklyChallenge = weeklyChallengeInfo || { url: weeklyChallengeImage, title: '本周挑战' };
 
   // 根据标签页筛选作品
   const filteredWorks = useMemo(() => {

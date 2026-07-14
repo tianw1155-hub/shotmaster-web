@@ -43,7 +43,7 @@ function PasswordStrength({ password }: { password: string }) {
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login, register, verifyLogin, loginAsGuest } = useGameStore();
+  const { register, verifyLogin, loginAsGuest } = useGameStore();
 
   const [mode, setMode] = useState<Mode>('login');
   const [username, setUsername] = useState('');
@@ -108,25 +108,32 @@ export function LoginPage() {
     }
 
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (mode === 'login') {
-      const result = verifyLogin(trimmedUsername, password);
-      if (result.success) {
-        navigate('/preferences');
+    try {
+      if (mode === 'login') {
+        const result = await verifyLogin(trimmedUsername, password);
+        if (result.success) {
+          // 已完成 onboarding 的用户直接进入首页，否则去偏好设置
+          const target = useGameStore.getState().user.hasCompletedOnboarding ? '/' : '/preferences';
+          navigate(target);
+        } else {
+          setError(result.message);
+        }
       } else {
-        setError(result.message);
+        const result = await register(trimmedUsername, password);
+        if (result.success) {
+          // 新注册用户需要设置偏好
+          navigate('/preferences');
+        } else {
+          setError(result.message);
+        }
       }
-    } else {
-      const result = register(trimmedUsername, password);
-      if (result.success) {
-        navigate('/preferences');
-      } else {
-        setError(result.message);
-      }
+    } catch (e) {
+      setError('登录失败，请稍后重试');
+      console.error('Auth failed:', e);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   const handleGuestLogin = () => {

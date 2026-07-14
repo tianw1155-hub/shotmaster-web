@@ -18,7 +18,7 @@ func InitDB() {
 		dsn = config.AppConfig.DatabaseURL
 	} else {
 		dsn = fmt.Sprintf(
-			"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FShanghai&tls=skip-verify",
+			"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 			config.AppConfig.DBUser,
 			config.AppConfig.DBPassword,
 			config.AppConfig.DBHost,

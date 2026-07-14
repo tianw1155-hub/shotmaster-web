@@ -7,6 +7,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME:-shotmaster}
       MYSQL_USER: ${DB_USER:-shotmaster}
       MYSQL_PASSWORD: ${DB_PASSWORD:-password}
+      TZ: Asia/Shanghai
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
@@ -46,7 +47,7 @@ services:
       dockerfile: Dockerfile
     container_name: shotmaster-frontend
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - backend
     restart: unless-stopped

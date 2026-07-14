@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { Level, Score, ShootingPlan, GameUser, Achievement, Stars, GalleryImage, PhotoPreference, ImageCategory, Chapter, ShootingPlanDimension, DimensionFeedback } from '../types';
+import { Level, Score, ShootingPlan, GameUser, Achievement, Stars, GalleryImage, PhotoPreference, ImageCategory, Chapter, ShootingPlanDimension, DimensionFeedback, Difficulty } from '../types';
 import { mockGalleryImages, mockCourses, mockAchievements, mockCommunityWorks } from '../services/mockData';
 import type { CommunityWork } from '../types';
 import { getLevel } from '../services/levelService';
 import { aiService } from '../services/aiService';
-import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow } from '../services/apiService';
+import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge } from '../services/apiService';
 import { fetchRecommendedImages, hasUnsplashAccess } from '../services/unsplashService';
 
 // 默认 Unsplash 图片（当未配置 API key 时使用）- 共50张
@@ -70,8 +70,8 @@ interface GameState {
 
   // 认证
   login: (username: string) => void;
-  register: (username: string, password: string) => { success: boolean; message: string };
-  verifyLogin: (username: string, password: string) => { success: boolean; message: string };
+  register: (username: string, password: string) => Promise<{ success: boolean; message: string }>;
+  verifyLogin: (username: string, password: string) => Promise<{ success: boolean; message: string }>;
   loginAsGuest: () => void;
   logout: () => void;
   setPreferences: (preferences: PhotoPreference[]) => void;
@@ -251,6 +251,7 @@ function saveUserToStorage(user: GameUser) {
           avgScore: user.averageScore,
           isLoggedIn: user.isLoggedIn,
           isGuest: user.isGuest,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
           preferences: user.preferences as string[],
         });
       }
@@ -478,13 +479,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     saveUserToStorage(newUser);
     set({ user: newUser });
   },
-  register: (username, password) => {
-    const storedUsers = getStoredUsers();
-
-    if (storedUsers.find(u => u.name === username)) {
-      return { success: false, message: '用户名已存在' };
-    }
-
+  register: async (username, password) => {
+    // 前端基础校验
     if (username.length < 2 || username.length > 20) {
       return { success: false, message: '用户名长度需在2-20字符之间' };
     }
@@ -494,38 +490,83 @@ export const useGameStore = create<GameState>((set, get) => ({
       return { success: false, message: passwordCheck.message };
     }
 
-    const newUser: GameUser & { password: string } = {
+    // 调用后端注册API
+    const result = await userRegister(username, password);
+    if (!result.success) {
+      return { success: false, message: result.message };
+    }
+
+    // 注册成功，初始化本地用户数据
+    const newUserId = result.userId || Date.now().toString();
+    const newUser: GameUser = {
       ...defaultUser,
-      id: Date.now().toString(),
+      id: newUserId,
       name: username,
-      password,
       isLoggedIn: true,
       isGuest: false,
       hasSetNickname: true,
       hasCompletedOnboarding: false,
     };
 
-    const updatedUsers = [...storedUsers, newUser];
-    localStorage.setItem('shotmaster_users', JSON.stringify(updatedUsers));
     saveUserToStorage(newUser);
     set({ user: newUser });
 
     return { success: true, message: '注册成功' };
   },
-  verifyLogin: (username, password) => {
-    const storedUsers = getStoredUsers();
-    const user = storedUsers.find(u => u.name === username);
-
-    if (!user) {
-      return { success: false, message: '用户不存在' };
+  verifyLogin: async (username, password) => {
+    // 调用后端登录API
+    const result = await userLogin(username, password);
+    if (!result.success) {
+      return { success: false, message: result.message };
     }
 
-    if (user.password !== password) {
-      return { success: false, message: '密码错误' };
+    // 登录成功，使用后端返回的用户数据初始化本地状态
+    const backendUser = result.user;
+    const userId = result.userId || backendUser?.id || Date.now().toString();
+
+    // 尝试从localStorage加载该用户的历史数据（关卡进度等本地数据）
+    const localUserData = loadUserFromStorage(userId);
+
+    // 解析preferences
+    let preferences: PhotoPreference[] = [];
+    if (backendUser?.preferences) {
+      try {
+        const parsed = typeof backendUser.preferences === 'string'
+          ? JSON.parse(backendUser.preferences)
+          : backendUser.preferences;
+        if (Array.isArray(parsed)) {
+          preferences = parsed;
+        }
+      } catch {}
     }
 
-    saveUserToStorage(user);
-    set({ user: { ...user, isLoggedIn: true } });
+    const loggedInUser: GameUser = {
+      ...defaultUser,
+      ...(localUserData || {}), // 保留本地关卡进度数据
+      id: userId,
+      name: backendUser?.username || username,
+      phone: backendUser?.phone || localUserData?.phone || '',
+      avatar: backendUser?.avatar || localUserData?.avatar || '摄',
+      level: backendUser?.level || localUserData?.level || 1,
+      xp: backendUser?.xp || localUserData?.xp || 0,
+      xpToNext: backendUser?.xpToNext || localUserData?.xpToNext || XP_PER_LEVEL,
+      streak: backendUser?.streak || localUserData?.streak || 0,
+      maxStreak: backendUser?.maxStreak || localUserData?.maxStreak || 0,
+      totalStars: backendUser?.totalStars || localUserData?.totalStars || 0,
+      worksCount: backendUser?.worksCount || localUserData?.worksCount || 0,
+      averageScore: backendUser?.avgScore || localUserData?.averageScore || 0,
+      followers: backendUser?.followers || localUserData?.followers || 0,
+      isLoggedIn: true,
+      isGuest: false,
+      hasSetNickname: true,
+      // 优先使用后端的 onboarding 状态（跨设备持久化），本地状态作为兜底
+      hasCompletedOnboarding: backendUser?.hasCompletedOnboarding || localUserData?.hasCompletedOnboarding || false,
+      // 优先使用后端的 preferences（跨设备持久化），本地状态作为兜底
+      preferences: preferences.length > 0 ? preferences : (localUserData?.preferences || []),
+    };
+
+    saveUserToStorage(loggedInUser);
+    set({ user: loggedInUser });
 
     return { success: true, message: '登录成功' };
   },
@@ -638,29 +679,41 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastWeeklyRefresh: initialLastWeeklyRefresh,
   setWeeklyChallengeImage: (url: string) => set({ weeklyChallengeImage: url }),
   refreshWeeklyChallenge: async () => {
-    const { shouldRefreshWeeklyChallenge } = await import('../services/unsplashService');
-    const { fetchWeeklyChallengeImage } = await import('../services/unsplashService');
+    const challenge = await getWeeklyChallenge();
+    if (challenge) {
+      const validCategories: ImageCategory[] = ['composition', 'light', 'color', 'portrait', 'landscape', 'still', 'street'];
+      const category: ImageCategory = validCategories.includes(challenge.category as ImageCategory)
+        ? challenge.category as ImageCategory
+        : 'landscape';
+      const validDifficulties: Difficulty[] = ['beginner', 'intermediate', 'advanced'];
+      const difficulty: Difficulty = validDifficulties.includes(challenge.difficulty as Difficulty)
+        ? challenge.difficulty as Difficulty
+        : 'intermediate';
 
-    if (!shouldRefreshWeeklyChallenge(get().lastWeeklyRefresh)) {
-      return;
-    }
+      const galleryImage: GalleryImage = {
+        id: challenge.id,
+        url: challenge.url,
+        title: challenge.title,
+        category,
+        difficulty,
+        tags: challenge.tags || [],
+        author: challenge.author,
+        authorUrl: challenge.authorUrl,
+      };
 
-    const newImage = await fetchWeeklyChallengeImage();
-    if (newImage) {
       const now = new Date().toISOString();
       const currentUserId = localStorage.getItem('shotmaster_current_user_id');
       const refreshKey = currentUserId ? `lastWeeklyRefresh_${currentUserId}` : 'lastWeeklyRefresh';
       const infoKey = currentUserId ? `weeklyChallengeInfo_${currentUserId}` : 'weeklyChallengeInfo';
 
       set({
-        weeklyChallengeImage: newImage.url,
-        weeklyChallengeInfo: newImage,
+        weeklyChallengeImage: challenge.url,
+        weeklyChallengeInfo: galleryImage,
         lastWeeklyRefresh: now,
       });
 
-      // 保存到本地存储（用户独立）
       localStorage.setItem(refreshKey, now);
-      localStorage.setItem(infoKey, JSON.stringify(newImage));
+      localStorage.setItem(infoKey, JSON.stringify(galleryImage));
     }
   },
 

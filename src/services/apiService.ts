@@ -12,6 +12,72 @@ interface SyncFeedbackResponse {
   message: string;
 }
 
+// ============== 用户注册/登录 ==============
+
+export interface UserAuthResponse {
+  success: boolean;
+  message: string;
+  userId?: string;
+  username?: string;
+  user?: {
+    id: string;
+    username: string;
+    phone: string;
+    avatar: string;
+    level: number;
+    xp: number;
+    xpToNext: number;
+    streak: number;
+    maxStreak: number;
+    totalStars: number;
+    worksCount: number;
+    avgScore: number;
+    followers: number;
+    following: number;
+    isLoggedIn: boolean;
+    isGuest: boolean;
+    preferences: string;
+    hasCompletedOnboarding: boolean;
+  };
+}
+
+export async function userRegister(username: string, password: string): Promise<UserAuthResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await response.json();
+    // 兼容后端可能返回的 error 字段
+    if (!response.ok && !data.success) {
+      return { success: false, message: data.message || data.error || '注册失败' };
+    }
+    return data;
+  } catch (e) {
+    console.error('User register failed:', e);
+    return { success: false, message: '网络错误，请检查网络连接' };
+  }
+}
+
+export async function userLogin(username: string, password: string): Promise<UserAuthResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await response.json();
+    if (!response.ok && !data.success) {
+      return { success: false, message: data.message || data.error || '登录失败' };
+    }
+    return data;
+  } catch (e) {
+    console.error('User login failed:', e);
+    return { success: false, message: '网络错误，请检查网络连接' };
+  }
+}
+
 export async function syncUserData(userData: {
   userId: string;
   username: string;
@@ -27,6 +93,7 @@ export async function syncUserData(userData: {
   avgScore: number;
   isLoggedIn: boolean;
   isGuest: boolean;
+  hasCompletedOnboarding: boolean;
   preferences: string[];
 }): Promise<SyncUserResponse> {
   try {
@@ -298,6 +365,73 @@ export async function updateTextFeedbackStatus(token: string, id: number, status
     body: JSON.stringify({ status }),
   });
   if (!response.ok) throw new Error('更新反馈状态失败');
+  return await response.json();
+}
+
+// 本周挑战
+export interface WeeklyChallengeData {
+  id: string;
+  url: string;
+  title: string;
+  category: string;
+  difficulty: string;
+  tags: string[];
+  author: string;
+  authorUrl: string;
+  startDate: string;
+  endDate: string;
+}
+
+export async function getWeeklyChallenge(): Promise<WeeklyChallengeData | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/weekly-challenge`);
+    const data = await response.json();
+    if (data.success && data.data) {
+      return data.data;
+    }
+    return null;
+  } catch (e) {
+    console.error('Get weekly challenge failed:', e);
+    return null;
+  }
+}
+
+export async function setWeeklyChallenge(token: string, data: {
+  id?: string;
+  url: string;
+  title: string;
+  category?: string;
+  difficulty?: string;
+  tags?: string[];
+  author?: string;
+  authorUrl?: string;
+}): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/admin/weekly-challenge`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('设置失败');
+  return await response.json();
+}
+
+export async function uploadImage(token: string, file: File): Promise<{ success: boolean; url: string; message: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_BASE_URL}/admin/upload`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || '上传失败');
+  }
   return await response.json();
 }
 

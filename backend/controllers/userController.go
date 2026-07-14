@@ -4,9 +4,13 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"shotmaster-backend/models"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -50,6 +54,7 @@ type UserSyncRequest struct {
 	AvgScore    float64         `json:"avgScore"`
 	IsLoggedIn  bool            `json:"isLoggedIn"`
 	IsGuest     bool            `json:"isGuest"`
+	HasCompletedOnboarding bool  `json:"hasCompletedOnboarding"`
 	Preferences json.RawMessage `json:"preferences"`
 }
 
@@ -99,30 +104,53 @@ func SyncUserData(c *gin.Context) {
 	prefsJSON, _ := json.Marshal(req.Preferences)
 
 	if result.Error != nil {
-		// 新建用户
-		user = models.User{
-			ID:          req.UserID,
-			Username:    req.Username,
-			Phone:       req.Phone,
-			Avatar:      req.Avatar,
-			Level:       req.Level,
-			XP:          req.XP,
-			XPToNext:    req.XPToNext,
-			Streak:      req.Streak,
-			MaxStreak:   req.MaxStreak,
-			TotalStars:  req.TotalStars,
-			WorksCount:  req.WorksCount,
-			AvgScore:    req.AvgScore,
-			IsLoggedIn:  req.IsLoggedIn,
-			IsGuest:     req.IsGuest,
-			Preferences: string(prefsJSON),
-			LastActive:  now,
-			CreatedAt:   now,
-			UpdatedAt:   now,
+		result = models.DB.Where("username = ? AND password IS NOT NULL", req.Username).First(&user)
+		if result.Error != nil {
+			user = models.User{
+				ID:                     req.UserID,
+				Username:               req.Username,
+				Phone:                  req.Phone,
+				Avatar:                 req.Avatar,
+				Level:                  req.Level,
+				XP:                     req.XP,
+				XPToNext:               req.XPToNext,
+				Streak:                 req.Streak,
+				MaxStreak:              req.MaxStreak,
+				TotalStars:             req.TotalStars,
+				WorksCount:             req.WorksCount,
+				AvgScore:               req.AvgScore,
+				IsLoggedIn:             req.IsLoggedIn,
+				IsGuest:                req.IsGuest,
+				HasCompletedOnboarding: req.HasCompletedOnboarding,
+				Preferences:            string(prefsJSON),
+				LastActive:             now,
+				CreatedAt:              now,
+				UpdatedAt:              now,
+			}
+			models.DB.Create(&user)
+		} else {
+			user.Username = req.Username
+			user.Phone = req.Phone
+			user.Avatar = req.Avatar
+			user.Level = req.Level
+			user.XP = req.XP
+			user.XPToNext = req.XPToNext
+			user.Streak = req.Streak
+			user.MaxStreak = req.MaxStreak
+			user.TotalStars = req.TotalStars
+			user.WorksCount = req.WorksCount
+			user.AvgScore = req.AvgScore
+			user.IsLoggedIn = req.IsLoggedIn
+			user.IsGuest = req.IsGuest
+			if req.HasCompletedOnboarding {
+				user.HasCompletedOnboarding = true
+			}
+			user.Preferences = string(prefsJSON)
+			user.LastActive = now
+			user.UpdatedAt = now
+			models.DB.Save(&user)
 		}
-		models.DB.Create(&user)
 	} else {
-		// 更新用户
 		user.Username = req.Username
 		user.Phone = req.Phone
 		user.Avatar = req.Avatar
@@ -136,6 +164,9 @@ func SyncUserData(c *gin.Context) {
 		user.AvgScore = req.AvgScore
 		user.IsLoggedIn = req.IsLoggedIn
 		user.IsGuest = req.IsGuest
+		if req.HasCompletedOnboarding {
+			user.HasCompletedOnboarding = true
+		}
 		user.Preferences = string(prefsJSON)
 		user.LastActive = now
 		user.UpdatedAt = now
@@ -823,4 +854,170 @@ func ToggleFollow(c *gin.Context) {
 			"message":     "关注成功",
 		})
 	}
+}
+
+// ============== 图片上传 ==============
+
+// UploadImage 上传图片（管理员用）
+func UploadImage(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请选择要上传的文件"})
+		return
+	}
+
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" && ext != ".webp" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "只支持 JPG、PNG、GIF、WebP 格式"})
+		return
+	}
+
+	if file.Size > 5*1024*1024 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "文件大小不能超过 5MB"})
+		return
+	}
+
+	uploadDir := "./uploads"
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建目录失败"})
+		return
+	}
+
+	timestamp := time.Now().UnixMilli()
+	filename := fmt.Sprintf("%d%s", timestamp, ext)
+	savePath := filepath.Join(uploadDir, filename)
+
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "保存文件失败"})
+		return
+	}
+
+	fileURL := fmt.Sprintf("/uploads/%s", filename)
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"url":     fileURL,
+		"message": "上传成功",
+	})
+}
+
+// ============== 本周挑战 ==============
+
+const defaultWeeklyChallengeUrl = "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+
+type WeeklyChallengeData struct {
+	ID        string `json:"id"`
+	URL       string `json:"url"`
+	Title     string `json:"title"`
+	Category  string `json:"category"`
+	Difficulty string `json:"difficulty"`
+	Tags      []string `json:"tags"`
+	Author    string `json:"author"`
+	AuthorURL string `json:"authorUrl"`
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
+}
+
+// GetWeeklyChallenge 获取本周挑战图片
+func GetWeeklyChallenge(c *gin.Context) {
+	var config models.SystemConfig
+	result := models.DB.Where("config_key = ?", "weekly_challenge").First(&config)
+
+	if result.Error != nil {
+		// 没有配置，返回默认图片
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data": gin.H{
+				"id":         "default_challenge",
+				"url":        defaultWeeklyChallengeUrl,
+				"title":      "山景构图挑战",
+				"category":   "landscape",
+				"difficulty": "intermediate",
+				"tags":       []string{"山脉", "风景", "构图"},
+				"author":     "Samuel Ferrara",
+				"authorUrl":  "https://unsplash.com/@samferrara",
+			},
+		})
+		return
+	}
+
+	var challengeData WeeklyChallengeData
+	if err := json.Unmarshal([]byte(config.Value), &challengeData); err != nil {
+		// JSON 解析失败，返回默认
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"data": gin.H{
+				"id":         "default_challenge",
+				"url":        defaultWeeklyChallengeUrl,
+				"title":      "山景构图挑战",
+				"category":   "landscape",
+				"difficulty": "intermediate",
+				"tags":       []string{"山脉", "风景", "构图"},
+				"author":     "Samuel Ferrara",
+				"authorUrl":  "https://unsplash.com/@samferrara",
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    challengeData,
+	})
+}
+
+// SetWeeklyChallenge 设置本周挑战图片（管理员用）
+func SetWeeklyChallenge(c *gin.Context) {
+	var req struct {
+		ID         string   `json:"id"`
+		URL        string   `json:"url" binding:"required"`
+		Title      string   `json:"title" binding:"required"`
+		Category   string   `json:"category"`
+		Difficulty string   `json:"difficulty"`
+		Tags       []string `json:"tags"`
+		Author     string   `json:"author"`
+		AuthorURL  string   `json:"authorUrl"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
+		return
+	}
+
+	now := time.Now().In(shanghaiLocation)
+	challengeData := WeeklyChallengeData{
+		ID:         req.ID,
+		URL:        req.URL,
+		Title:      req.Title,
+		Category:   req.Category,
+		Difficulty: req.Difficulty,
+		Tags:       req.Tags,
+		Author:     req.Author,
+		AuthorURL:  req.AuthorURL,
+		StartDate:  now.Format("2006-01-02"),
+		EndDate:    now.AddDate(0, 0, 7).Format("2006-01-02"),
+	}
+
+	jsonData, _ := json.Marshal(challengeData)
+
+	var config models.SystemConfig
+	result := models.DB.Where("config_key = ?", "weekly_challenge").First(&config)
+	if result.Error != nil {
+		config = models.SystemConfig{
+			ConfigKey: "weekly_challenge",
+			Value:     string(jsonData),
+			Remark:    "本周挑战图片",
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+		models.DB.Create(&config)
+	} else {
+		config.Value = string(jsonData)
+		config.UpdatedAt = now
+		models.DB.Save(&config)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "设置成功",
+		"data":    challengeData,
+	})
 }

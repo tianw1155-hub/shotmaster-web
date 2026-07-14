@@ -40,3 +40,9 @@ playwright-report/
 # Zip extraction artifacts
 __MACOSX/
 shotmaster-web-main/
+
+# Deploy scripts (contain credentials)
+*.exp
+
+# Archives
+*.tar.gz
