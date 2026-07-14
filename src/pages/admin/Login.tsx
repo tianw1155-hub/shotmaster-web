@@ -99,9 +99,7 @@ export const AdminLoginPage: React.FC = () => {
           </form>
         </div>
 
-        <p className="text-center text-slate-500 text-sm mt-6">
-          默认账号：admin / admin123
-        </p>
+
       </div>
     </div>
   );
