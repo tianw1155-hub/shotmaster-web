@@ -1,5 +1,6 @@
 import { GalleryImage, ImageCategory, Difficulty, PhotoPreference, Chapter } from '../types';
 import { aiService } from './aiService';
+import { reportUnsplashCall } from './apiService';
 
 const UNSPLASH_BASE_URL = 'https://api.unsplash.com';
 const ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
@@ -91,10 +92,24 @@ export async function searchPhotos(
   query: string,
   page: number = 1,
   perPage: number = 10,
-  orientation: 'landscape' | 'portrait' | 'squarish' = 'landscape'
+  orientation: 'landscape' | 'portrait' | 'squarish' = 'landscape',
+  userId?: string,
+  action?: string,
+  category?: string,
 ): Promise<UnsplashPhoto[]> {
+  const startTime = Date.now();
+
   if (!ACCESS_KEY) {
     console.warn('Unsplash Access Key 未配置，使用本地mock数据');
+    reportUnsplashCall({
+      userId: userId || '',
+      action: action || 'search',
+      query,
+      category,
+      resultCount: 0,
+      durationMs: Date.now() - startTime,
+      status: 'no_key',
+    });
     return [];
   }
 
@@ -108,9 +123,31 @@ export async function searchPhotos(
     }
 
     const data = await response.json();
-    return data.results as UnsplashPhoto[];
+    const results = data.results as UnsplashPhoto[];
+
+    reportUnsplashCall({
+      userId: userId || '',
+      action: action || 'search',
+      query,
+      category,
+      resultCount: results.length,
+      durationMs: Date.now() - startTime,
+      status: 'success',
+    });
+
+    return results;
   } catch (error) {
     console.error('搜索 Unsplash 图片失败:', error);
+    reportUnsplashCall({
+      userId: userId || '',
+      action: action || 'search',
+      query,
+      category,
+      resultCount: 0,
+      durationMs: Date.now() - startTime,
+      status: 'failed',
+      errorMsg: error instanceof Error ? error.message : String(error),
+    });
     return [];
   }
 }

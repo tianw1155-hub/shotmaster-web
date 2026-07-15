@@ -40,6 +40,11 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/api/shooting-plan/cache", controllers.GetShootingPlanCache)
 	r.POST("/api/shooting-plan/cache/save", controllers.SaveShootingPlanCache)
 
+	// 日志上报（前台调用）
+	r.POST("/api/logs/ai-call", controllers.ReportAiCall)
+	r.POST("/api/logs/unsplash-call", controllers.ReportUnsplashCall)
+	r.POST("/api/logs/page-visit", controllers.ReportPageVisit)
+
 	// 需要认证的管理员路由
 	admin := r.Group("/api/admin")
 	admin.Use(middleware.AuthMiddleware())
@@ -82,6 +87,14 @@ func SetupRoutes(r *gin.Engine) {
 		// 本周挑战管理
 		admin.POST("/weekly-challenge", controllers.SetWeeklyChallenge)
 		admin.POST("/upload", controllers.UploadImage)
+
+		// 系统日志
+		admin.GET("/logs/ai-stats", controllers.GetAiCallStats)
+		admin.GET("/logs/ai-list", controllers.GetAiCallList)
+		admin.GET("/logs/unsplash-stats", controllers.GetUnsplashCallStats)
+		admin.GET("/logs/unsplash-list", controllers.GetUnsplashCallList)
+		admin.GET("/logs/page-visit-stats", controllers.GetPageVisitStats)
+		admin.GET("/logs/page-visit-list", controllers.GetPageVisitList)
 	}
 
 	r.Static("/uploads", "./uploads")

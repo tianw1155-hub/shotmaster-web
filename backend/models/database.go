@@ -48,6 +48,10 @@ func InitDB() {
 		&EvaluationResult{},
 		&SystemConfig{},
 		&UserAction{},
+		&AiCallLog{},
+		&UnsplashCallLog{},
+		&PageVisitLog{},
+		&ShootingPlanCache{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)

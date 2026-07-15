@@ -630,7 +630,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   isAnalyzing: false,
   generateShootingPlan: async (imageUrl) => {
     set({ isAnalyzing: true });
-    const plan = await aiService.generateShootingPlan(imageUrl);
+    const { user } = get();
+    const plan = await aiService.generateShootingPlan(imageUrl, user.id);
     set({ isAnalyzing: false, shootingPlan: plan });
   },
 
@@ -646,7 +647,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   isScoring: false,
   compareImages: async (referenceUrl, userImageUrl, levelId) => {
     set({ isScoring: true, capturedImage: userImageUrl });
-    const scoreResult = await aiService.compareImages(referenceUrl, userImageUrl);
+    const { user, currentLevel } = get();
+    const category = currentLevel?.chapter || '';
+    const scoreResult = await aiService.compareImages(referenceUrl, userImageUrl, user.id, category);
     set({
       isScoring: false,
       score: scoreResult,

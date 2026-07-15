@@ -1,4 +1,5 @@
 import { ShootingPlan, Score, GalleryImage, ImageCategory } from '../types';
+import { reportAiCall } from './apiService';
 
 // API 配置
 const API_URL = import.meta.env.VITE_AGNES_API_URL || 'https://apihub.agnes-ai.com/v1';
@@ -18,9 +19,9 @@ export interface ImageAnalysis {
 
 // AI 服务接口
 export interface AIService {
-  generateShootingPlan(imageUrl: string): Promise<ShootingPlan>;
-  compareImages(referenceUrl: string, userImageUrl: string): Promise<Score>;
-  analyzeImage(imageUrl: string, category?: ImageCategory): Promise<ImageAnalysis>;
+  generateShootingPlan(imageUrl: string, userId?: string): Promise<ShootingPlan>;
+  compareImages(referenceUrl: string, userImageUrl: string, userId?: string, category?: string): Promise<Score>;
+  analyzeImage(imageUrl: string, category?: ImageCategory, userId?: string): Promise<ImageAnalysis>;
 }
 
 // 将图片 URL 转换为 base64
@@ -354,40 +355,108 @@ function generateMockShootingPlan(_imageUrl: string): ShootingPlan {
 
 // Agnes AI 服务实现
 export const agnesAIService: AIService = {
-  async generateShootingPlan(_imageUrl: string): Promise<ShootingPlan> {
-    // 拍摄计划生成仍使用模拟数据
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    return generateMockShootingPlan(_imageUrl);
+  async generateShootingPlan(imageUrl: string, userId?: string): Promise<ShootingPlan> {
+    const startTime = Date.now();
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      const plan = generateMockShootingPlan(imageUrl);
+      reportAiCall({
+        userId: userId || '',
+        apiType: 'shooting_plan',
+        imageUrl,
+        durationMs: Date.now() - startTime,
+        status: 'mock',
+      });
+      return plan;
+    } catch (error) {
+      reportAiCall({
+        userId: userId || '',
+        apiType: 'shooting_plan',
+        imageUrl,
+        durationMs: Date.now() - startTime,
+        status: 'failed',
+        errorMsg: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   },
 
-  async compareImages(referenceUrl: string, userImageUrl: string): Promise<Score> {
+  async compareImages(referenceUrl: string, userImageUrl: string, userId?: string, category?: string): Promise<Score> {
+    const startTime = Date.now();
     try {
-      // 转换图片为 base64
       const [refBase64, userBase64] = await Promise.all([
         imageUrlToBase64(referenceUrl),
         imageUrlToBase64(userImageUrl),
       ]);
 
-      // 如果 base64 转换失败（跨域问题），使用模拟数据
       if (!refBase64 || !userBase64) {
         console.warn('Image conversion failed, using mock score');
         await new Promise(resolve => setTimeout(resolve, 1000));
-        return generateMockScore();
+        const score = generateMockScore();
+        reportAiCall({
+          userId: userId || '',
+          apiType: 'compare_images',
+          imageUrl: referenceUrl,
+          category,
+          durationMs: Date.now() - startTime,
+          status: 'mock',
+        });
+        return score;
       }
 
-      // 调用 Agnes API
-      return await callAgnesAPI(refBase64, userBase64);
+      const score = await callAgnesAPI(refBase64, userBase64);
+      reportAiCall({
+        userId: userId || '',
+        apiType: 'compare_images',
+        imageUrl: referenceUrl,
+        category,
+        durationMs: Date.now() - startTime,
+        status: 'success',
+      });
+      return score;
     } catch (error) {
       console.error('Agnes API error:', error);
-      // API 失败时使用模拟数据作为 fallback
       await new Promise(resolve => setTimeout(resolve, 1000));
-      return generateMockScore();
+      const score = generateMockScore();
+      reportAiCall({
+        userId: userId || '',
+        apiType: 'compare_images',
+        imageUrl: referenceUrl,
+        category,
+        durationMs: Date.now() - startTime,
+        status: 'failed',
+        errorMsg: error instanceof Error ? error.message : String(error),
+      });
+      return score;
     }
   },
 
-  async analyzeImage(_imageUrl: string, category?: ImageCategory): Promise<ImageAnalysis> {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return generateMockImageAnalysis(category);
+  async analyzeImage(imageUrl: string, category?: ImageCategory, userId?: string): Promise<ImageAnalysis> {
+    const startTime = Date.now();
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = generateMockImageAnalysis(category);
+      reportAiCall({
+        userId: userId || '',
+        apiType: 'analyze_image',
+        imageUrl,
+        category,
+        durationMs: Date.now() - startTime,
+        status: 'mock',
+      });
+      return result;
+    } catch (error) {
+      reportAiCall({
+        userId: userId || '',
+        apiType: 'analyze_image',
+        imageUrl,
+        category,
+        durationMs: Date.now() - startTime,
+        status: 'failed',
+        errorMsg: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   },
 };
 
@@ -485,19 +554,48 @@ function generateMockImageAnalysis(category?: ImageCategory): ImageAnalysis {
 
 // 模拟服务（完全使用模拟数据）
 export const mockAIService: AIService = {
-  async generateShootingPlan(_imageUrl: string): Promise<ShootingPlan> {
+  async generateShootingPlan(imageUrl: string, userId?: string): Promise<ShootingPlan> {
+    const startTime = Date.now();
     await new Promise(resolve => setTimeout(resolve, 1500));
-    return generateMockShootingPlan(_imageUrl);
+    const plan = generateMockShootingPlan(imageUrl);
+    reportAiCall({
+      userId: userId || '',
+      apiType: 'shooting_plan',
+      imageUrl,
+      durationMs: Date.now() - startTime,
+      status: 'mock',
+    });
+    return plan;
   },
 
-  async compareImages(_referenceUrl: string, _userImageUrl: string): Promise<Score> {
+  async compareImages(referenceUrl: string, userImageUrl: string, userId?: string, category?: string): Promise<Score> {
+    const startTime = Date.now();
     await new Promise(resolve => setTimeout(resolve, 2000));
-    return generateMockScore();
+    const score = generateMockScore();
+    reportAiCall({
+      userId: userId || '',
+      apiType: 'compare_images',
+      imageUrl: referenceUrl,
+      category,
+      durationMs: Date.now() - startTime,
+      status: 'mock',
+    });
+    return score;
   },
 
-  async analyzeImage(_imageUrl: string, category?: ImageCategory): Promise<ImageAnalysis> {
+  async analyzeImage(imageUrl: string, category?: ImageCategory, userId?: string): Promise<ImageAnalysis> {
+    const startTime = Date.now();
     await new Promise(resolve => setTimeout(resolve, 1500));
-    return generateMockImageAnalysis(category);
+    const result = generateMockImageAnalysis(category);
+    reportAiCall({
+      userId: userId || '',
+      apiType: 'analyze_image',
+      imageUrl,
+      category,
+      durationMs: Date.now() - startTime,
+      status: 'mock',
+    });
+    return result;
   },
 };
 

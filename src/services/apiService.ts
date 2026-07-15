@@ -622,3 +622,145 @@ export async function updateSystemConfig(token: string, key: string, value: stri
   }
   return await response.json();
 }
+
+// ============== 日志上报（前台调用） ==============
+
+export async function reportAiCall(data: {
+  userId: string;
+  apiType: string;
+  imageUrl?: string;
+  category?: string;
+  durationMs: number;
+  status: string;
+  errorMsg?: string;
+}): Promise<void> {
+  try {
+    await fetch(`${API_BASE_URL}/logs/ai-call`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (e) {
+    console.error('Report AI call failed:', e);
+  }
+}
+
+export async function reportUnsplashCall(data: {
+  userId: string;
+  action: string;
+  query?: string;
+  category?: string;
+  resultCount?: number;
+  durationMs?: number;
+  status: string;
+  errorMsg?: string;
+}): Promise<void> {
+  try {
+    await fetch(`${API_BASE_URL}/logs/unsplash-call`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (e) {
+    console.error('Report Unsplash call failed:', e);
+  }
+}
+
+export async function reportPageVisit(data: {
+  userId: string;
+  sessionId: string;
+  page: string;
+  pageTitle: string;
+  referrer: string;
+  staySec?: number;
+}): Promise<void> {
+  try {
+    await fetch(`${API_BASE_URL}/logs/page-visit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (e) {
+    console.error('Report page visit failed:', e);
+  }
+}
+
+// ============== 日志统计（管理后台调用） ==============
+
+export async function getAiCallStats(token: string, startDate?: string, endDate?: string): Promise<any> {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${API_BASE_URL}/admin/logs/ai-stats${query}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('获取AI调用统计失败');
+  return await response.json();
+}
+
+export async function getAiCallList(token: string, startDate?: string, endDate?: string, page = 1, pageSize = 20): Promise<any> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  const response = await fetch(`${API_BASE_URL}/admin/logs/ai-list?${params.toString()}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('获取AI调用日志失败');
+  return await response.json();
+}
+
+export async function getUnsplashCallStats(token: string, startDate?: string, endDate?: string): Promise<any> {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${API_BASE_URL}/admin/logs/unsplash-stats${query}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('获取Unsplash调用统计失败');
+  return await response.json();
+}
+
+export async function getUnsplashCallList(token: string, startDate?: string, endDate?: string, page = 1, pageSize = 20): Promise<any> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  const response = await fetch(`${API_BASE_URL}/admin/logs/unsplash-list?${params.toString()}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('获取Unsplash调用日志失败');
+  return await response.json();
+}
+
+export async function getPageVisitStats(token: string, startDate?: string, endDate?: string): Promise<any> {
+  const params = new URLSearchParams();
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetch(`${API_BASE_URL}/admin/logs/page-visit-stats${query}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('获取页面访问统计失败');
+  return await response.json();
+}
+
+export async function getPageVisitList(token: string, startDate?: string, endDate?: string, page = 1, pageSize = 20): Promise<any> {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+  if (startDate) params.append('startDate', startDate);
+  if (endDate) params.append('endDate', endDate);
+  const response = await fetch(`${API_BASE_URL}/admin/logs/page-visit-list?${params.toString()}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('获取页面访问日志失败');
+  return await response.json();
+}

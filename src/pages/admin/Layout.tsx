@@ -13,6 +13,7 @@ import {
   Camera,
   ChevronRight,
   Trophy,
+  FileText,
 } from 'lucide-react';
 
 const menuItems = [
@@ -20,6 +21,7 @@ const menuItems = [
   { path: '/admin/users', label: '用户管理', icon: Users },
   { path: '/admin/feedback', label: '反馈分析', icon: BarChart3 },
   { path: '/admin/weekly-challenge', label: '本周挑战', icon: Trophy },
+  { path: '/admin/logs', label: '系统日志', icon: FileText },
   { path: '/admin/eval', label: '评测集管理', icon: ImageIcon },
   { path: '/admin/ai-eval', label: 'AI评测中心', icon: Camera },
   { path: '/admin/settings', label: '系统配置', icon: Settings },

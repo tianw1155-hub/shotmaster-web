@@ -208,3 +208,42 @@ type ShootingPlanCache struct {
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 }
+
+// AI调用日志
+type AiCallLog struct {
+	ID         uint      `gorm:"primaryKey" json:"id"`
+	UserID     string    `gorm:"size:100;index" json:"userId"`
+	ApiType    string    `gorm:"size:30;index" json:"apiType"` // compare_images/analyze_image/shooting_plan
+	ImageURL   string    `gorm:"size:500" json:"imageUrl"`
+	Category   string    `gorm:"size:20;index" json:"category"`
+	DurationMs int       `json:"durationMs"`
+	Status     string    `gorm:"size:20;index" json:"status"` // success/failed/mock
+	ErrorMsg   string    `gorm:"type:text" json:"errorMsg"`
+	CreatedAt  time.Time `gorm:"index" json:"createdAt"`
+}
+
+// Unsplash调用日志
+type UnsplashCallLog struct {
+	ID          uint      `gorm:"primaryKey" json:"id"`
+	UserID      string    `gorm:"size:100;index" json:"userId"`
+	Action      string    `gorm:"size:30;index" json:"action"` // search/fetch_by_category/fetch_by_preferences/weekly_challenge
+	Query       string    `gorm:"size:200" json:"query"`
+	Category    string    `gorm:"size:20;index" json:"category"`
+	ResultCount int       `json:"resultCount"`
+	DurationMs  int       `json:"durationMs"`
+	Status      string    `gorm:"size:20;index" json:"status"` // success/failed/no_key
+	ErrorMsg    string    `gorm:"type:text" json:"errorMsg"`
+	CreatedAt   time.Time `gorm:"index" json:"createdAt"`
+}
+
+// 用户页面访问日志
+type PageVisitLog struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	UserID    string    `gorm:"size:100;index" json:"userId"`
+	SessionID string    `gorm:"size:100;index" json:"sessionId"` // 会话ID，用于计算访问深度
+	Page      string    `gorm:"size:200;index" json:"page"`    // 页面路径，如 /gallery
+	PageTitle string    `gorm:"size:100" json:"pageTitle"`      // 页面标题
+	Referrer  string    `gorm:"size:200" json:"referrer"`       // 来源页面
+	StaySec   int       `json:"staySec"`                        // 停留时长（秒）
+	CreatedAt time.Time `gorm:"index" json:"createdAt"`
+}
