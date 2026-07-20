@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, Star, Lock, Check, Camera, Image, Trophy, BookOpen, Users, X } from 'lucide-react';
+import { Flame, Star, Lock, Check, Camera, Image, Trophy, Users, X } from 'lucide-react';
 import { Level, Stars, CompositionRule } from '../../types';
 import { useGameStore } from '../../stores/useGameStore';
 import { chapterInfo } from '../../services/levelService';
@@ -286,12 +286,11 @@ export function TopBar({ title }: { title?: string }) {
 }
 
 // 底部导航
-export function BottomNav({ active }: { active: 'levels' | 'gallery' | 'community' | 'learn' | 'profile' }) {
+export function BottomNav({ active }: { active: 'levels' | 'gallery' | 'community' | 'profile' }) {
   const items = [
     { id: 'levels', icon: Trophy, label: '闯关', path: '/' },
     { id: 'gallery', icon: Image, label: '图库', path: '/gallery' },
     { id: 'community', icon: Users, label: '挑战', path: '/community' },
-    { id: 'learn', icon: BookOpen, label: '学习', path: '/learn' },
     { id: 'profile', icon: Camera, label: '我的', path: '/profile' },
   ];
 

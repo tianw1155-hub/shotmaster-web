@@ -1,13 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Aperture, LayoutGrid, BookOpen, Image as ImageIcon, Users, User, Flame } from 'lucide-react';
+import { Aperture, LayoutGrid, Image as ImageIcon, Users, User, Flame } from 'lucide-react';
 import { useGameStore } from '../../stores/useGameStore';
 import { deriveSection } from '../../lib/navSection';
 import type { NavSection } from '../../lib/navSection';
 
 const NAV: { id: NavSection; icon: typeof LayoutGrid; label: string; path: string }[] = [
   { id: 'levels', icon: LayoutGrid, label: '闯关', path: '/' },
-  { id: 'learn', icon: BookOpen, label: '学习', path: '/learn' },
   { id: 'gallery', icon: ImageIcon, label: '图库', path: '/gallery' },
   { id: 'community', icon: Users, label: '社区', path: '/community' },
   { id: 'profile', icon: User, label: '我的', path: '/profile' },

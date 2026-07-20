@@ -8,7 +8,6 @@ import {
   Aperture,
   Layers,
   Heart,
-  RefreshCw,
   Sparkles,
 } from 'lucide-react';
 import { CompositionOverlay } from '../components/game/GameComponents';
@@ -22,6 +21,7 @@ import { PageLayout } from '../components/layout/PageLayout';
 import { motion } from 'framer-motion';
 import { variants } from '../lib/motion';
 import { HeroBack } from '../components/ui/HeroBack';
+import { FallbackImage } from '../components/ui/FallbackImage';
 
 // 页签顺序：全部 -> 我的上传 -> 其他分类
 const categoryOrder = ['all', 'myupload', 'composition', 'light', 'color', 'portrait', 'landscape', 'still', 'street'];
@@ -58,8 +58,6 @@ export function GalleryPage() {
     refreshUnsplashImages,
   } = useGameStore();
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [lastManualRefresh, setLastManualRefresh] = useState<number>(0);
-  const [canRefresh, setCanRefresh] = useState(true);
 
   const galleryImages = getAllGalleryImages();
 
@@ -73,19 +71,6 @@ export function GalleryPage() {
       refreshUnsplashImages();
     }
   }, []);
-
-  // 检查是否可以刷新（5分钟限制）
-  useEffect(() => {
-    const checkRefreshAvailability = () => {
-      const now = Date.now();
-      const diff = now - lastManualRefresh;
-      setCanRefresh(diff >= 5 * 60 * 1000 || lastManualRefresh === 0);
-    };
-
-    checkRefreshAvailability();
-    const interval = setInterval(checkRefreshAvailability, 1000);
-    return () => clearInterval(interval);
-  }, [lastManualRefresh]);
 
   // 根据"我的上传"页签切换显示内容
   const displayImages =
@@ -121,25 +106,6 @@ export function GalleryPage() {
     if (window.confirm('确定要删除这张图片吗？')) {
       removeCustomGalleryImage(imageId);
     }
-  };
-
-  const handleManualRefresh = () => {
-    if (!canRefresh) {
-      const remaining = Math.ceil((5 * 60 * 1000 - (Date.now() - lastManualRefresh)) / 1000 / 60);
-      alert(`请等待 ${remaining} 分钟后再刷新`);
-      return;
-    }
-    refreshUnsplashImages();
-    setLastManualRefresh(Date.now());
-    setCanRefresh(false);
-  };
-
-  const getRefreshTooltip = () => {
-    if (canRefresh) return '从Unsplash获取新图片（每5分钟一次）';
-    const remainingMs = 5 * 60 * 1000 - (Date.now() - lastManualRefresh);
-    const minutes = Math.floor(remainingMs / 60000);
-    const seconds = Math.floor((remainingMs % 60000) / 1000);
-    return `请等待 ${minutes}分${seconds}秒 后再刷新`;
   };
 
   return (
@@ -202,24 +168,14 @@ export function GalleryPage() {
           </div>
         </motion.div>
 
-        {/* 图片数量和刷新按钮 */}
+        {/* 图片数量 */}
         <motion.div variants={variants.fadeUp} initial="hidden" animate="show" className="flex items-center justify-between">
-          <span className="text-sm text-ink-muted">共 {displayImages.length} 张</span>
-          {selectedCategory !== 'myupload' && (
-            <button
-              onClick={handleManualRefresh}
-              disabled={!canRefresh || isLoadingUnsplash}
-              aria-label="刷新参考图"
-              className={`w-8 h-8 rounded-md flex items-center justify-center transition ${
-                canRefresh
-                  ? 'bg-surface-muted text-ink-muted hover:text-ink hover:bg-surface-muted/80'
-                  : 'bg-surface-muted text-ink-muted cursor-not-allowed'
-              } disabled:opacity-50`}
-              title={getRefreshTooltip()}
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoadingUnsplash ? 'animate-spin' : ''}`} strokeWidth={1.25} />
-            </button>
-          )}
+          <span className="text-sm text-ink-muted">
+            共 {displayImages.length} 张
+            {isLoadingUnsplash && selectedCategory !== 'myupload' && (
+              <span className="ml-2 text-accent">更新中...</span>
+            )}
+          </span>
         </motion.div>
 
         {/* 图片网格 */}
@@ -402,11 +358,13 @@ export function GalleryDetailPage() {
       <div>
         <div className="relative bg-ink">
           <div className="relative">
-            <img
+            <FallbackImage
               src={image.url}
               alt={image.title}
-              className="w-full max-h-[80vh] object-contain mx-auto"
-              loading="lazy"
+              className="w-full max-h-[80vh] mx-auto"
+              objectFit="contain"
+              loading="eager"
+              category={image.category}
             />
             {showGuideLines && !isCustom && (
               <CompositionOverlay rule={compositionRule} showLabel={false} />
@@ -648,11 +606,13 @@ function GalleryImageCard({
       onClick={onClick}
       className="group relative aspect-square rounded-md overflow-hidden text-left"
     >
-      <img
+      <FallbackImage
         src={image.url}
         alt={image.title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+        objectFit="cover"
         loading="lazy"
+        category={image.category}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="absolute bottom-2 left-2 right-2">

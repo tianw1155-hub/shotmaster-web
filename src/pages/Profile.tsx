@@ -8,7 +8,6 @@ import {
   Camera,
   Heart,
   Image as ImageIcon,
-  Clock,
   Star,
   X,
   Flame,
@@ -512,14 +511,6 @@ export function ProfilePage() {
       iconBg: 'bg-gold/16',
       iconColor: 'text-gold',
       path: '/profile/achievements',
-    },
-    {
-      icon: Clock,
-      label: '学习时长',
-      value: `${user.worksCount * 15}分钟`,
-      iconBg: 'bg-surface-muted',
-      iconColor: 'text-ink-muted',
-      path: null,
     },
   ];
 

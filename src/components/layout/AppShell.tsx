@@ -20,9 +20,22 @@ const pageTitleMap: Record<string, string> = {
   '/level-map': '关卡地图',
   '/community': '社区',
   '/profile': '我的',
+  '/profile/works': '我的作品',
+  '/profile/achievements': '成就',
+  '/profile/favorites': '收藏',
   '/preferences': '偏好设置',
   '/login': '登录',
   '/score': '评分结果',
+  '/admin': '后台管理',
+  '/admin/login': '管理员登录',
+  '/admin/dashboard': '数据看板',
+  '/admin/users': '用户管理',
+  '/admin/feedback': '反馈分析',
+  '/admin/eval': '评测集管理',
+  '/admin/ai-eval': 'AI评测中心',
+  '/admin/settings': '系统配置',
+  '/admin/weekly-challenge': '本周挑战',
+  '/admin/logs': '系统日志',
 };
 
 function getPageTitle(path: string): string {

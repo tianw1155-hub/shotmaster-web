@@ -39,26 +39,6 @@ const defaultUnsplashImages: GalleryImage[] = [
   { id: 'unsplash_default_28', url: 'https://images.unsplash.com/photo-1480796927426-f609979314bd?w=800', title: '东京街头', category: 'street', difficulty: 'intermediate', tags: ['街头', '日本', '城市'], author: 'Jezael Melgoza', authorUrl: 'https://unsplash.com/@jezael_' },
   { id: 'unsplash_default_29', url: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800', title: '城市天际线', category: 'street', difficulty: 'advanced', tags: ['城市', '天际线', '建筑'], author: 'Daniel von Appen', authorUrl: 'https://unsplash.com/@danielvonappen' },
   { id: 'unsplash_default_30', url: 'https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=800', title: '街头咖啡', category: 'street', difficulty: 'beginner', tags: ['街头', '咖啡', '生活'], author: 'Clay Banks', authorUrl: 'https://unsplash.com/@claybanks' },
-  { id: 'unsplash_default_31', url: 'https://images.unsplash.com/photo-1485871981521-5b1fd3805eee?w=800', title: '都市夜色', category: 'street', difficulty: 'intermediate', tags: ['城市', '夜景', '街拍'], author: 'Anthony DELANOIX', authorUrl: 'https://unsplash.com/@anthonydelanoix' },
-  { id: 'unsplash_default_32', url: 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=800', title: '街头光影', category: 'street', difficulty: 'advanced', tags: ['街头', '光影', '城市'], author: 'Ryoji Iwata', authorUrl: 'https://unsplash.com/@ryoji__iwata' },
-  { id: 'unsplash_default_33', url: 'https://images.unsplash.com/photo-1526726538690-5cbf956ae2fd?w=800', title: '雨天街景', category: 'street', difficulty: 'intermediate', tags: ['街头', '雨天', '城市'], author: 'Ifeoluwa Akinwale', authorUrl: 'https://unsplash.com/@ifeoluwato' },
-  { id: 'unsplash_default_34', url: 'https://images.unsplash.com/photo-1519575762497-2f9a6fd6b8f1?w=800', title: '街角风景', category: 'street', difficulty: 'beginner', tags: ['街头', '建筑', '城市'], author: 'Heather Morse', authorUrl: 'https://unsplash.com/@heatherm' },
-  { id: 'unsplash_default_35', url: 'https://images.unsplash.com/photo-1473950425543-a6cbd42e6682?w=800', title: '人来人往', category: 'street', difficulty: 'intermediate', tags: ['街头', '人群', '城市'], author: 'Andre Benz', authorUrl: 'https://unsplash.com/@traget' },
-  { id: 'unsplash_default_36', url: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800', title: '咖啡时光', category: 'still', difficulty: 'beginner', tags: ['静物', '咖啡', '生活'], author: 'Nathan Dumlao', authorUrl: 'https://unsplash.com/@nate_dumlao' },
-  { id: 'unsplash_default_37', url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800', title: '美食摄影', category: 'still', difficulty: 'intermediate', tags: ['美食', '静物', '摄影'], author: 'Eiliv Sonas', authorUrl: 'https://unsplash.com/@acerutti' },
-  { id: 'unsplash_default_38', url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800', title: '香浓咖啡', category: 'still', difficulty: 'beginner', tags: ['咖啡', '静物', '饮品'], author: 'Chelsea Shapouri', authorUrl: 'https://unsplash.com/@chelseap' },
-  { id: 'unsplash_default_39', url: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=800', title: '水果拼盘', category: 'still', difficulty: 'intermediate', tags: ['水果', '静物', '美食'], author: 'Brenda Godinez', authorUrl: 'https://unsplash.com/@bregods' },
-  { id: 'unsplash_default_40', url: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?w=800', title: '面包烘焙', category: 'still', difficulty: 'beginner', tags: ['面包', '烘焙', '美食'], author: 'Priscilla Du Preez', authorUrl: 'https://unsplash.com/@priscilladupreez' },
-  { id: 'unsplash_default_41', url: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800', title: '花卉静物', category: 'still', difficulty: 'advanced', tags: ['花卉', '静物', '艺术'], author: 'Brigitte Tohm', authorUrl: 'https://unsplash.com/@brigittetohm' },
-  { id: 'unsplash_default_42', url: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800', title: '桌面摆件', category: 'still', difficulty: 'intermediate', tags: ['桌面', '静物', '生活'], author: 'Dominik Martin', authorUrl: 'https://unsplash.com/@dominik_photography' },
-  { id: 'unsplash_default_43', url: 'https://images.unsplash.com/photo-1516594798947-e65505dbb29d?w=800', title: '美酒佳肴', category: 'still', difficulty: 'advanced', tags: ['美食', '红酒', '静物'], author: 'Sven Scheuermeier', authorUrl: 'https://unsplash.com/@svens' },
-  { id: 'unsplash_default_44', url: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=800', title: '极简静物', category: 'still', difficulty: 'beginner', tags: ['极简', '静物', '风格'], author: 'Kari Shea', authorUrl: 'https://unsplash.com/@karishea' },
-  { id: 'unsplash_default_45', url: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800', title: '蔬菜美食', category: 'still', difficulty: 'intermediate', tags: ['蔬菜', '健康', '美食'], author: 'Thomas Martinsen', authorUrl: 'https://unsplash.com/@tomasmartinsen' },
-  { id: 'unsplash_default_46', url: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800', title: '建筑线条', category: 'composition', difficulty: 'intermediate', tags: ['建筑', '线条', '构图'], author: 'Patrick Tomasso', authorUrl: 'https://unsplash.com/@impatrickt' },
-  { id: 'unsplash_default_47', url: 'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=800', title: '几何建筑', category: 'composition', difficulty: 'advanced', tags: ['几何', '建筑', '极简'], author: 'Chris Barbalis', authorUrl: 'https://unsplash.com/@cbarbalis' },
-  { id: 'unsplash_default_48', url: 'https://images.unsplash.com/photo-1494526585095-c41746248156?w=800', title: '对称美学', category: 'composition', difficulty: 'beginner', tags: ['对称', '建筑', '构图'], author: 'Robert Lukeman', authorUrl: 'https://unsplash.com/@robertlukeman' },
-  { id: 'unsplash_default_49', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800', title: '极简构图', category: 'composition', difficulty: 'intermediate', tags: ['极简', '建筑', '线条'], author: 'Vadim Sherbakov', authorUrl: 'https://unsplash.com/@flomotion' },
-  { id: 'unsplash_default_50', url: 'https://images.unsplash.com/photo-1470717279721-04a33d9e396b?w=800', title: '空间层次', category: 'composition', difficulty: 'advanced', tags: ['空间', '层次', '建筑'], author: 'Julian Bialowas', authorUrl: 'https://unsplash.com/@julianbialowas' },
 ];
 
 const XP_PER_LEVEL = 500;
@@ -359,16 +339,30 @@ function saveCustomImagesToStorage(images: GalleryImage[]) {
   } catch {}
 }
 
+// 图库缓存版本号，更改数量或内容时递增
+const GALLERY_CACHE_VERSION = 'v31';
+
 function loadUnsplashImagesFromStorage(): { images: GalleryImage[]; lastRefresh: string | null } {
   try {
-    // 使用当前用户ID加载用户特定的图片
     const currentUserId = localStorage.getItem('shotmaster_current_user_id');
+    const versionKey = currentUserId ? `shotmaster_gallery_version_${currentUserId}` : 'shotmaster_gallery_version';
+    const cachedVersion = localStorage.getItem(versionKey);
+    // 版本号不匹配时清除旧缓存
+    if (cachedVersion !== GALLERY_CACHE_VERSION) {
+      const key = currentUserId ? `shotmaster_unsplash_images_${currentUserId}` : 'shotmaster_unsplash_images';
+      const refreshKey = currentUserId ? `shotmaster_unsplash_last_refresh_${currentUserId}` : 'shotmaster_unsplash_last_refresh';
+      localStorage.removeItem(key);
+      localStorage.removeItem(refreshKey);
+      localStorage.setItem(versionKey, GALLERY_CACHE_VERSION);
+      return { images: [], lastRefresh: null };
+    }
     const key = currentUserId ? `shotmaster_unsplash_images_${currentUserId}` : 'shotmaster_unsplash_images';
     const refreshKey = currentUserId ? `shotmaster_unsplash_last_refresh_${currentUserId}` : 'shotmaster_unsplash_last_refresh';
     const stored = localStorage.getItem(key);
     const lastRefresh = localStorage.getItem(refreshKey);
     if (stored) {
-      return { images: JSON.parse(stored), lastRefresh };
+      const images: GalleryImage[] = JSON.parse(stored);
+      return { images: images.slice(0, 30), lastRefresh };
     }
   } catch {}
   return { images: [], lastRefresh: null };
@@ -1392,25 +1386,25 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (get().unsplashImages.length === 0) return true;
     
     if (!hasUnsplashAccess()) {
-      // 没有 API key 时，每48小时重新排序一次
+      // 没有 API key 时，每12小时重新排序一次
       const lastDate = lastUnsplashRefresh ? new Date(lastUnsplashRefresh) : new Date(0);
       const now = new Date();
       const diffHours = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
-      
-      // 每48小时重新排序一次
-      if (diffHours >= 48) return true;
-      
+
+      // 每12小时重新排序一次
+      if (diffHours >= 12) return true;
+
       return false;
     }
-    
+
     if (!lastUnsplashRefresh) return true;
 
     const lastDate = new Date(lastUnsplashRefresh);
     const now = new Date();
     const diffHours = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
 
-    // 每48小时（2天）刷新一次
-    if (diffHours >= 48) return true;
+    // 每12小时刷新一次
+    if (diffHours >= 12) return true;
 
     return false;
   },
@@ -1440,7 +1434,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           likedCategories,
           shootCategories,
           chapterProgress,
-          50
+          30
         );
       } else {
         // 使用默认图片，但根据用户偏好筛选

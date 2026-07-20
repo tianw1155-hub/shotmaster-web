@@ -12,8 +12,6 @@ const GalleryScorePage = React.lazy(() => import('./pages/GalleryScore').then(m 
 const LevelDetailPage = React.lazy(() => import('./pages/LevelDetail').then(m => ({ default: m.LevelDetailPage })));
 const ShootPage = React.lazy(() => import('./pages/Shoot').then(m => ({ default: m.ShootPage })));
 const ScorePage = React.lazy(() => import('./pages/Score').then(m => ({ default: m.ScorePage })));
-const LearnPage = React.lazy(() => import('./pages/Learn').then(m => ({ default: m.LearnPage })));
-const CourseDetailPage = React.lazy(() => import('./pages/Learn').then(m => ({ default: m.CourseDetailPage })));
 const CommunityPage = React.lazy(() => import('./pages/Community').then(m => ({ default: m.CommunityPage })));
 const CommunityScorePage = React.lazy(() => import('./pages/CommunityScore').then(m => ({ default: m.CommunityScorePage })));
 const ProfilePage = React.lazy(() => import('./pages/Profile').then(m => ({ default: m.ProfilePage })));
@@ -84,8 +82,6 @@ function App() {
           <Route path="/level/:id" element={<AuthGuard><LevelDetailPage /></AuthGuard>} />
           <Route path="/shoot/:levelId" element={<AuthGuard><ShootPage /></AuthGuard>} />
           <Route path="/score/:levelId" element={<AuthGuard><ScorePage /></AuthGuard>} />
-          <Route path="/learn" element={<AuthGuard><LearnPage /></AuthGuard>} />
-          <Route path="/learn/:id" element={<AuthGuard><CourseDetailPage /></AuthGuard>} />
           <Route path="/community" element={<AuthGuard><ErrorBoundary><CommunityPage /></ErrorBoundary></AuthGuard>} />
           <Route path="/community/score" element={<AuthGuard><CommunityScorePage /></AuthGuard>} />
           <Route path="/profile" element={<AuthGuard><ProfilePage /></AuthGuard>} />

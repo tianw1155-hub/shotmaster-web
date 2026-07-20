@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Trophy, Image as ImageIcon, Users, BookOpen, Camera } from 'lucide-react';
+import { Trophy, Image as ImageIcon, Users, Camera } from 'lucide-react';
 import type { NavSection } from '../../lib/navSection';
 
 export type { NavSection };
@@ -7,7 +7,6 @@ const ITEMS: { id: NavSection; icon: typeof Trophy; label: string; path: string 
   { id: 'levels', icon: Trophy, label: '闯关', path: '/' },
   { id: 'gallery', icon: ImageIcon, label: '图库', path: '/gallery' },
   { id: 'community', icon: Users, label: '挑战', path: '/community' },
-  { id: 'learn', icon: BookOpen, label: '学习', path: '/learn' },
   { id: 'profile', icon: Camera, label: '我的', path: '/profile' },
 ];
 

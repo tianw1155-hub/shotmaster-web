@@ -48,6 +48,9 @@ services:
     container_name: shotmaster-frontend
     ports:
       - "8081:80"
+      - "8443:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - backend
     restart: unless-stopped
