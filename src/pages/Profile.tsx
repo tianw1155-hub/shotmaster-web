@@ -464,14 +464,17 @@ export function MyFavoritesPage() {
 // ==================== 主个人中心页面 ====================
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { user, updateUser, logout } = useGameStore();
+  const { user, updateUser, logout, customGalleryImages, getAllGalleryImages, communityWorks, isFavoriteImage, isFavoriteWork } = useGameStore();
   const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   const completedCount = user.completedLevels.length;
   const unlockedAchievements = user.achievements.filter((a) => a.unlocked);
   const xpProgress = (user.xp / user.xpToNext) * 100;
-  const favoriteCount = (user.favoriteImageIds || []).length + (user.favoriteWorkIds || []).length;
+  const allImages = [...customGalleryImages, ...getAllGalleryImages()];
+  const favoriteImageCount = allImages.filter((img) => isFavoriteImage(img.id)).length;
+  const favoriteWorkCount = communityWorks.filter((work) => isFavoriteWork(work.id)).length;
+  const favoriteCount = favoriteImageCount + favoriteWorkCount;
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
