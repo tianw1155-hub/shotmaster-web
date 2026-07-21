@@ -35,6 +35,10 @@ func SetupRoutes(r *gin.Engine) {
 
 	// 本周挑战（前台调用）
 	r.GET("/api/weekly-challenge", controllers.GetWeeklyChallenge)
+        r.GET("/api/community-works", controllers.GetCommunityWorks)
+        r.POST("/api/community-works", controllers.SubmitCommunityWork)
+        r.POST("/api/community-works/vote", controllers.VoteCommunityWork)
+        r.DELETE("/api/community-works/:id", controllers.DeleteCommunityWork)
 
 	// 拍摄建议缓存（前台调用，不需要管理员权限）
 	r.POST("/api/shooting-plan/cache", controllers.GetShootingPlanCache)

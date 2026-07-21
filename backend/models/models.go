@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -246,4 +247,25 @@ type PageVisitLog struct {
 	Referrer  string    `gorm:"size:200" json:"referrer"`       // 来源页面
 	StaySec   int       `json:"staySec"`                        // 停留时长（秒）
 	CreatedAt time.Time `gorm:"index" json:"createdAt"`
+}
+
+// 社区挑战作品
+type CommunityWork struct {
+	ID                  string    `gorm:"primaryKey;size:100" json:"id"`
+	AuthorID            string    `gorm:"size:100;index" json:"authorId"`
+	Author              string    `gorm:"size:50" json:"author"`
+	Avatar              string    `gorm:"size:255" json:"avatar"`
+	AuthorLevel         int       `json:"authorLevel"`
+	AuthorStars         int       `json:"authorStars"`
+	AuthorCompletedCount int      `json:"authorCompletedCount"`
+	AuthorStreak        int       `json:"authorStreak"`
+	AuthorFollowers     int       `json:"authorFollowers"`
+	AuthorFollowing     int       `json:"authorFollowing"`
+	TopAchievements     json.RawMessage `gorm:"type:text" json:"topAchievements"`
+	TopWorks            json.RawMessage `gorm:"type:text" json:"topWorks"`
+	Image               string    `gorm:"type:text" json:"image"`
+	Votes               int       `json:"votes"`
+	VotedBy             string    `gorm:"type:text" json:"votedBy"`
+	CreatedAt           time.Time `json:"createdAt"`
+	UpdatedAt           time.Time `json:"updatedAt"`
 }

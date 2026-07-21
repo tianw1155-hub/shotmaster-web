@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { Level, Score, ShootingPlan, GameUser, Achievement, Stars, GalleryImage, PhotoPreference, ImageCategory, Chapter, ShootingPlanDimension, DimensionFeedback, Difficulty } from '../types';
-import { mockGalleryImages, mockCourses, mockAchievements, mockCommunityWorks } from '../services/mockData';
+import { mockGalleryImages, mockCourses, mockAchievements } from '../services/mockData';
 import type { CommunityWork } from '../types';
 import { getLevel } from '../services/levelService';
 import { aiService } from '../services/aiService';
-import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge } from '../services/apiService';
+import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge, getCommunityWorks, submitCommunityWork, voteCommunityWork, deleteCommunityWork } from '../services/apiService';
 import { fetchRecommendedImages, hasUnsplashAccess } from '../services/unsplashService';
 
 // 默认 Unsplash 图片（当未配置 API key 时使用）- 共50张
@@ -135,6 +135,7 @@ interface GameState {
 
   // 社区
   communityWorks: CommunityWork[];
+  fetchCommunityWorks: () => Promise<void>;
   addCommunityWork: (work: CommunityWork) => void;
   removeCommunityWork: (workId: string) => void;
   voteWork: (workId: string) => void;
@@ -1511,25 +1512,40 @@ export const useGameStore = create<GameState>((set, get) => ({
   })),
 
   // 社区
-  communityWorks: mockCommunityWorks,
-  addCommunityWork: (work) => {
-    set(state => ({
-      communityWorks: [work, ...state.communityWorks]
-    }));
+  communityWorks: [] as CommunityWork[],
+  fetchCommunityWorks: async () => {
+    const res = await getCommunityWorks();
+    if (res.success && res.data) {
+      set({ communityWorks: res.data });
+    }
   },
-  removeCommunityWork: (workId) => {
+  addCommunityWork: async (work) => {
+    const res = await submitCommunityWork(work);
+    if (res.success && res.data) {
+      set(state => ({
+        communityWorks: [res.data, ...state.communityWorks]
+      }));
+    } else {
+      set(state => ({
+        communityWorks: [work, ...state.communityWorks]
+      }));
+    }
+  },
+  removeCommunityWork: async (workId) => {
+    await deleteCommunityWork(workId);
     set(state => ({
       communityWorks: state.communityWorks.filter(w => w.id !== workId)
     }));
   },
-  voteWork: (workId) => {
+  voteWork: async (workId) => {
     const { user } = get();
     const votedWorks = user.votedWorks || [];
     const hasVoted = votedWorks.includes(workId);
     const favoriteWorkIds = user.favoriteWorkIds || [];
 
+    await voteCommunityWork(workId, user.id);
+
     if (hasVoted) {
-      // 取消点赞
       set(state => ({
         communityWorks: state.communityWorks.map(w =>
           w.id === workId ? { ...w, votes: Math.max(0, w.votes - 1) } : w
@@ -1541,7 +1557,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       saveUserToStorage(updatedUser);
       set({ user: updatedUser });
     } else {
-      // 点赞 + 自动收藏
       set(state => ({
         communityWorks: state.communityWorks.map(w =>
           w.id === workId ? { ...w, votes: w.votes + 1 } : w

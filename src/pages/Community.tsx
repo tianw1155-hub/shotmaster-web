@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Trophy, Clock, Camera, X, UserPlus, UserCheck, Flame, Star, Target, Users, User, Sparkles, Trash2 } from 'lucide-react';
+import { Heart, Trophy, Clock, Camera, X, Flame, Star, Target, User, Sparkles, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/useGameStore';
 import { PageLayout } from '../components/layout/PageLayout';
@@ -12,15 +12,11 @@ import type { CommunityWork } from '../types';
 function UserDetailModal({
   work,
   onClose,
-  onFollow,
-  isFollowing,
   isVoted,
   onVote,
 }: {
   work: CommunityWork;
   onClose: () => void;
-  onFollow: () => void;
-  isFollowing: boolean;
   isVoted: boolean;
   onVote: () => void;
 }) {
@@ -33,8 +29,6 @@ function UserDetailModal({
     authorStars: work?.authorStars || 0,
     authorCompletedCount: work?.authorCompletedCount || 0,
     authorStreak: work?.authorStreak || 0,
-    authorFollowers: work?.authorFollowers || 0,
-    authorFollowing: work?.authorFollowing || 0,
     topAchievements: work?.topAchievements || [],
     topWorks: work?.topWorks || [],
     image: work?.image || '',
@@ -52,147 +46,138 @@ function UserDetailModal({
       onClick={onClose}
     >
       <motion.div
-        className="relative w-full max-w-lg bg-surface-card rounded-md max-h-[85vh] overflow-y-auto"
+        className="relative w-full max-w-lg bg-surface-card rounded-md max-h-[85vh] flex flex-col overflow-hidden"
         variants={variants.scaleIn}
         initial="hidden"
         animate="show"
         exit="hidden"
         onClick={e => e.stopPropagation()}
       >
-        {/* 关闭按钮 */}
-        <button
-          onClick={onClose}
-          aria-label="关闭"
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-ink-secondary hover:bg-ink-muted/15 transition-colors z-20"
-        >
-          <X className="w-4 h-4" strokeWidth={1.25} />
-        </button>
-
-        {/* 用户信息头部 */}
-        <div className="sticky top-0 bg-surface-card z-10 px-6 pt-6 pb-4 border-b border-line">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent/20 to-gold/20 flex items-center justify-center text-3xl">
-              {workData.avatar || '👤'}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <h2 className="font-display text-lg font-bold text-ink">{workData.author || '未知用户'}</h2>
-                <Badge color="gold">Lv.{workData.authorLevel || 1}</Badge>
-              </div>
-              <p className="text-ink-muted text-sm">{workData.authorCompletedCount || 0} 关已通关 · {workData.authorStreak || 0} 天连胜</p>
-            </div>
-          </div>
-
-          {/* 粉丝和关注 */}
-          <div className="flex items-center gap-6 mt-4">
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4 text-ink-muted" strokeWidth={1.25} />
-              <span className="font-medium text-ink">{workData.authorFollowers || 0}</span>
-              <span className="text-ink-muted text-sm">粉丝</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <User className="w-4 h-4 text-ink-muted" strokeWidth={1.25} />
-              <span className="font-medium text-ink">{workData.authorFollowing || 0}</span>
-              <span className="text-ink-muted text-sm">关注</span>
-            </div>
-          </div>
-
-          {/* 关注按钮 */}
-          <Button
-            variant={isFollowing ? 'secondary' : 'primary'}
-            size="lg"
-            className="w-full mt-4"
-            onClick={onFollow}
+        {/* 用户信息头部（固定） */}
+        <div className="flex-shrink-0 bg-surface-card border-b border-line">
+          <button
+            onClick={onClose}
+            aria-label="关闭"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-muted/95 backdrop-blur flex items-center justify-center text-ink-secondary hover:bg-ink-muted/15 transition-colors z-20"
           >
-            {isFollowing ? (
-              <>
-                <UserCheck className="w-5 h-5" strokeWidth={1.25} />
-                已关注
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-5 h-5" strokeWidth={1.25} />
-                关注TA
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* 主要成就 */}
-        <div className="px-6 py-4 border-b border-line">
-          <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-gold" strokeWidth={1.25} />
-            主要成就
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {(workData.topAchievements || []).map((ach, idx) => (
-              <span key={idx} className="px-3 py-1.5 rounded-full bg-gold/10 text-gold text-sm font-medium">
-                {ach}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* 统计数据 */}
-        <div className="px-6 py-4 border-b border-line">
-          <h3 className="font-medium text-ink mb-3">数据概览</h3>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-surface-muted rounded-md p-3 text-center">
-              <Star className="w-5 h-5 mx-auto text-gold mb-1" strokeWidth={1.25} />
-              <p className="text-lg font-bold text-ink">{workData.authorStars || 0}</p>
-              <p className="text-xs text-ink-muted">总星数</p>
-            </div>
-            <div className="bg-surface-muted rounded-md p-3 text-center">
-              <Target className="w-5 h-5 mx-auto text-accent mb-1" strokeWidth={1.25} />
-              <p className="text-lg font-bold text-ink">{workData.authorCompletedCount || 0}</p>
-              <p className="text-xs text-ink-muted">已通关</p>
-            </div>
-            <div className="bg-surface-muted rounded-md p-3 text-center">
-              <Flame className="w-5 h-5 mx-auto text-accent mb-1" strokeWidth={1.25} />
-              <p className="text-lg font-bold text-ink">{workData.authorStreak || 0}</p>
-              <p className="text-xs text-ink-muted">连胜</p>
-            </div>
-          </div>
-        </div>
-
-        {/* 主要作品 */}
-        <div className="px-6 py-4">
-          <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
-            <Camera className="w-4 h-4 text-accent" strokeWidth={1.25} />
-            主要作品
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            {(workData.topWorks || []).map((imgUrl, idx) => (
-              <div key={idx} className="aspect-square rounded-md overflow-hidden">
-                <img src={imgUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+            <X className="w-4 h-4" strokeWidth={1.25} />
+          </button>
+          
+          <div className="px-6 pt-6 pb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent/20 to-gold/20 flex items-center justify-center text-3xl">
+                {workData.avatar || '👤'}
               </div>
-            ))}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="font-display text-lg font-bold text-ink">{workData.author || '未知用户'}</h2>
+                  <Badge color="gold">Lv.{workData.authorLevel || 1}</Badge>
+                </div>
+                <p className="text-ink-muted text-sm">{workData.authorCompletedCount || 0} 关已通关 · {workData.authorStreak || 0} 天连胜</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 本周作品 */}
-        <div className="px-6 py-4 pb-6">
-          <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
-            <Heart className="w-4 h-4 text-accent" strokeWidth={1.25} />
-            本周作品
-          </h3>
-          <div className="rounded-md overflow-hidden">
-            <img src={workData.image || ''} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+        {/* 可滚动内容区 */}
+        <div 
+          className="flex-1 overflow-y-auto overscroll-contain" 
+          onWheelCapture={(e) => {
+            const target = e.currentTarget;
+            if (e.deltaY < 0 && target.scrollTop === 0) {
+              e.preventDefault();
+            }
+            if (e.deltaY > 0 && target.scrollTop + target.clientHeight >= target.scrollHeight) {
+              e.preventDefault();
+            }
+          }}
+          onTouchMoveCapture={(e) => {
+            const target = e.currentTarget;
+            const touch = e.touches[0];
+            if (touch && target.scrollTop === 0 && touch.clientY < e.currentTarget.getBoundingClientRect().top + 50) {
+              e.preventDefault();
+            }
+            if (touch && target.scrollTop + target.clientHeight >= target.scrollHeight && touch.clientY > e.currentTarget.getBoundingClientRect().bottom - 50) {
+              e.preventDefault();
+            }
+          }}
+        >
+          {/* 主要成就 */}
+          <div className="px-6 py-4 border-b border-line">
+            <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-gold" strokeWidth={1.25} />
+              主要成就
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {(workData.topAchievements || []).map((ach, idx) => (
+                <span key={idx} className="px-3 py-1.5 rounded-full bg-gold/10 text-gold text-sm font-medium">
+                  {ach}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center justify-between mt-2 px-1">
-            <span className="text-ink-muted text-xs">{workData.createdAt || ''}</span>
-            <button
-              onClick={onVote}
-              disabled={isVoted}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                isVoted
-                  ? 'bg-accent/12 text-accent cursor-not-allowed'
-                  : 'bg-accent/5 text-accent hover:bg-accent/10'
-              }`}
-            >
-              <Heart className={`w-4 h-4 ${isVoted ? 'fill-accent' : ''}`} strokeWidth={1.25} />
-              {workData.votes || 0} 票
-            </button>
+
+          {/* 统计数据 */}
+          <div className="px-6 py-4 border-b border-line">
+            <h3 className="font-medium text-ink mb-3">数据概览</h3>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-surface-muted rounded-md p-3 text-center">
+                <Star className="w-5 h-5 mx-auto text-gold mb-1" strokeWidth={1.25} />
+                <p className="text-lg font-bold text-ink">{workData.authorStars || 0}</p>
+                <p className="text-xs text-ink-muted">总星数</p>
+              </div>
+              <div className="bg-surface-muted rounded-md p-3 text-center">
+                <Target className="w-5 h-5 mx-auto text-accent mb-1" strokeWidth={1.25} />
+                <p className="text-lg font-bold text-ink">{workData.authorCompletedCount || 0}</p>
+                <p className="text-xs text-ink-muted">已通关</p>
+              </div>
+              <div className="bg-surface-muted rounded-md p-3 text-center">
+                <Flame className="w-5 h-5 mx-auto text-accent mb-1" strokeWidth={1.25} />
+                <p className="text-lg font-bold text-ink">{workData.authorStreak || 0}</p>
+                <p className="text-xs text-ink-muted">连胜</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 主要作品 */}
+          <div className="px-6 py-4">
+            <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
+              <Camera className="w-4 h-4 text-accent" strokeWidth={1.25} />
+              主要作品
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {(workData.topWorks || []).map((imgUrl, idx) => (
+                <div key={idx} className="aspect-square rounded-md overflow-hidden">
+                  <img src={imgUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 本周作品 */}
+          <div className="px-6 py-4 pb-8">
+            <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
+              <Heart className="w-4 h-4 text-accent" strokeWidth={1.25} />
+              本周作品
+            </h3>
+            <div className="rounded-md overflow-hidden">
+              <img src={workData.image || ''} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+            </div>
+            <div className="flex items-center justify-between mt-2 px-1">
+              <span className="text-ink-muted text-xs">{workData.createdAt || ''}</span>
+              <button
+                onClick={onVote}
+                disabled={isVoted}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  isVoted
+                    ? 'bg-accent/12 text-accent cursor-not-allowed'
+                    : 'bg-accent/5 text-accent hover:bg-accent/10'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${isVoted ? 'fill-accent' : ''}`} strokeWidth={1.25} />
+                {workData.votes || 0} 票
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -235,7 +220,7 @@ function WeeklyChallengeCard({
 
 export function CommunityPage() {
   const navigate = useNavigate();
-  const { communityWorks = [], voteWork, galleryImages = [], toggleFollow, isFollowing, isVoted, removeCommunityWork, user, weeklyChallengeImage, weeklyChallengeInfo, refreshWeeklyChallenge } = useGameStore();
+  const { communityWorks = [], voteWork, galleryImages = [], isVoted, removeCommunityWork, user, weeklyChallengeImage, weeklyChallengeInfo, refreshWeeklyChallenge, fetchCommunityWorks } = useGameStore();
   const [selectedWork, setSelectedWork] = useState<CommunityWork | null>(null);
   const [activeTab, setActiveTab] = useState<'hot' | 'new' | 'mine'>('hot');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -243,7 +228,8 @@ export function CommunityPage() {
 
   React.useEffect(() => {
     refreshWeeklyChallenge();
-  }, [refreshWeeklyChallenge]);
+    fetchCommunityWorks();
+  }, [refreshWeeklyChallenge, fetchCommunityWorks]);
 
   const weeklyChallenge = weeklyChallengeInfo || { url: weeklyChallengeImage, title: '本周挑战' };
 
@@ -289,12 +275,6 @@ export function CommunityPage() {
 
   const handleCloseModal = () => {
     setSelectedWork(null);
-  };
-
-  const handleFollow = () => {
-    if (selectedWork) {
-      toggleFollow(selectedWork.authorId);
-    }
   };
 
   return (
@@ -553,7 +533,7 @@ export function CommunityPage() {
             <Heart className="w-4 h-4 inline align-text-bottom text-accent mr-0.5" strokeWidth={1.25} />
             为喜欢的作品投票
           </p>
-          <p className="text-ink-muted text-xs mt-1">点击头像查看用户详情并关注</p>
+          <p className="text-ink-muted text-xs mt-1">点击头像查看用户详情</p>
         </motion.div>
       </div>
 
@@ -608,8 +588,6 @@ export function CommunityPage() {
         <UserDetailModal
           work={selectedWork}
           onClose={handleCloseModal}
-          onFollow={handleFollow}
-          isFollowing={typeof isFollowing === 'function' ? isFollowing(selectedWork?.authorId || '') : false}
           isVoted={typeof isVoted === 'function' ? isVoted(selectedWork?.id || '') : false}
           onVote={() => selectedWork?.id && voteWork(selectedWork.id)}
         />

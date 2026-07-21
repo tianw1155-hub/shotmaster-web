@@ -450,6 +450,79 @@ export async function toggleUserFollow(followerId: string, targetId: string): Pr
   return await response.json();
 }
 
+// 社区作品
+export interface CommunityWork {
+  id: string;
+  authorId: string;
+  author: string;
+  avatar: string;
+  authorLevel: number;
+  authorStars: number;
+  authorCompletedCount: number;
+  authorStreak: number;
+  authorFollowers: number;
+  authorFollowing: number;
+  topAchievements: string[];
+  topWorks: string[];
+  image: string;
+  votes: number;
+  createdAt: string;
+}
+
+export async function getCommunityWorks(): Promise<{ success: boolean; data: CommunityWork[] }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/community-works`);
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    console.error('Get community works failed:', e);
+    return { success: false, data: [] };
+  }
+}
+
+export async function submitCommunityWork(work: Omit<CommunityWork, 'id' | 'votes'>): Promise<{ success: boolean; message: string; data?: CommunityWork }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/community-works`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(work),
+    });
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    console.error('Submit community work failed:', e);
+    return { success: false, message: '提交失败' };
+  }
+}
+
+export async function voteCommunityWork(workId: string, userId: string): Promise<{ success: boolean; data?: CommunityWork }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/community-works/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workId, userId }),
+    });
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    console.error('Vote community work failed:', e);
+    return { success: false };
+  }
+}
+
+export async function deleteCommunityWork(workId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/community-works/${workId}`, {
+      method: 'DELETE',
+    });
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    console.error('Delete community work failed:', e);
+    return { success: false, message: '删除失败' };
+  }
+}
+
 // 评测集管理 API
 export interface EvalSet {
   id: number;
