@@ -60,6 +60,10 @@ func InitDB() {
 
 	log.Println("Database migrated successfully")
 
+	// 手动迁移：确保 CommunityWork 的大字段使用 LONGTEXT
+	DB.Exec("ALTER TABLE community_works MODIFY COLUMN image LONGTEXT")
+	DB.Exec("ALTER TABLE community_works MODIFY COLUMN top_works LONGTEXT")
+
 	initDefaultAdmin()
 	initDefaultConfigs()
 }

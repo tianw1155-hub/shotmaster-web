@@ -43,7 +43,7 @@ interface Props {
   onHome: () => void;
 }
 export function ScoreResultView({ score, capturedImage, referenceImage, scoreId, fromCommunity, onRetake, onNext, onHome }: Props) {
-  const { toggleLikeSuggestion, toggleDislikeSuggestion, getSuggestionFeedback, toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
+  const { toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
   const [compareMode, setCompareMode] = useState<'split' | 'overlay'>('split');
   const [revealed, setRevealed] = useState(false);
   const [scoreNum, setScoreNum] = useState(0);
@@ -188,58 +188,56 @@ export function ScoreResultView({ score, capturedImage, referenceImage, scoreId,
       {score.suggestions && score.suggestions.length > 0 && (
         <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
           <Card className="p-4">
-            <h3 className="font-medium mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" />AI 改进建议</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" />AI 改进建议</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-ink-muted">整体评价有用吗？</span>
+                <button
+                  onClick={() => toggleLikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).liked
+                      ? 'bg-accent/12 text-accent'
+                      : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                  有用
+                </button>
+                <button
+                  onClick={() => toggleDislikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).disliked
+                      ? 'bg-red-50 text-red-500'
+                      : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
+                  没用
+                </button>
+              </div>
+            </div>
             <div className="space-y-4">
-              {score.suggestions.map((s, i) => {
-                const suggestionKey = `${s.dimension}-${s.title}-${i}`;
-                const feedback = getSuggestionFeedback(scoreId, suggestionKey);
-                return (
-                  <div key={i} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        s.priority === 'high' ? 'bg-red-50 text-red-600' :
-                        s.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
-                        'bg-surface-muted text-ink-secondary'
-                      }`}>
-                        {s.priority === 'high' ? '重要' : s.priority === 'medium' ? '建议' : '可选'}
-                      </span>
-                      <span className="px-2 py-0.5 rounded bg-surface-muted text-ink-secondary text-xs">{s.dimension}</span>
-                      <span className="font-medium text-ink text-sm">{s.title}</span>
-                    </div>
-                    <div className="space-y-1.5 text-sm text-ink-secondary">
-                      <p><span className="font-medium text-ink">问题：</span>{s.problem}</p>
-                      <p><span className="font-medium text-ink">分析：</span>{s.analysis}</p>
-                      <p><span className="font-medium text-ink">方法：</span>{s.method}</p>
-                      <p><span className="font-medium text-ink">参考：</span>{s.referencePoint}</p>
-                    </div>
-                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-line/50">
-                      <span className="text-xs text-ink-muted mr-1">这条建议有用吗？</span>
-                      <button
-                        onClick={() => toggleLikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
-                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                          feedback.liked
-                            ? 'bg-accent/12 text-accent'
-                            : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5" />
-                        有用
-                      </button>
-                      <button
-                        onClick={() => toggleDislikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
-                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                          feedback.disliked
-                            ? 'bg-red-50 text-red-500'
-                            : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsDown className="w-3.5 h-3.5" />
-                        没用
-                      </button>
-                    </div>
+              {score.suggestions.map((s, i) => (
+                <div key={i} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      s.priority === 'high' ? 'bg-red-50 text-red-600' :
+                      s.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
+                      'bg-surface-muted text-ink-secondary'
+                    }`}>
+                      {s.priority === 'high' ? '重要' : s.priority === 'medium' ? '建议' : '可选'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-surface-muted text-ink-secondary text-xs">{s.dimension}</span>
+                    <span className="font-medium text-ink text-sm">{s.title}</span>
                   </div>
-                );
-              })}
+                  <div className="space-y-1.5 text-sm text-ink-secondary">
+                    <p><span className="font-medium text-ink">问题：</span>{s.problem}</p>
+                    <p><span className="font-medium text-ink">分析：</span>{s.analysis}</p>
+                    <p><span className="font-medium text-ink">方法：</span>{s.method}</p>
+                    <p><span className="font-medium text-ink">参考：</span>{s.referencePoint}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         </motion.div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
@@ -220,14 +220,34 @@ export function AchievementsPage() {
 // ==================== 我的收藏页面 ====================
 export function MyFavoritesPage() {
   const navigate = useNavigate();
-  const { user, customGalleryImages, getAllGalleryImages, communityWorks, toggleFavoriteImage, isFavoriteImage, toggleFavoriteWork, isFavoriteWork } =
-    useGameStore();
+  const {
+    user,
+    customGalleryImages,
+    unsplashImages,
+    communityWorks,
+    toggleFavoriteImage,
+    isFavoriteImage,
+    toggleFavoriteWork,
+    isFavoriteWork,
+    shouldRefreshUnsplash,
+    refreshUnsplashImages,
+    isLoadingUnsplash,
+    fetchCommunityWorks,
+  } = useGameStore();
   const [activeTab, setActiveTab] = useState<'gallery' | 'community'>('gallery');
   const [selectedWork, setSelectedWork] = useState<CommunityWork | null>(null);
 
-  const allImages = [...customGalleryImages, ...getAllGalleryImages()];
+  useEffect(() => {
+    if (shouldRefreshUnsplash()) {
+      refreshUnsplashImages();
+    }
+    fetchCommunityWorks();
+  }, []);
+
+  const allImages = [...customGalleryImages, ...unsplashImages];
   const favoriteImages = allImages.filter((img) => isFavoriteImage(img.id));
   const favoriteWorks = communityWorks.filter((work) => isFavoriteWork(work.id));
+  const totalFavoriteCount = favoriteImages.length + favoriteWorks.length;
 
   const handleToggleWorkFav = (workId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -248,7 +268,7 @@ export function MyFavoritesPage() {
           </button>
           <h1 className="font-display text-xl font-bold text-ink">我的收藏</h1>
           <span className="text-ink-muted text-sm">
-            {activeTab === 'gallery' ? `${favoriteImages.length} 张` : `${favoriteWorks.length} 个作品`}
+            {totalFavoriteCount} 个收藏
           </span>
         </div>
 
@@ -464,14 +484,14 @@ export function MyFavoritesPage() {
 // ==================== 主个人中心页面 ====================
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { user, updateUser, logout, customGalleryImages, getAllGalleryImages, communityWorks, isFavoriteImage, isFavoriteWork } = useGameStore();
+  const { user, updateUser, logout, customGalleryImages, unsplashImages, communityWorks, isFavoriteImage, isFavoriteWork } = useGameStore();
   const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   const completedCount = user.completedLevels.length;
   const unlockedAchievements = user.achievements.filter((a) => a.unlocked);
   const xpProgress = (user.xp / user.xpToNext) * 100;
-  const allImages = [...customGalleryImages, ...getAllGalleryImages()];
+  const allImages = [...customGalleryImages, ...unsplashImages];
   const favoriteImageCount = allImages.filter((img) => isFavoriteImage(img.id)).length;
   const favoriteWorkCount = communityWorks.filter((work) => isFavoriteWork(work.id)).length;
   const favoriteCount = favoriteImageCount + favoriteWorkCount;

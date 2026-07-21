@@ -262,8 +262,8 @@ type CommunityWork struct {
 	AuthorFollowers     int       `json:"authorFollowers"`
 	AuthorFollowing     int       `json:"authorFollowing"`
 	TopAchievements     json.RawMessage `gorm:"type:text" json:"topAchievements"`
-	TopWorks            json.RawMessage `gorm:"type:text" json:"topWorks"`
-	Image               string    `gorm:"type:text" json:"image"`
+	TopWorks            json.RawMessage `gorm:"type:longtext" json:"topWorks"`
+	Image               string    `gorm:"type:longtext" json:"image"`
 	Votes               int       `json:"votes"`
 	VotedBy             string    `gorm:"type:text" json:"votedBy"`
 	CreatedAt           time.Time `json:"createdAt"`

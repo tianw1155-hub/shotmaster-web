@@ -124,58 +124,56 @@ function ScoreDetailCard({
         {/* 分维度改进建议 */}
         {score.suggestions && score.suggestions.length > 0 ? (
           <div className="bg-surface-muted rounded-md p-3 mb-3">
-            <p className="text-sm font-medium text-ink mb-2 flex items-center gap-1"><Sparkles className="w-4 h-4 text-accent" />改进建议</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-ink flex items-center gap-1"><Sparkles className="w-4 h-4 text-accent" />改进建议</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-ink-muted">有用吗？</span>
+                <button
+                  onClick={() => toggleLikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).liked
+                      ? 'bg-accent/12 text-accent'
+                      : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsUp className="w-3 h-3" />
+                  有用
+                </button>
+                <button
+                  onClick={() => toggleDislikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).disliked
+                      ? 'bg-red-50 text-red-500'
+                      : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsDown className="w-3 h-3" />
+                  没用
+                </button>
+              </div>
+            </div>
             <div className="space-y-3">
-              {score.suggestions.map((s, i) => {
-                const suggestionKey = `${s.dimension}-${s.title}-${i}`;
-                const feedback = getSuggestionFeedback(scoreId, suggestionKey);
-                return (
-                  <div key={i} className="border-b border-line pb-2 last:border-b-0 last:pb-0">
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className={`px-1.5 py-0.5 rounded text-xs ${
-                        s.priority === 'high' ? 'bg-red-50 text-red-600' :
-                        s.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
-                        'bg-surface-card text-ink-secondary'
-                      }`}>
-                        {s.priority === 'high' ? '重要' : s.priority === 'medium' ? '建议' : '可选'}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded bg-surface-card text-ink-secondary text-xs">{s.dimension}</span>
-                      <span className="font-medium text-ink text-xs">{s.title}</span>
-                    </div>
-                    <div className="space-y-1 text-xs text-ink-secondary">
-                      <p><span className="font-medium text-ink">问题：</span>{s.problem}</p>
-                      <p><span className="font-medium text-ink">分析：</span>{s.analysis}</p>
-                      <p><span className="font-medium text-ink">方法：</span>{s.method}</p>
-                      <p><span className="font-medium text-ink">参考：</span>{s.referencePoint}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-line/50">
-                      <span className="text-[10px] text-ink-muted mr-0.5">有用吗？</span>
-                      <button
-                        onClick={() => toggleLikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
-                        className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
-                          feedback.liked
-                            ? 'bg-accent/12 text-accent'
-                            : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsUp className="w-3 h-3" />
-                        有用
-                      </button>
-                      <button
-                        onClick={() => toggleDislikeSuggestion(scoreId, suggestionKey, { title: s.title, dimension: s.dimension })}
-                        className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
-                          feedback.disliked
-                            ? 'bg-red-50 text-red-500'
-                            : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsDown className="w-3 h-3" />
-                        没用
-                      </button>
-                    </div>
+              {score.suggestions.map((s, i) => (
+                <div key={i} className="border-b border-line pb-2 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className={`px-1.5 py-0.5 rounded text-xs ${
+                      s.priority === 'high' ? 'bg-red-50 text-red-600' :
+                      s.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
+                      'bg-surface-card text-ink-secondary'
+                    }`}>
+                      {s.priority === 'high' ? '重要' : s.priority === 'medium' ? '建议' : '可选'}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-surface-card text-ink-secondary text-xs">{s.dimension}</span>
+                    <span className="font-medium text-ink text-xs">{s.title}</span>
                   </div>
-                );
-              })}
+                  <div className="space-y-1 text-xs text-ink-secondary">
+                    <p><span className="font-medium text-ink">问题：</span>{s.problem}</p>
+                    <p><span className="font-medium text-ink">分析：</span>{s.analysis}</p>
+                    <p><span className="font-medium text-ink">方法：</span>{s.method}</p>
+                    <p><span className="font-medium text-ink">参考：</span>{s.referencePoint}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ) : score.feedback && score.feedback.length > 0 && (
