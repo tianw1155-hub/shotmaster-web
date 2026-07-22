@@ -89,7 +89,8 @@ export function CommunityScorePage() {
         topWorks: [capturedImage],
         image: capturedImage,
         votes: 0,
-        createdAt: new Date().toISOString().slice(0, 10),
+        votedBy: '[]',
+        createdAt: new Date().toISOString(),
       };
       await addCommunityWork(newWork);
       setHasAddedWork(true);

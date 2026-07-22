@@ -1526,9 +1526,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         communityWorks: [res.data, ...state.communityWorks]
       }));
     } else {
-      set(state => ({
-        communityWorks: [work, ...state.communityWorks]
-      }));
+      console.error('提交社区作品失败:', res.message);
     }
   },
   removeCommunityWork: async (workId) => {
