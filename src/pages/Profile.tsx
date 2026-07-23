@@ -57,8 +57,10 @@ export function MyWorksPage() {
   }, [fetchCommunityWorks]);
 
   const myWorks = communityWorks.filter(w => {
-    if (w.authorId === user.id) return true;
-    if (user.id !== '1' && w.authorId === '1') return true;
+    const workAuthorId = String(w.authorId || '');
+    const currentUserId = String(user.id || '');
+    if (workAuthorId === currentUserId) return true;
+    if (currentUserId !== '1' && workAuthorId === '1') return true;
     return false;
   });
 
@@ -584,8 +586,10 @@ export function ProfilePage() {
   const favoriteCount = favoriteImageCount + favoriteWorkCount;
 
   const myWorksCount = communityWorks.filter(w => {
-    if (w.authorId === user.id) return true;
-    if (user.id !== '1' && w.authorId === '1') return true;
+    const workAuthorId = String(w.authorId || '');
+    const currentUserId = String(user.id || '');
+    if (workAuthorId === currentUserId) return true;
+    if (currentUserId !== '1' && workAuthorId === '1') return true;
     return false;
   }).length;
 

@@ -246,10 +246,11 @@ export function CommunityPage() {
     } else {
       // 我的：筛选当前用户上传的作品
       // 兜底：如果用户ID不是默认的 '1'，同时匹配 authorId='1'（游客模式上传的作品）
-      const currentUserId = user.id;
+      const currentUserId = String(user.id || '');
       return communityWorks.filter(w => {
-        if (w.authorId === currentUserId) return true;
-        if (currentUserId !== '1' && w.authorId === '1') return true;
+        const workAuthorId = String(w.authorId || '');
+        if (workAuthorId === currentUserId) return true;
+        if (currentUserId !== '1' && workAuthorId === '1') return true;
         return false;
       });
     }
@@ -483,7 +484,7 @@ export function CommunityPage() {
                   <div className="relative">
                     <img src={work.image} alt="" className="w-full aspect-square object-cover" loading="lazy" />
                     {/* 我的标签页：下架按钮 */}
-                    {activeTab === 'mine' && (work.authorId === user.id || (user.id !== '1' && work.authorId === '1')) && (
+                    {activeTab === 'mine' && (String(work.authorId) === String(user.id) || (String(user.id) !== '1' && String(work.authorId) === '1')) && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
