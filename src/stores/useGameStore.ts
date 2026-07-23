@@ -4,7 +4,7 @@ import { mockGalleryImages, mockCourses, mockAchievements } from '../services/mo
 import type { CommunityWork } from '../types';
 import { getLevel } from '../services/levelService';
 import { aiService } from '../services/aiService';
-import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge, getCommunityWorks, submitCommunityWork, voteCommunityWork, deleteCommunityWork } from '../services/apiService';
+import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge, getCommunityWorks, submitCommunityWork, voteCommunityWork, deleteCommunityWork, migrateGuestWorks } from '../services/apiService';
 import { fetchRecommendedImages, hasUnsplashAccess } from '../services/unsplashService';
 
 // 默认 Unsplash 图片（当未配置 API key 时使用）- 共50张
@@ -136,7 +136,7 @@ interface GameState {
   // 社区
   communityWorks: CommunityWork[];
   fetchCommunityWorks: () => Promise<void>;
-  addCommunityWork: (work: CommunityWork) => void;
+  addCommunityWork: (work: CommunityWork) => Promise<{ success: boolean; message?: string; data?: CommunityWork }>;
   removeCommunityWork: (workId: string) => void;
   voteWork: (workId: string) => void;
   isVoted: (workId: string) => boolean;
@@ -181,20 +181,36 @@ function getUserStorageKey(userId: string): string {
 
 function loadUserFromStorage(userId?: string): GameUser | null {
   try {
-    // 如果提供了用户ID，使用用户特定的存储
+    let raw: any = null;
     if (userId) {
       const stored = localStorage.getItem(getUserStorageKey(userId));
-      if (stored) return JSON.parse(stored);
+      if (stored) raw = JSON.parse(stored);
     }
-    // 否则尝试加载当前用户
-    const stored = localStorage.getItem('shotmaster_user');
-    if (stored) return JSON.parse(stored);
-    // 尝试从用户列表中加载
-    const currentUserId = localStorage.getItem('shotmaster_current_user_id');
-    if (currentUserId) {
-      const userStored = localStorage.getItem(getUserStorageKey(currentUserId));
-      if (userStored) return JSON.parse(userStored);
+    if (!raw) {
+      const stored = localStorage.getItem('shotmaster_user');
+      if (stored) raw = JSON.parse(stored);
     }
+    if (!raw) {
+      const currentUserId = localStorage.getItem('shotmaster_current_user_id');
+      if (currentUserId) {
+        const userStored = localStorage.getItem(getUserStorageKey(currentUserId));
+        if (userStored) raw = JSON.parse(userStored);
+      }
+    }
+    if (!raw) return null;
+
+    if (Array.isArray(raw.following) && raw.followingIds === undefined) {
+      raw.followingIds = raw.following;
+      raw.following = raw.following.length;
+    }
+    if (raw.followingIds === undefined) {
+      raw.followingIds = [];
+    }
+    if (typeof raw.following !== 'number') {
+      raw.following = 0;
+    }
+
+    return raw as GameUser;
   } catch {}
   return null;
 }
@@ -422,7 +438,8 @@ const defaultUser: GameUser = loadUserFromStorage() || {
   completedLevels: [],
   levelStars: {},
   followers: 0,
-  following: [],
+  following: 0,
+  followingIds: [],
   votedWorks: [],
   isLoggedIn: false,
   isGuest: false,
@@ -506,6 +523,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     saveUserToStorage(newUser);
     set({ user: newUser });
 
+    // 将游客模式下上传的作品迁移到新注册用户
+    migrateGuestWorks(newUserId).catch(e => console.error('迁移游客作品失败:', e));
+
     return { success: true, message: '注册成功' };
   },
   verifyLogin: async (username, password) => {
@@ -551,6 +571,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       worksCount: backendUser?.worksCount || localUserData?.worksCount || 0,
       averageScore: backendUser?.avgScore || localUserData?.averageScore || 0,
       followers: backendUser?.followers || localUserData?.followers || 0,
+      following: backendUser?.following ?? localUserData?.following ?? 0,
+      followingIds: backendUser?.followingIds || localUserData?.followingIds || [],
       isLoggedIn: true,
       isGuest: false,
       hasSetNickname: true,
@@ -562,6 +584,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     saveUserToStorage(loggedInUser);
     set({ user: loggedInUser });
+
+    // 将游客模式下上传的作品迁移到当前登录用户
+    migrateGuestWorks(userId).catch(e => console.error('迁移游客作品失败:', e));
 
     return { success: true, message: '登录成功' };
   },
@@ -1528,9 +1553,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     } else {
       console.error('提交社区作品失败:', res.message);
     }
+    return res;
   },
   removeCommunityWork: async (workId) => {
-    await deleteCommunityWork(workId);
+    const res = await deleteCommunityWork(workId);
+    if (!res.success) {
+      console.error('删除社区作品失败:', res.message);
+      return;
+    }
     set(state => ({
       communityWorks: state.communityWorks.filter(w => w.id !== workId)
     }));
@@ -1539,35 +1569,33 @@ export const useGameStore = create<GameState>((set, get) => ({
     const { user } = get();
     const votedWorks = user.votedWorks || [];
     const hasVoted = votedWorks.includes(workId);
-    const favoriteWorkIds = user.favoriteWorkIds || [];
 
-    await voteCommunityWork(workId, user.id);
+    const res = await voteCommunityWork(workId, user.id);
 
-    if (hasVoted) {
-      set(state => ({
-        communityWorks: state.communityWorks.map(w =>
-          w.id === workId ? { ...w, votes: Math.max(0, w.votes - 1) } : w
-        )
-      }));
-      const newVotedWorks = votedWorks.filter(id => id !== workId);
-      const newFavoriteWorkIds = favoriteWorkIds.filter(id => id !== workId);
-      const updatedUser = { ...user, votedWorks: newVotedWorks, favoriteWorkIds: newFavoriteWorkIds };
-      saveUserToStorage(updatedUser);
-      set({ user: updatedUser });
-    } else {
-      set(state => ({
-        communityWorks: state.communityWorks.map(w =>
-          w.id === workId ? { ...w, votes: w.votes + 1 } : w
-        )
-      }));
-      const newVotedWorks = [...votedWorks, workId];
-      const newFavoriteWorkIds = favoriteWorkIds.includes(workId)
-        ? favoriteWorkIds
-        : [...favoriteWorkIds, workId];
-      const updatedUser = { ...user, votedWorks: newVotedWorks, favoriteWorkIds: newFavoriteWorkIds };
-      saveUserToStorage(updatedUser);
-      set({ user: updatedUser });
+    // API 失败时不更新本地状态，避免前后端不一致
+    if (!res.success || !res.data) {
+      console.error('点赞失败:', res);
+      return;
     }
+
+    // 使用后端返回的最新数据更新票数
+    const newVotes = res.data.votes;
+    set(state => ({
+      communityWorks: state.communityWorks.map(w =>
+        w.id === workId ? { ...w, votes: newVotes } : w
+      )
+    }));
+
+    // 更新用户点赞记录
+    let newVotedWorks: string[];
+    if (hasVoted) {
+      newVotedWorks = votedWorks.filter(id => id !== workId);
+    } else {
+      newVotedWorks = [...votedWorks, workId];
+    }
+    const updatedUser = { ...user, votedWorks: newVotedWorks };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
   },
   isVoted: (workId: string) => {
     const votedWorks = get().user.votedWorks || [];
@@ -1595,11 +1623,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     try {
       const res = await toggleUserFollow(user.id, userId);
       if (res.success) {
-        const following = user.following || [];
-        const newFollowing = res.isFollowing
-          ? [...following, userId]
-          : following.filter(id => id !== userId);
-        const updatedUser = { ...user, following: newFollowing };
+        const followingIds = user.followingIds || [];
+        const newFollowingIds = res.isFollowing
+          ? [...followingIds, userId]
+          : followingIds.filter(id => id !== userId);
+        const updatedUser = { 
+          ...user, 
+          followingIds: newFollowingIds,
+          following: newFollowingIds.length,
+        };
         saveUserToStorage(updatedUser);
         set({ user: updatedUser });
       }
@@ -1609,8 +1641,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   isFollowing: (userId: string) => {
     if (!userId) return false;
-    const following = get().user.following;
-    if (!Array.isArray(following)) return false;
-    return following.includes(userId);
+    const followingIds = get().user.followingIds;
+    if (!Array.isArray(followingIds)) return false;
+    return followingIds.includes(userId);
   },
 }));

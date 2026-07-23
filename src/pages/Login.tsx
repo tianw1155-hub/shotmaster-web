@@ -33,7 +33,7 @@ function PasswordStrength({ password }: { password: string }) {
           />
         ))}
       </div>
-      <p className="text-xs text-ink-light">
+      <p className="text-xs text-ink-muted">
         密码强度：<span className={strength.color.replace('bg-', 'text-')}>{strength.label}</span>
         <span className="ml-2">（需至少8位，包含字母、数字和特殊符号）</span>
       </p>
@@ -159,7 +159,7 @@ export function LoginPage() {
             <Camera className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-ink">ShotMaster</h1>
-          <p className="text-ink-light mt-2">开启你的摄影学习之旅</p>
+          <p className="text-ink-muted mt-2">开启你的摄影学习之旅</p>
         </div>
 
         {/* 登录/注册表单 */}
@@ -171,7 +171,7 @@ export function LoginPage() {
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
                 mode === 'login'
                   ? 'bg-white text-ink shadow-sm'
-                  : 'text-ink-light hover:text-ink'
+                  : 'text-ink-muted hover:text-ink'
               }`}
             >
               登录
@@ -181,7 +181,7 @@ export function LoginPage() {
               className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
                 mode === 'register'
                   ? 'bg-white text-ink shadow-sm'
-                  : 'text-ink-light hover:text-ink'
+                  : 'text-ink-muted hover:text-ink'
               }`}
             >
               注册
@@ -192,7 +192,7 @@ export function LoginPage() {
             {/* 用户名 */}
             <div>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-light" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-muted" />
                 <input
                   type="text"
                   value={username}
@@ -210,7 +210,7 @@ export function LoginPage() {
             {/* 密码 */}
             <div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-light" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-muted" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -224,7 +224,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-light hover:text-ink transition"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink transition"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -239,7 +239,7 @@ export function LoginPage() {
             {mode === 'register' && (
               <div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-light" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-muted" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
@@ -253,7 +253,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-light hover:text-ink transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink transition"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -278,7 +278,7 @@ export function LoginPage() {
           {/* 分隔线 */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px bg-line" />
-            <span className="text-ink-light text-sm">或</span>
+            <span className="text-ink-muted text-sm">或</span>
             <div className="flex-1 h-px bg-line" />
           </div>
 
@@ -292,7 +292,7 @@ export function LoginPage() {
         </div>
 
         {/* 底部提示 */}
-        <p className="text-center text-ink-light text-xs mt-6">
+        <p className="text-center text-ink-muted text-xs mt-6">
           {mode === 'login' ? (
             <>
               还没有账号？{' '}

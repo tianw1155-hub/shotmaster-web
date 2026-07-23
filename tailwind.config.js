@@ -36,10 +36,14 @@ export default {
       keyframes: {
         pulseRing: { '0%': { transform: 'scale(.95)', opacity: '.8' }, '70%': { transform: 'scale(1.3)', opacity: '0' }, '100%': { transform: 'scale(.95)', opacity: '0' } },
         starPop: { '0%': { transform: 'scale(0) rotate(-45deg)', opacity: '0' }, '60%': { transform: 'scale(1.3) rotate(5deg)', opacity: '1' }, '100%': { transform: 'scale(1) rotate(0)', opacity: '1' } },
+        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        bounceIn: { '0%': { transform: 'scale(.9)', opacity: '0' }, '50%': { transform: 'scale(1.02)' }, '100%': { transform: 'scale(1)', opacity: '1' } },
       },
       animation: {
         'pulse-ring': 'pulseRing 2s ease-out infinite',
         'star-pop': 'starPop .4s ease-out',
+        'fade-in': 'fadeIn .3s ease-out',
+        'bounce-in': 'bounceIn .4s ease-out',
       },
     },
   },

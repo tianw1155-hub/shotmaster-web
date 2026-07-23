@@ -218,7 +218,8 @@ export interface GameUser {
   completedLevels: number[];
   levelStars: Record<number, Stars>;
   followers: number; // 粉丝数
-  following: string[]; // 关注的用户ID列表
+  following: number; // 关注数
+  followingIds: string[]; // 关注的用户ID列表
   votedWorks: string[];
   isLoggedIn: boolean;
   isGuest: boolean;

@@ -28,7 +28,7 @@ function ScoreDetailCard({
   scoreId: string;
   onClose: () => void;
 }) {
-  const { toggleLikeSuggestion, toggleDislikeSuggestion, getSuggestionFeedback, toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
+  const { toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
   const scoreItems = [
     { label: '构图', value: score.composition, color: 'bg-ink-muted' },
     { label: '光线', value: score.lighting, color: 'bg-gold' },
@@ -179,44 +179,43 @@ function ScoreDetailCard({
         ) : score.feedback && score.feedback.length > 0 && (
           /* 兼容旧版 */
           <div className="bg-surface-muted rounded-md p-3 mb-3">
-            <p className="text-sm font-medium text-ink mb-2">💡 改进建议</p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-ink">💡 改进建议</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-ink-muted">有用吗？</span>
+                <button
+                  onClick={() => toggleLikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).liked
+                      ? 'bg-accent/12 text-accent'
+                      : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsUp className="w-3 h-3" />
+                  有用
+                </button>
+                <button
+                  onClick={() => toggleDislikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).disliked
+                      ? 'bg-red-50 text-red-500'
+                      : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsDown className="w-3 h-3" />
+                  没用
+                </button>
+              </div>
+            </div>
             <ul className="space-y-2">
-              {score.feedback.map((f, i) => {
-                const feedback = getFeedbackItemFeedback(scoreId, i);
-                return (
-                  <li key={i} className="border-b border-line pb-2 last:border-b-0 last:pb-0">
-                    <div className="flex items-start gap-2 text-xs text-ink-secondary mb-1.5">
-                      <ChevronRight className="w-3 h-3 text-accent mt-0.5 flex-shrink-0" />
-                      <span>{f}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] text-ink-muted mr-0.5">有用吗？</span>
-                      <button
-                        onClick={() => toggleLikeFeedback(scoreId, i)}
-                        className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
-                          feedback.liked
-                            ? 'bg-accent/12 text-accent'
-                            : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsUp className="w-3 h-3" />
-                        有用
-                      </button>
-                      <button
-                        onClick={() => toggleDislikeFeedback(scoreId, i)}
-                        className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] transition-colors ${
-                          feedback.disliked
-                            ? 'bg-red-50 text-red-500'
-                            : 'bg-surface-card text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsDown className="w-3 h-3" />
-                        没用
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
+              {score.feedback.map((f, i) => (
+                <li key={i} className="border-b border-line pb-2 last:border-b-0 last:pb-0">
+                  <div className="flex items-start gap-2 text-xs text-ink-secondary">
+                    <ChevronRight className="w-3 h-3 text-accent mt-0.5 flex-shrink-0" />
+                    <span>{f}</span>
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
         )}

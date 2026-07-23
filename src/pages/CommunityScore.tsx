@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, Sparkles, ChevronRight, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ArrowLeftRight, Sparkles, ChevronRight, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { TopBar, BottomNav } from '../components/game/GameComponents';
 import { Card, Button, RingProgress } from '../components/ui/Button';
@@ -11,6 +11,8 @@ export function CommunityScorePage() {
   const [compareMode, setCompareMode] = useState<'split' | 'overlay'>('split');
   const [hasAddedWork, setHasAddedWork] = useState(false);
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // 使用本周挑战图片作为参考图
   const referenceImage = weeklyChallengeImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400';
@@ -74,28 +76,43 @@ export function CommunityScorePage() {
 
   const handleUploadConfirm = async (shouldUpload: boolean) => {
     if (shouldUpload && capturedImage && score && !hasAddedWork) {
-      const newWork = {
-        id: `user_${Date.now()}`,
-        author: user.name,
-        avatar: user.avatar,
-        authorId: user.id,
-        authorLevel: user.level,
-        authorStars: Object.values(user.levelStars).reduce((a, b) => a + b, 0),
-        authorCompletedCount: user.completedLevels.length,
-        authorStreak: user.streak,
-        authorFollowers: 0,
-        authorFollowing: user.following?.length || 0,
-        topAchievements: user.achievements.filter(a => a.unlocked).map(a => a.name),
-        topWorks: [capturedImage],
-        image: capturedImage,
-        votes: 0,
-        votedBy: '[]',
-        createdAt: new Date().toISOString(),
-      };
-      await addCommunityWork(newWork);
-      setHasAddedWork(true);
+      setIsUploading(true);
+      setUploadError(null);
+      try {
+        const newWork = {
+          id: `user_${Date.now()}`,
+          author: user.name,
+          avatar: user.avatar,
+          authorId: user.id,
+          authorLevel: user.level,
+          authorStars: Object.values(user.levelStars).reduce((a, b) => a + b, 0),
+          authorCompletedCount: user.completedLevels.length,
+          authorStreak: user.streak,
+          authorFollowers: 0,
+          authorFollowing: user.following || 0,
+          topAchievements: user.achievements.filter(a => a.unlocked).map(a => a.name),
+          topWorks: [capturedImage],
+          image: capturedImage,
+          votes: 0,
+          votedBy: '[]',
+          createdAt: new Date().toISOString(),
+        };
+        const res = await addCommunityWork(newWork);
+        if (res && res.success === false) {
+          setUploadError(res.message || '上传失败，请重试');
+          setIsUploading(false);
+          return;
+        }
+        setHasAddedWork(true);
+      } catch (e) {
+        console.error('上传作品出错:', e);
+        setUploadError('网络错误，请重试');
+        setIsUploading(false);
+        return;
+      }
     }
     setShowUploadConfirm(false);
+    setIsUploading(false);
     setCapturedImage(null);
     clearScore();
     navigate('/community');
@@ -263,12 +280,32 @@ export function CommunityScorePage() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
             <div className="bg-white rounded-md w-full max-w-sm mx-4 p-6 animate-slide-up">
               <h3 className="font-display text-lg font-bold text-ink text-center mb-2">上传到排行榜</h3>
-              <p className="text-ink-secondary text-sm text-center mb-6">是否将您的作品上传到本周排行榜？</p>
+              <p className="text-ink-secondary text-sm text-center mb-4">是否将您的作品上传到本周排行榜？</p>
+              {uploadError && (
+                <p className="text-red-500 text-sm text-center mb-4 bg-red-50 py-2 rounded">{uploadError}</p>
+              )}
               <div className="space-y-3">
-                <Button variant="primary" className="w-full" onClick={() => handleUploadConfirm(true)}>
-                  上传并参与排行
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  disabled={isUploading}
+                  onClick={() => handleUploadConfirm(true)}
+                >
+                  {isUploading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      上传中...
+                    </span>
+                  ) : (
+                    '上传并参与排行'
+                  )}
                 </Button>
-                <Button variant="secondary" className="w-full" onClick={() => handleUploadConfirm(false)}>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  disabled={isUploading}
+                  onClick={() => handleUploadConfirm(false)}
+                >
                   暂不上传
                 </Button>
               </div>

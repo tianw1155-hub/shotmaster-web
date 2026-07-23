@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, Sparkles, ChevronRight, Camera, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ArrowLeftRight, Sparkles, ChevronRight, Camera, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
 import { TopBar, BottomNav } from '../components/game/GameComponents';
 import { Card, Button, RingProgress } from '../components/ui/Button';
 
 export function GalleryScorePage() {
   const navigate = useNavigate();
-  const { user, capturedImage, score, isScoring, compareImages, weeklyChallengeImage, setCapturedImage, clearScore, toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
+  const { user, capturedImage, score, isScoring, compareImages, weeklyChallengeImage, setCapturedImage, clearScore, addCommunityWork, toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
   const [compareMode, setCompareMode] = useState<'split' | 'overlay'>('split');
+  const [hasAddedWork, setHasAddedWork] = useState(false);
+  const [showUploadConfirm, setShowUploadConfirm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const referenceImage = weeklyChallengeImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400';
 
@@ -57,6 +61,54 @@ export function GalleryScorePage() {
   ];
 
   const handleBackToGallery = () => {
+    if (capturedImage && score && !hasAddedWork) {
+      setShowUploadConfirm(true);
+    } else {
+      setCapturedImage(null);
+      clearScore();
+      navigate('/gallery');
+    }
+  };
+
+  const handleUploadConfirm = async (shouldUpload: boolean) => {
+    if (shouldUpload && capturedImage && score && !hasAddedWork) {
+      setIsUploading(true);
+      setUploadError(null);
+      try {
+        const newWork = {
+          id: `user_${Date.now()}`,
+          author: user.name,
+          avatar: user.avatar,
+          authorId: user.id,
+          authorLevel: user.level,
+          authorStars: Object.values(user.levelStars).reduce((a, b) => a + b, 0),
+          authorCompletedCount: user.completedLevels.length,
+          authorStreak: user.streak,
+          authorFollowers: 0,
+          authorFollowing: user.following || 0,
+          topAchievements: user.achievements.filter(a => a.unlocked).map(a => a.name),
+          topWorks: [capturedImage],
+          image: capturedImage,
+          votes: 0,
+          votedBy: '[]',
+          createdAt: new Date().toISOString(),
+        };
+        const res = await addCommunityWork(newWork);
+        if (res && res.success === false) {
+          setUploadError(res.message || '上传失败，请重试');
+          setIsUploading(false);
+          return;
+        }
+        setHasAddedWork(true);
+      } catch (e) {
+        console.error('上传作品出错:', e);
+        setUploadError('网络错误，请重试');
+        setIsUploading(false);
+        return;
+      }
+    }
+    setShowUploadConfirm(false);
+    setIsUploading(false);
     setCapturedImage(null);
     clearScore();
     navigate('/gallery');
@@ -139,56 +191,119 @@ export function GalleryScorePage() {
         </section>
 
         <Card className="p-4 animate-slide-up">
-          <h3 className="font-medium text-ink mb-3 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-accent" />
-            AI 改进建议
-          </h3>
-          <ul className="space-y-3">
-            {score.feedback.map((f, i) => {
-              const feedback = getFeedbackItemFeedback('gallery', i);
-              return (
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-medium text-ink flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-accent" />
+              AI 改进建议
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-ink-muted">整体评价有用吗？</span>
+              <button
+                onClick={() => toggleLikeFeedback('gallery', 0)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                  getFeedbackItemFeedback('gallery', 0).liked
+                    ? 'bg-accent/12 text-accent'
+                    : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
+                }`}
+              >
+                <ThumbsUp className="w-3.5 h-3.5" />
+                有用
+              </button>
+              <button
+                onClick={() => toggleDislikeFeedback('gallery', 0)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                  getFeedbackItemFeedback('gallery', 0).disliked
+                    ? 'bg-red-50 text-red-500'
+                    : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
+                }`}
+              >
+                <ThumbsDown className="w-3.5 h-3.5" />
+                没用
+              </button>
+            </div>
+          </div>
+          {score.suggestions && score.suggestions.length > 0 ? (
+            <div className="space-y-4">
+              {score.suggestions.map((s, i) => (
+                <div key={i} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      s.priority === 'high' ? 'bg-red-50 text-red-600' :
+                      s.priority === 'medium' ? 'bg-amber-50 text-amber-600' :
+                      'bg-surface-muted text-ink-secondary'
+                    }`}>
+                      {s.priority === 'high' ? '重要' : s.priority === 'medium' ? '建议' : '可选'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-surface-muted text-ink-secondary text-xs">{s.dimension}</span>
+                    <span className="font-medium text-ink text-sm">{s.title}</span>
+                  </div>
+                  <div className="space-y-1.5 text-sm text-ink-secondary">
+                    <p><span className="font-medium text-ink">问题：</span>{s.problem}</p>
+                    <p><span className="font-medium text-ink">分析：</span>{s.analysis}</p>
+                    <p><span className="font-medium text-ink">方法：</span>{s.method}</p>
+                    <p><span className="font-medium text-ink">参考：</span>{s.referencePoint}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : score.feedback && score.feedback.length > 0 ? (
+            <ul className="space-y-3">
+              {score.feedback.map((f, i) => (
                 <li key={i} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
-                  <div className="flex items-start gap-2 text-sm text-ink-secondary mb-2">
+                  <div className="flex items-start gap-2 text-sm text-ink-secondary">
                     <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                     <span>{f}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-ink-muted mr-1">这条建议有用吗？</span>
-                    <button
-                      onClick={() => toggleLikeFeedback('gallery', i)}
-                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                        feedback.liked
-                          ? 'bg-accent/12 text-accent'
-                          : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
-                      }`}
-                    >
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                      有用
-                    </button>
-                    <button
-                      onClick={() => toggleDislikeFeedback('gallery', i)}
-                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                        feedback.disliked
-                          ? 'bg-red-50 text-red-500'
-                          : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
-                      }`}
-                    >
-                      <ThumbsDown className="w-3.5 h-3.5" />
-                      没用
-                    </button>
-                  </div>
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          ) : null}
         </Card>
 
-        <div className="space-y-3 animate-slide-up">
+        <div className="animate-slide-up">
           <Button variant="primary" className="w-full" onClick={handleBackToGallery}>
             <Camera className="w-5 h-5" />
             返回图库
           </Button>
         </div>
+
+        {/* 上传确认对话框 */}
+        {showUploadConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-md w-full max-w-sm mx-4 p-6 animate-slide-up">
+              <h3 className="font-display text-lg font-bold text-ink text-center mb-2">上传到排行榜</h3>
+              <p className="text-ink-secondary text-sm text-center mb-4">是否将您的作品上传到本周排行榜？</p>
+              {uploadError && (
+                <p className="text-red-500 text-sm text-center mb-4 bg-red-50 py-2 rounded">{uploadError}</p>
+              )}
+              <div className="space-y-3">
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  disabled={isUploading}
+                  onClick={() => handleUploadConfirm(true)}
+                >
+                  {isUploading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      上传中...
+                    </span>
+                  ) : (
+                    '上传并参与排行'
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  disabled={isUploading}
+                  onClick={() => handleUploadConfirm(false)}
+                >
+                  暂不上传
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="text-center animate-slide-up">
           <p className="text-ink-muted text-sm">

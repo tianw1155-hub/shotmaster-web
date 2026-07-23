@@ -39,6 +39,7 @@ func SetupRoutes(r *gin.Engine) {
         r.POST("/api/community-works", controllers.SubmitCommunityWork)
         r.POST("/api/community-works/vote", controllers.VoteCommunityWork)
         r.DELETE("/api/community-works/:id", controllers.DeleteCommunityWork)
+        r.POST("/api/community-works/migrate-guest", controllers.MigrateGuestWorks)
 
 	// 拍摄建议缓存（前台调用，不需要管理员权限）
 	r.POST("/api/shooting-plan/cache", controllers.GetShootingPlanCache)

@@ -34,6 +34,7 @@ export interface UserAuthResponse {
     avgScore: number;
     followers: number;
     following: number;
+    followingIds: string[];
     isLoggedIn: boolean;
     isGuest: boolean;
     preferences: string;
@@ -520,6 +521,21 @@ export async function deleteCommunityWork(workId: string): Promise<{ success: bo
   } catch (e) {
     console.error('Delete community work failed:', e);
     return { success: false, message: '删除失败' };
+  }
+}
+
+export async function migrateGuestWorks(newUserId: string): Promise<{ success: boolean; message: string; migratedCount?: number }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/community-works/migrate-guest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newUserId }),
+    });
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    console.error('Migrate guest works failed:', e);
+    return { success: false, message: '迁移失败' };
   }
 }
 

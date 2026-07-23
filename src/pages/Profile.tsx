@@ -20,6 +20,7 @@ import {
   Triangle,
   LogOut,
   User as UserIcon,
+  Trash2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/useGameStore';
@@ -47,9 +48,37 @@ function getAchievementIcon(emoji: string): React.ReactNode {
 // ==================== 我的作品页面 ====================
 export function MyWorksPage() {
   const navigate = useNavigate();
-  const { user, galleryImages } = useGameStore();
+  const { user, communityWorks, fetchCommunityWorks, removeCommunityWork } = useGameStore();
+  const [workToDelete, setWorkToDelete] = React.useState<CommunityWork | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
 
-  const completedWorks = galleryImages.slice(0, user.worksCount);
+  React.useEffect(() => {
+    fetchCommunityWorks();
+  }, [fetchCommunityWorks]);
+
+  const myWorks = communityWorks.filter(w => {
+    if (w.authorId === user.id) return true;
+    if (user.id !== '1' && w.authorId === '1') return true;
+    return false;
+  });
+
+  const handleRemoveWork = (work: CommunityWork) => {
+    setWorkToDelete(work);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (workToDelete) {
+      removeCommunityWork(workToDelete.id);
+    }
+    setShowDeleteConfirm(false);
+    setWorkToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setWorkToDelete(null);
+  };
 
   return (
     <PageLayout desktop="single">
@@ -74,7 +103,7 @@ export function MyWorksPage() {
           animate="show"
         >
           {[
-            { value: user.worksCount, label: '作品总数', color: 'text-accent' },
+            { value: myWorks.length, label: '作品总数', color: 'text-accent' },
             { value: user.totalStars, label: '获得星数', color: 'text-gold' },
             { value: user.averageScore, label: '平均分', color: 'text-ink-muted' },
           ].map((stat) => (
@@ -86,28 +115,41 @@ export function MyWorksPage() {
         </motion.div>
 
         {/* 作品列表 — hairline grid */}
-        {completedWorks.length > 0 ? (
+        {myWorks.length > 0 ? (
           <motion.div
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
             initial="hidden"
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.06 } } }}
           >
-            {completedWorks.map((work, idx) => (
+            {myWorks.map((work, idx) => (
               <motion.div
-                key={idx}
+                key={work.id || idx}
                 variants={variants.fadeUp}
-                className="bg-surface-card border border-line rounded-md overflow-hidden group cursor-pointer hover:border-accent/30 transition-colors"
+                className="bg-surface-card border border-line rounded-md overflow-hidden group relative hover:border-accent/30 transition-colors"
               >
                 <img
-                  src={work.url}
-                  alt={work.title}
+                  src={work.image}
+                  alt={work.author}
                   className="w-full aspect-square object-cover"
                   loading="lazy"
                 />
-                <div className="p-3 border-t border-line">
-                  <p className="text-sm font-medium text-ink truncate">{work.title}</p>
-                  <p className="text-xs text-ink-muted mt-0.5">{work.category}</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveWork(work);
+                  }}
+                  aria-label="删除作品"
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger"
+                >
+                  <Trash2 className="w-4 h-4 text-white" strokeWidth={1.5} />
+                </button>
+                <div className="p-3 border-t border-line flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Heart className="w-3.5 h-3.5 text-accent fill-accent" strokeWidth={1.25} />
+                    <span className="text-xs text-ink-secondary">{work.votes || 0} 票</span>
+                  </div>
+                  <span className="text-xs text-ink-muted truncate">{work.createdAt ? new Date(work.createdAt).toLocaleDateString('zh-CN') : ''}</span>
                 </div>
               </motion.div>
             ))}
@@ -120,14 +162,55 @@ export function MyWorksPage() {
             className="bg-surface-card border border-line rounded-md p-8 text-center"
           >
             <Camera className="w-12 h-12 text-ink-muted mx-auto mb-3" strokeWidth={1.25} />
-            <p className="text-ink-secondary">还没有作品</p>
-            <p className="text-ink-muted text-sm mt-1">开始闯关拍摄你的第一张作品吧</p>
-            <Button variant="primary" className="mt-4" onClick={() => navigate('/')}>
-              去闯关
+            <p className="text-ink-secondary">还没有上传作品</p>
+            <p className="text-ink-muted text-sm mt-1">参与本周挑战并上传你的作品</p>
+            <Button variant="primary" className="mt-4" onClick={() => navigate('/community')}>
+              去社区看看
             </Button>
           </motion.div>
         )}
       </div>
+
+      {/* 删除确认弹窗 */}
+      {showDeleteConfirm && workToDelete && (
+        <motion.div
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-ink/40 backdrop-blur-sm"
+          variants={variants.fadeIn}
+          initial="hidden"
+          animate="show"
+          exit="hidden"
+          onClick={cancelDelete}
+        >
+          <motion.div
+            className="bg-surface-card rounded-md w-full max-w-sm mx-4 p-6"
+            variants={variants.scaleIn}
+            initial="hidden"
+            animate="show"
+            exit="hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-danger/12 flex items-center justify-center">
+              <Trash2 className="w-8 h-8 text-danger" strokeWidth={1.25} />
+            </div>
+            <h3 className="font-display text-lg font-bold text-ink text-center mb-2">确认删除作品</h3>
+            <p className="text-ink-secondary text-sm text-center mb-6">删除后作品将从排行榜中移除，无法恢复。</p>
+            <div className="space-y-3">
+              <button
+                onClick={confirmDelete}
+                className="w-full py-3 rounded-md bg-danger text-surface font-medium hover:bg-danger/90 transition-colors"
+              >
+                确认删除
+              </button>
+              <button
+                onClick={cancelDelete}
+                className="w-full py-3 rounded-md bg-surface-muted text-ink-secondary font-medium hover:bg-ink-muted/15 transition-colors"
+              >
+                取消
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </PageLayout>
   );
 }
@@ -399,7 +482,7 @@ export function MyFavoritesPage() {
             >
               <Heart className="w-12 h-12 text-ink-muted mx-auto mb-3" strokeWidth={1.25} />
               <p className="text-ink-secondary">还没有收藏社区作品</p>
-              <p className="text-ink-muted text-sm mt-1">在社区中点赞喜欢的作品会自动收藏</p>
+              <p className="text-ink-muted text-sm mt-1">在社区中收藏喜欢的作品</p>
               <Button variant="primary" className="mt-4" onClick={() => navigate('/community')}>
                 去社区看看
               </Button>
@@ -484,9 +567,13 @@ export function MyFavoritesPage() {
 // ==================== 主个人中心页面 ====================
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { user, updateUser, logout, customGalleryImages, unsplashImages, communityWorks, isFavoriteImage, isFavoriteWork } = useGameStore();
+  const { user, updateUser, logout, customGalleryImages, unsplashImages, communityWorks, isFavoriteImage, isFavoriteWork, fetchCommunityWorks } = useGameStore();
   const [isUploading, setIsUploading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  React.useEffect(() => {
+    fetchCommunityWorks();
+  }, [fetchCommunityWorks]);
 
   const completedCount = user.completedLevels.length;
   const unlockedAchievements = user.achievements.filter((a) => a.unlocked);
@@ -495,6 +582,12 @@ export function ProfilePage() {
   const favoriteImageCount = allImages.filter((img) => isFavoriteImage(img.id)).length;
   const favoriteWorkCount = communityWorks.filter((work) => isFavoriteWork(work.id)).length;
   const favoriteCount = favoriteImageCount + favoriteWorkCount;
+
+  const myWorksCount = communityWorks.filter(w => {
+    if (w.authorId === user.id) return true;
+    if (user.id !== '1' && w.authorId === '1') return true;
+    return false;
+  }).length;
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -514,7 +607,7 @@ export function ProfilePage() {
     {
       icon: ImageIcon,
       label: '我的作品',
-      value: `${user.worksCount}幅`,
+      value: `${myWorksCount}幅`,
       iconBg: 'bg-accent/10',
       iconColor: 'text-accent',
       path: '/profile/works',
@@ -599,7 +692,7 @@ export function ProfilePage() {
           animate="show"
         >
           {[
-            { value: user.worksCount, label: '作品', color: 'text-accent' },
+            { value: myWorksCount, label: '作品', color: 'text-accent' },
             { value: completedCount, label: '通关', color: 'text-ink-muted' },
             { value: user.totalStars, label: '星数', color: 'text-gold' },
             { value: user.maxStreak, label: '最高连胜', color: 'text-accent' },

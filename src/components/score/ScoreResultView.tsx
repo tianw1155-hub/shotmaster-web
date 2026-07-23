@@ -279,44 +279,43 @@ export function ScoreResultView({ score, capturedImage, referenceImage, scoreId,
       {(!score.suggestions || score.suggestions.length === 0) && score.feedback && score.feedback.length > 0 && (
         <motion.div variants={variants.fadeUp} initial="hidden" animate="show">
           <Card className="p-4">
-            <h3 className="font-medium mb-3 flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" />AI 改进建议</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" />AI 改进建议</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-ink-muted">整体评价有用吗？</span>
+                <button
+                  onClick={() => toggleLikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).liked
+                      ? 'bg-accent/12 text-accent'
+                      : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                  有用
+                </button>
+                <button
+                  onClick={() => toggleDislikeFeedback(scoreId, 0)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                    getFeedbackItemFeedback(scoreId, 0).disliked
+                      ? 'bg-red-50 text-red-500'
+                      : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
+                  没用
+                </button>
+              </div>
+            </div>
             <ul className="space-y-3">
-              {score.feedback.map((f, i) => {
-                const feedback = getFeedbackItemFeedback(scoreId, i);
-                return (
-                  <li key={i} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
-                    <div className="flex items-start gap-2 text-sm text-ink-secondary mb-2">
-                      <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
-                      <span>{f}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-ink-muted mr-1">这条建议有用吗？</span>
-                      <button
-                        onClick={() => toggleLikeFeedback(scoreId, i)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                          feedback.liked
-                            ? 'bg-accent/12 text-accent'
-                            : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsUp className="w-3.5 h-3.5" />
-                        有用
-                      </button>
-                      <button
-                        onClick={() => toggleDislikeFeedback(scoreId, i)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                          feedback.disliked
-                            ? 'bg-red-50 text-red-500'
-                            : 'bg-surface-muted text-ink-secondary hover:bg-surface hover:text-ink'
-                        }`}
-                      >
-                        <ThumbsDown className="w-3.5 h-3.5" />
-                        没用
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
+              {score.feedback.map((f, i) => (
+                <li key={i} className="border-b border-line pb-3 last:border-b-0 last:pb-0">
+                  <div className="flex items-start gap-2 text-sm text-ink-secondary">
+                    <ChevronRight className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                    <span>{f}</span>
+                  </div>
+                </li>
+              ))}
             </ul>
           </Card>
         </motion.div>

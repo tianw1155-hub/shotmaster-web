@@ -189,6 +189,14 @@ func UserLogin(c *gin.Context) {
 		"updated_at":   now,
 	})
 
+	// 查询关注的用户ID列表
+	var followRecords []models.UserFollow
+	models.DB.Where("follower_id = ?", user.ID).Find(&followRecords)
+	followingIds := make([]string, 0, len(followRecords))
+	for _, fr := range followRecords {
+		followingIds = append(followingIds, fr.TargetID)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"message":  "登录成功",
@@ -209,6 +217,7 @@ func UserLogin(c *gin.Context) {
 			"avgScore":         user.AvgScore,
 			"followers":        user.Followers,
 			"following":        user.Following,
+			"followingIds":     followingIds,
 			"isLoggedIn":       true,
 			"isGuest":          false,
 			"preferences":      user.Preferences,

@@ -64,7 +64,7 @@ export function PreferencesPage() {
         </div>
           <button
             onClick={handleSkip}
-            className="text-ink-light hover:text-ink transition text-sm"
+            className="text-ink-muted hover:text-ink transition text-sm"
           >
             跳过
           </button>
@@ -73,8 +73,8 @@ export function PreferencesPage() {
         {/* 标题 */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-ink mb-3">你喜欢拍什么？</h1>
-          <p className="text-ink-light">选择你感兴趣的摄影类型，我们会为你推荐更适合的学习内容</p>
-          <p className="text-ink-light text-sm mt-1">至少选择 1 项，可多选</p>
+          <p className="text-ink-muted">选择你感兴趣的摄影类型，我们会为你推荐更适合的学习内容</p>
+          <p className="text-ink-muted text-sm mt-1">至少选择 1 项，可多选</p>
         </div>
 
         {/* 偏好选项网格 */}
@@ -105,7 +105,7 @@ export function PreferencesPage() {
 
               {/* 文字 */}
               <h3 className="font-semibold text-ink mb-1">{pref.label}</h3>
-              <p className="text-xs text-ink-light">{pref.description}</p>
+              <p className="text-xs text-ink-muted">{pref.description}</p>
             </button>
           );
         })}
@@ -130,7 +130,7 @@ export function PreferencesPage() {
               </>
             )}
           </button>
-          <p className="text-center text-ink-light text-sm">
+          <p className="text-center text-ink-muted text-sm">
             已选择 <span className="text-accent font-medium">{selected.length}</span> 项
           </p>
         </div>
