@@ -42,7 +42,7 @@ func AdminLogin(c *gin.Context) {
 		return
 	}
 
-	token, err := middleware.GenerateToken(admin.ID, admin.Username)
+	token, err := middleware.GenerateAdminToken(admin.ID, admin.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "生成令牌失败"})
 		return
@@ -149,11 +149,18 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
+	token, err := middleware.GenerateUserToken(user.ID, user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "生成令牌失败"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "注册成功",
-		"userId":  user.ID,
+		"success":  true,
+		"message":  "注册成功",
+		"userId":   user.ID,
 		"username": user.Username,
+		"token":    token,
 	})
 }
 
@@ -197,11 +204,18 @@ func UserLogin(c *gin.Context) {
 		followingIds = append(followingIds, fr.TargetID)
 	}
 
+	token, err := middleware.GenerateUserToken(user.ID, user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "生成令牌失败"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"message":  "登录成功",
 		"userId":   user.ID,
 		"username": user.Username,
+		"token":    token,
 		"user": gin.H{
 			"id":               user.ID,
 			"username":         user.Username,

@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { Level, Score, ShootingPlan, GameUser, Achievement, Stars, GalleryImage, PhotoPreference, ImageCategory, Chapter, ShootingPlanDimension, DimensionFeedback, Difficulty } from '../types';
+import { Level, Score, ShootingPlan, GameUser, Achievement, Stars, GalleryImage, PhotoPreference, ImageCategory, Chapter, ShootingPlanDimension, DimensionFeedback, Difficulty, ScoringHistory } from '../types';
 import { mockGalleryImages, mockCourses, mockAchievements } from '../services/mockData';
 import type { CommunityWork } from '../types';
 import { getLevel } from '../services/levelService';
 import { aiService } from '../services/aiService';
-import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge, getCommunityWorks, submitCommunityWork, voteCommunityWork, deleteCommunityWork, migrateGuestWorks } from '../services/apiService';
+import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge, getCommunityWorks, submitCommunityWork, voteCommunityWork, deleteCommunityWork, migrateGuestWorks, setUserToken, clearUserToken, setAuthFailureHandler } from '../services/apiService';
 import { fetchRecommendedImages, hasUnsplashAccess } from '../services/unsplashService';
 
 // 默认 Unsplash 图片（当未配置 API key 时使用）- 共50张
@@ -80,7 +80,7 @@ interface GameState {
   lastScoreLevelId: number | null; // 最后评分的关卡ID
   lastCapturedImage: string | null; // 最后提交的作品图片
   isScoring: boolean;
-  compareImages: (referenceUrl: string, userImageUrl: string, levelId: number) => Promise<void>;
+  compareImages: (referenceUrl: string, userImageUrl: string, levelId: number, source?: 'level' | 'gallery' | 'community', levelTitle?: string) => Promise<void>;
   clearLastScore: () => void; // 清除最后评分记录
   clearScore: () => void; // 清除当前评分
 
@@ -142,6 +142,11 @@ interface GameState {
   isVoted: (workId: string) => boolean;
   toggleFavoriteWork: (workId: string) => void;
   isFavoriteWork: (workId: string) => boolean;
+
+  // 评分历史
+  addScoringHistory: (item: Omit<ScoringHistory, 'id' | 'createdAt' | 'submittedToCommunity'>) => void;
+  markScoringSubmitted: (scoringId: string) => void;
+  removeScoringHistory: (scoringId: string) => void;
 
   // 关注
   toggleFollow: (userId: string) => Promise<void>;
@@ -211,7 +216,9 @@ function loadUserFromStorage(userId?: string): GameUser | null {
     }
 
     return raw as GameUser;
-  } catch {}
+  } catch (e) {
+    console.error('[useGameStore] 操作失败:', e);
+  }
   return null;
 }
 
@@ -253,7 +260,9 @@ function saveUserToStorage(user: GameUser) {
         });
       }
     }, 2000);
-  } catch {}
+  } catch (e) {
+    console.error('[useGameStore] 操作失败:', e);
+  }
 }
 
 // 同步反馈数据到后端
@@ -344,7 +353,9 @@ function loadCustomImagesFromStorage(): GalleryImage[] {
     const key = currentUserId ? `shotmaster_custom_images_${currentUserId}` : 'shotmaster_custom_images';
     const stored = localStorage.getItem(key);
     if (stored) return JSON.parse(stored);
-  } catch {}
+  } catch (e) {
+    console.error('[useGameStore] 操作失败:', e);
+  }
   return [];
 }
 
@@ -353,7 +364,9 @@ function saveCustomImagesToStorage(images: GalleryImage[]) {
     const currentUserId = localStorage.getItem('shotmaster_current_user_id');
     const key = currentUserId ? `shotmaster_custom_images_${currentUserId}` : 'shotmaster_custom_images';
     localStorage.setItem(key, JSON.stringify(images));
-  } catch {}
+  } catch (e) {
+    console.error('[useGameStore] 操作失败:', e);
+  }
 }
 
 // 图库缓存版本号，更改数量或内容时递增
@@ -381,7 +394,9 @@ function loadUnsplashImagesFromStorage(): { images: GalleryImage[]; lastRefresh:
       const images: GalleryImage[] = JSON.parse(stored);
       return { images: images.slice(0, 30), lastRefresh };
     }
-  } catch {}
+  } catch (e) {
+    console.error('[useGameStore] 操作失败:', e);
+  }
   return { images: [], lastRefresh: null };
 }
 
@@ -392,15 +407,9 @@ function saveUnsplashImagesToStorage(images: GalleryImage[], lastRefresh: string
     const refreshKey = currentUserId ? `shotmaster_unsplash_last_refresh_${currentUserId}` : 'shotmaster_unsplash_last_refresh';
     localStorage.setItem(key, JSON.stringify(images));
     localStorage.setItem(refreshKey, lastRefresh);
-  } catch {}
-}
-
-function getStoredUsers(): (GameUser & { password: string })[] {
-  try {
-    const stored = localStorage.getItem('shotmaster_users');
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return [];
+  } catch (e) {
+    console.error('[useGameStore] 操作失败:', e);
+  }
 }
 
 function validatePassword(password: string): { valid: boolean; message: string; strength: number } {
@@ -453,6 +462,7 @@ const defaultUser: GameUser = loadUserFromStorage() || {
   shootCategories: [],
   shootingPlanFeedbacks: [],
   scoreFeedbacks: [],
+  scoringHistory: [],
 };
 
 // 加载本周挑战图片（用户独立）
@@ -468,7 +478,9 @@ try {
     initialWeeklyChallengeInfo = JSON.parse(storedInfo);
     initialWeeklyChallengeImage = initialWeeklyChallengeInfo.url;
   }
-} catch {}
+} catch (e) {
+  console.error('[useGameStore] 初始化失败:', e);
+}
 
 export const useGameStore = create<GameState>((set, get) => ({
   user: defaultUser,
@@ -505,7 +517,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     // 调用后端注册API
     const result = await userRegister(username, password);
     if (!result.success) {
+      clearUserToken();
       return { success: false, message: result.message };
+    }
+
+    // 保存用户token
+    if (result.token) {
+      setUserToken(result.token);
     }
 
     // 注册成功，初始化本地用户数据
@@ -524,7 +542,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ user: newUser });
 
     // 将游客模式下上传的作品迁移到新注册用户
-    migrateGuestWorks(newUserId).catch(e => console.error('迁移游客作品失败:', e));
+    migrateGuestWorks().catch(e => console.error('迁移游客作品失败:', e));
 
     return { success: true, message: '注册成功' };
   },
@@ -532,7 +550,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     // 调用后端登录API
     const result = await userLogin(username, password);
     if (!result.success) {
+      clearUserToken();
       return { success: false, message: result.message };
+    }
+
+    // 保存用户token
+    if (result.token) {
+      setUserToken(result.token);
     }
 
     // 登录成功，使用后端返回的用户数据初始化本地状态
@@ -552,7 +576,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         if (Array.isArray(parsed)) {
           preferences = parsed;
         }
-      } catch {}
+      } catch (e) {
+    console.error('[useGameStore] 操作失败:', e);
+  }
     }
 
     const loggedInUser: GameUser = {
@@ -586,7 +612,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ user: loggedInUser });
 
     // 将游客模式下上传的作品迁移到当前登录用户
-    migrateGuestWorks(userId).catch(e => console.error('迁移游客作品失败:', e));
+    migrateGuestWorks().catch(e => console.error('迁移游客作品失败:', e));
 
     return { success: true, message: '登录成功' };
   },
@@ -609,6 +635,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({ user: newUser });
   },
   logout: () => {
+    clearUserToken();
     const newUser = {
       ...defaultUser,
       id: '1',
@@ -665,7 +692,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   lastScoreLevelId: null,
   lastCapturedImage: null,
   isScoring: false,
-  compareImages: async (referenceUrl, userImageUrl, levelId) => {
+  compareImages: async (referenceUrl, userImageUrl, levelId, source: 'level' | 'gallery' | 'community' = 'level', levelTitle?: string) => {
     set({ isScoring: true, capturedImage: userImageUrl });
     const { user, currentLevel } = get();
     const category = currentLevel?.chapter || '';
@@ -676,6 +703,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       lastScore: scoreResult,
       lastScoreLevelId: levelId,
       lastCapturedImage: userImageUrl,
+    });
+
+    // 保存到评分历史记录
+    get().addScoringHistory({
+      image: userImageUrl,
+      referenceImage: referenceUrl,
+      score: scoreResult,
+      source,
+      levelId,
+      levelTitle: levelTitle || currentLevel?.title,
     });
 
     // 通关处理
@@ -1570,7 +1607,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const votedWorks = user.votedWorks || [];
     const hasVoted = votedWorks.includes(workId);
 
-    const res = await voteCommunityWork(workId, user.id);
+    const res = await voteCommunityWork(workId);
 
     // API 失败时不更新本地状态，避免前后端不一致
     if (!res.success || !res.data) {
@@ -1617,11 +1654,48 @@ export const useGameStore = create<GameState>((set, get) => ({
     return favorites.includes(workId);
   },
 
+  // 评分历史
+  addScoringHistory: (item) => {
+    const { user } = get();
+    const newHistoryItem = {
+      ...item,
+      id: `score_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      submittedToCommunity: false
+    };
+    const updatedUser = {
+      ...user,
+      scoringHistory: [newHistoryItem, ...user.scoringHistory]
+    };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+  markScoringSubmitted: (scoringId) => {
+    const { user } = get();
+    const updatedUser = {
+      ...user,
+      scoringHistory: user.scoringHistory.map(item =>
+        item.id === scoringId ? { ...item, submittedToCommunity: true } : item
+      )
+    };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+  removeScoringHistory: (scoringId) => {
+    const { user } = get();
+    const updatedUser = {
+      ...user,
+      scoringHistory: user.scoringHistory.filter(item => item.id !== scoringId)
+    };
+    saveUserToStorage(updatedUser);
+    set({ user: updatedUser });
+  },
+
   // 关注
   toggleFollow: async (userId) => {
     const { user } = get();
     try {
-      const res = await toggleUserFollow(user.id, userId);
+      const res = await toggleUserFollow(userId);
       if (res.success) {
         const followingIds = user.followingIds || [];
         const newFollowingIds = res.isFollowing
@@ -1646,3 +1720,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     return followingIds.includes(userId);
   },
 }));
+
+setAuthFailureHandler(() => {
+  const state = useGameStore.getState();
+  if (!state.user.isGuest) {
+    state.logout();
+  }
+});

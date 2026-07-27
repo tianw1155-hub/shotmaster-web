@@ -26,33 +26,40 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/api/auth/register", controllers.UserRegister)
 	r.POST("/api/auth/login", controllers.UserLogin)
 
-	// 用户数据同步（前台调用，不需要管理员权限）
-	r.POST("/api/users/sync", controllers.SyncUserData)
-	r.POST("/api/users/sync-feedbacks", controllers.SyncFeedbacks)
-	r.POST("/api/users/sync-score-feedbacks", controllers.SyncScoreFeedbacks)
-	r.POST("/api/users/toggle-follow", controllers.ToggleFollow)
-	r.POST("/api/feedback/submit", controllers.SubmitTextFeedback)
-
-	// 本周挑战（前台调用）
+	// 公开接口（不需要登录）
 	r.GET("/api/weekly-challenge", controllers.GetWeeklyChallenge)
-        r.GET("/api/community-works", controllers.GetCommunityWorks)
-        r.POST("/api/community-works", controllers.SubmitCommunityWork)
-        r.POST("/api/community-works/vote", controllers.VoteCommunityWork)
-        r.DELETE("/api/community-works/:id", controllers.DeleteCommunityWork)
-        r.POST("/api/community-works/migrate-guest", controllers.MigrateGuestWorks)
-
-	// 拍摄建议缓存（前台调用，不需要管理员权限）
+	r.GET("/api/community-works", controllers.GetCommunityWorks)
 	r.POST("/api/shooting-plan/cache", controllers.GetShootingPlanCache)
 	r.POST("/api/shooting-plan/cache/save", controllers.SaveShootingPlanCache)
 
-	// 日志上报（前台调用）
+	// 日志上报（不需要登录，但会校验 userId 签名）
 	r.POST("/api/logs/ai-call", controllers.ReportAiCall)
 	r.POST("/api/logs/unsplash-call", controllers.ReportUnsplashCall)
 	r.POST("/api/logs/page-visit", controllers.ReportPageVisit)
 
+	// 需要用户登录的接口
+	userAPI := r.Group("/api")
+	userAPI.Use(middleware.UserAuthMiddleware())
+	{
+		// 用户数据
+		userAPI.POST("/users/sync", controllers.SyncUserData)
+		userAPI.POST("/users/sync-feedbacks", controllers.SyncFeedbacks)
+		userAPI.POST("/users/sync-score-feedbacks", controllers.SyncScoreFeedbacks)
+		userAPI.POST("/users/toggle-follow", controllers.ToggleFollow)
+
+		// 反馈
+		userAPI.POST("/feedback/submit", controllers.SubmitTextFeedback)
+
+		// 社区作品
+		userAPI.POST("/community-works", controllers.SubmitCommunityWork)
+		userAPI.POST("/community-works/vote", controllers.VoteCommunityWork)
+		userAPI.DELETE("/community-works/:id", controllers.DeleteCommunityWork)
+		userAPI.POST("/community-works/migrate-guest", controllers.MigrateGuestWorks)
+	}
+
 	// 需要认证的管理员路由
 	admin := r.Group("/api/admin")
-	admin.Use(middleware.AuthMiddleware())
+	admin.Use(middleware.AdminAuthMiddleware())
 	{
 		// 管理员信息
 		admin.GET("/me", controllers.GetAdminInfo)

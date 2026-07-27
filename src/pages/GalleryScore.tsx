@@ -18,7 +18,7 @@ export function GalleryScorePage() {
 
   useEffect(() => {
     if (capturedImage && !score && !isScoring) {
-      compareImages(referenceImage, capturedImage, 1);
+      compareImages(referenceImage, capturedImage, 1, 'gallery', '本周挑战');
     }
   }, []);
 

@@ -200,6 +200,19 @@ export interface ImageInteraction {
   lastInteractedAt: string;
 }
 
+// 评分历史记录
+export interface ScoringHistory {
+  id: string;
+  image: string;
+  referenceImage: string;
+  score: Score;
+  source: 'level' | 'gallery' | 'community';
+  levelId?: number;
+  levelTitle?: string;
+  createdAt: string;
+  submittedToCommunity: boolean;
+}
+
 // 用户游戏数据
 export interface GameUser {
   id: string;
@@ -232,4 +245,5 @@ export interface GameUser {
   shootCategories: ImageCategory[]; // 经常拍摄的类别
   shootingPlanFeedbacks: ShootingPlanFeedback[]; // 拍摄计划反馈记录
   scoreFeedbacks: ScoreFeedback[]; // 评分建议反馈记录
+  scoringHistory: ScoringHistory[]; // 评分历史记录
 }

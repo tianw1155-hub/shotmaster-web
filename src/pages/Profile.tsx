@@ -46,17 +46,21 @@ function getAchievementIcon(emoji: string): React.ReactNode {
 }
 
 // ==================== 我的作品页面 ====================
+type WorkTab = 'all' | 'level' | 'gallery' | 'community';
+type DeleteItem = { type: 'community'; work: CommunityWork } | { type: 'scoring'; id: string };
+
 export function MyWorksPage() {
   const navigate = useNavigate();
-  const { user, communityWorks, fetchCommunityWorks, removeCommunityWork } = useGameStore();
-  const [workToDelete, setWorkToDelete] = React.useState<CommunityWork | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const { user, communityWorks, fetchCommunityWorks, removeCommunityWork, removeScoringHistory } = useGameStore();
+  const [activeTab, setActiveTab] = useState<WorkTab>('all');
+  const [itemToDelete, setItemToDelete] = useState<DeleteItem | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   React.useEffect(() => {
     fetchCommunityWorks();
   }, [fetchCommunityWorks]);
 
-  const myWorks = communityWorks.filter(w => {
+  const myCommunityWorks = communityWorks.filter(w => {
     const workAuthorId = String(w.authorId || '');
     const currentUserId = String(user.id || '');
     if (workAuthorId === currentUserId) return true;
@@ -64,22 +68,54 @@ export function MyWorksPage() {
     return false;
   });
 
-  const handleRemoveWork = (work: CommunityWork) => {
-    setWorkToDelete(work);
+  const scoringHistory = user.scoringHistory || [];
+
+  const allItems = [
+    ...myCommunityWorks.map(w => ({ type: 'community' as const, id: w.id, image: w.image, score: null, source: 'community' as const, title: '社区作品', createdAt: w.createdAt, votes: w.votes })),
+    ...scoringHistory.map(s => ({ type: 'scoring' as const, id: s.id, image: s.image, score: s.score, source: s.source, title: s.levelTitle || '', createdAt: s.createdAt, votes: null })),
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const filteredItems = activeTab === 'all'
+    ? allItems
+    : allItems.filter(item => item.source === activeTab);
+
+  const levelCount = scoringHistory.filter(s => s.source === 'level').length;
+  const galleryCount = scoringHistory.filter(s => s.source === 'gallery').length;
+  const communityCount = myCommunityWorks.length;
+
+  const handleRemove = (item: DeleteItem) => {
+    setItemToDelete(item);
     setShowDeleteConfirm(true);
   };
 
   const confirmDelete = () => {
-    if (workToDelete) {
-      removeCommunityWork(workToDelete.id);
+    if (itemToDelete) {
+      if (itemToDelete.type === 'community') {
+        removeCommunityWork(itemToDelete.work.id);
+      } else {
+        removeScoringHistory(itemToDelete.id);
+      }
     }
     setShowDeleteConfirm(false);
-    setWorkToDelete(null);
+    setItemToDelete(null);
   };
 
   const cancelDelete = () => {
     setShowDeleteConfirm(false);
-    setWorkToDelete(null);
+    setItemToDelete(null);
+  };
+
+  const sourceLabel: Record<WorkTab, string> = {
+    all: '全部',
+    level: '闯关',
+    gallery: '图库',
+    community: '社区',
+  };
+
+  const sourceBadgeColor: Record<string, string> = {
+    level: 'bg-accent/12 text-accent',
+    gallery: 'bg-gold/16 text-gold',
+    community: 'bg-emerald-500/12 text-emerald-600',
   };
 
   return (
@@ -99,59 +135,96 @@ export function MyWorksPage() {
 
         {/* 统计 — hairline rows */}
         <motion.div
-          className="grid grid-cols-3 divide-x divide-line border border-line rounded-md overflow-hidden"
+          className="grid grid-cols-4 divide-x divide-line border border-line rounded-md overflow-hidden"
           variants={variants.fadeUp}
           initial="hidden"
           animate="show"
         >
           {[
-            { value: myWorks.length, label: '作品总数', color: 'text-accent' },
-            { value: user.totalStars, label: '获得星数', color: 'text-gold' },
-            { value: user.averageScore, label: '平均分', color: 'text-ink-muted' },
+            { value: allItems.length, label: '作品总数', color: 'text-accent' },
+            { value: levelCount, label: '闯关作品', color: 'text-ink' },
+            { value: galleryCount, label: '图库作品', color: 'text-gold' },
+            { value: communityCount, label: '社区作品', color: 'text-emerald-600' },
           ].map((stat) => (
-            <div key={stat.label} className="p-4 text-center bg-surface-card first:border-l-0">
+            <div key={stat.label} className="p-3 text-center bg-surface-card first:border-l-0">
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
               <p className="text-xs text-ink-muted mt-0.5">{stat.label}</p>
             </div>
           ))}
         </motion.div>
 
+        {/* Tab 切换 */}
+        <div className="flex gap-2 flex-wrap">
+          {(['all', 'level', 'gallery', 'community'] as WorkTab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeTab === tab
+                  ? 'bg-accent text-white'
+                  : 'bg-surface-card text-ink-secondary border border-line hover:bg-surface-muted'
+              }`}
+            >
+              {sourceLabel[tab]}
+            </button>
+          ))}
+        </div>
+
         {/* 作品列表 — hairline grid */}
-        {myWorks.length > 0 ? (
+        {filteredItems.length > 0 ? (
           <motion.div
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"
             initial="hidden"
             animate="show"
             variants={{ show: { transition: { staggerChildren: 0.06 } } }}
           >
-            {myWorks.map((work, idx) => (
+            {filteredItems.map((item, idx) => (
               <motion.div
-                key={work.id || idx}
+                key={item.id || idx}
                 variants={variants.fadeUp}
                 className="bg-surface-card border border-line rounded-md overflow-hidden group relative hover:border-accent/30 transition-colors"
               >
                 <img
-                  src={work.image}
-                  alt={work.author}
+                  src={item.image}
+                  alt={item.title}
                   className="w-full aspect-square object-cover"
                   loading="lazy"
                 />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleRemoveWork(work);
+                    handleRemove(item.type === 'community'
+                      ? { type: 'community', work: myCommunityWorks.find(w => w.id === item.id)! }
+                      : { type: 'scoring', id: item.id });
                   }}
                   aria-label="删除作品"
                   className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger"
                 >
                   <Trash2 className="w-4 h-4 text-white" strokeWidth={1.5} />
                 </button>
-                <div className="p-3 border-t border-line flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Heart className="w-3.5 h-3.5 text-accent fill-accent" strokeWidth={1.25} />
-                    <span className="text-xs text-ink-secondary">{work.votes || 0} 票</span>
+                <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-medium ${sourceBadgeColor[item.source]}`}>
+                  {sourceLabel[item.source as WorkTab]}
+                </div>
+                <div className="p-3 border-t border-line">
+                  <div className="flex items-center justify-between mb-1">
+                    {item.score ? (
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 text-gold fill-gold" strokeWidth={1.25} />
+                        <span className="text-xs font-bold text-ink">{item.score.overall}分</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <Heart className="w-3.5 h-3.5 text-accent fill-accent" strokeWidth={1.25} />
+                        <span className="text-xs text-ink-secondary">{item.votes || 0} 票</span>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-xs text-ink-muted truncate">{work.createdAt ? new Date(work.createdAt).toLocaleDateString('zh-CN') : ''}</span>
+                  {item.title && (
+                    <p className="text-xs text-ink-muted truncate">{item.title}</p>
+                  )}
+                  <p className="text-xs text-ink-muted mt-0.5">
+                    {item.createdAt ? new Date(item.createdAt).toLocaleDateString('zh-CN') : ''}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -164,17 +237,22 @@ export function MyWorksPage() {
             className="bg-surface-card border border-line rounded-md p-8 text-center"
           >
             <Camera className="w-12 h-12 text-ink-muted mx-auto mb-3" strokeWidth={1.25} />
-            <p className="text-ink-secondary">还没有上传作品</p>
-            <p className="text-ink-muted text-sm mt-1">参与本周挑战并上传你的作品</p>
-            <Button variant="primary" className="mt-4" onClick={() => navigate('/community')}>
-              去社区看看
-            </Button>
+            <p className="text-ink-secondary">还没有{activeTab === 'all' ? '' : sourceLabel[activeTab]}作品</p>
+            <p className="text-ink-muted text-sm mt-1">参与闯关、图库或社区挑战来创作作品</p>
+            <div className="flex justify-center gap-3 mt-4">
+              <Button variant="primary" onClick={() => navigate('/')}>
+                开始闯关
+              </Button>
+              <Button variant="secondary" onClick={() => navigate('/community')}>
+                去社区看看
+              </Button>
+            </div>
           </motion.div>
         )}
       </div>
 
       {/* 删除确认弹窗 */}
-      {showDeleteConfirm && workToDelete && (
+      {showDeleteConfirm && itemToDelete && (
         <motion.div
           className="fixed inset-0 z-[110] flex items-center justify-center bg-ink/40 backdrop-blur-sm"
           variants={variants.fadeIn}
@@ -195,7 +273,11 @@ export function MyWorksPage() {
               <Trash2 className="w-8 h-8 text-danger" strokeWidth={1.25} />
             </div>
             <h3 className="font-display text-lg font-bold text-ink text-center mb-2">确认删除作品</h3>
-            <p className="text-ink-secondary text-sm text-center mb-6">删除后作品将从排行榜中移除，无法恢复。</p>
+            <p className="text-ink-secondary text-sm text-center mb-6">
+              {itemToDelete.type === 'community'
+                ? '删除后作品将从排行榜中移除，无法恢复。'
+                : '删除后该评分记录将被移除，无法恢复。'}
+            </p>
             <div className="space-y-3">
               <button
                 onClick={confirmDelete}
@@ -585,17 +667,30 @@ export function ProfilePage() {
   const favoriteWorkCount = communityWorks.filter((work) => isFavoriteWork(work.id)).length;
   const favoriteCount = favoriteImageCount + favoriteWorkCount;
 
-  const myWorksCount = communityWorks.filter(w => {
+  const myCommunityWorks = communityWorks.filter(w => {
     const workAuthorId = String(w.authorId || '');
     const currentUserId = String(user.id || '');
     if (workAuthorId === currentUserId) return true;
     if (currentUserId !== '1' && workAuthorId === '1') return true;
     return false;
-  }).length;
+  });
+  const myWorksCount = myCommunityWorks.length + (user.scoringHistory?.length || 0);
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('只支持 JPG、PNG、GIF、WebP 格式');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('文件大小不能超过 5MB');
+      e.target.value = '';
+      return;
+    }
 
     setIsUploading(true);
     const reader = new FileReader();
@@ -603,6 +698,10 @@ export function ProfilePage() {
       const dataUrl = event.target?.result as string;
       updateUser({ avatar: dataUrl });
       setIsUploading(false);
+    };
+    reader.onerror = () => {
+      setIsUploading(false);
+      alert('图片读取失败，请重试');
     };
     reader.readAsDataURL(file);
   };

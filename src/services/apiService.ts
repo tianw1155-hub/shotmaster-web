@@ -1,5 +1,66 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
+const USER_TOKEN_KEY = 'shotmaster_user_token';
+
+let authFailureHandler: (() => void) | null = null;
+
+export function setAuthFailureHandler(handler: () => void) {
+  authFailureHandler = handler;
+}
+
+export function setUserToken(token: string) {
+  localStorage.setItem(USER_TOKEN_KEY, token);
+}
+
+export function getUserToken(): string | null {
+  return localStorage.getItem(USER_TOKEN_KEY);
+}
+
+export function clearUserToken() {
+  localStorage.removeItem(USER_TOKEN_KEY);
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getUserToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  if (response.status === 401) {
+    clearUserToken();
+    if (authFailureHandler) {
+      authFailureHandler();
+    }
+    const data = await response.json().catch(() => ({}));
+    throw new Error((data as any).message || '登录已过期，请重新登录');
+  }
+  return response.json() as Promise<T>;
+}
+
+async function requestWithRetry<T>(
+  url: string,
+  options: RequestInit,
+  maxRetries = 3,
+  retryDelay = 1000,
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      return handleResponse<T>(response);
+    } catch (e) {
+      lastError = e;
+      if (e instanceof Error && e.message.includes('登录已过期')) {
+        throw e;
+      }
+      if (attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
 interface SyncUserResponse {
   success: boolean;
   message: string;
@@ -19,6 +80,7 @@ export interface UserAuthResponse {
   message: string;
   userId?: string;
   username?: string;
+  token?: string;
   user?: {
     id: string;
     username: string;
@@ -98,14 +160,14 @@ export async function syncUserData(userData: {
   preferences: string[];
 }): Promise<SyncUserResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/sync`, {
+    return await requestWithRetry<SyncUserResponse>(`${API_BASE_URL}/users/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(),
       },
       body: JSON.stringify(userData),
     });
-    return await response.json();
   } catch (e) {
     console.error('Sync user data failed:', e);
     return { success: false, message: '网络错误', userId: userData.userId };
@@ -123,17 +185,16 @@ export async function syncFeedbacks(userId: string, feedbacks: Array<{
   updatedAt: string;
 }>): Promise<SyncFeedbackResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/sync-feedbacks`, {
+    return await requestWithRetry<SyncFeedbackResponse>(`${API_BASE_URL}/users/sync-feedbacks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(),
       },
       body: JSON.stringify({
-        userId,
         feedbacks,
       }),
     });
-    return await response.json();
   } catch (e) {
     console.error('Sync feedbacks failed:', e);
     return { success: false, synced: 0, message: '网络错误' };
@@ -150,17 +211,16 @@ export async function syncScoreFeedbacks(userId: string, feedbacks: Array<{
   updatedAt: string;
 }>): Promise<SyncFeedbackResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/sync-score-feedbacks`, {
+    return await requestWithRetry<SyncFeedbackResponse>(`${API_BASE_URL}/users/sync-score-feedbacks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders(),
       },
       body: JSON.stringify({
-        userId,
         feedbacks,
       }),
     });
-    return await response.json();
   } catch (e) {
     console.error('Sync score feedbacks failed:', e);
     return { success: false, synced: 0, message: '网络错误' };
@@ -323,7 +383,6 @@ export async function getScoreFeedbackStats(token: string, filters?: {
 // ==================== 用户文字反馈 ====================
 
 export async function submitTextFeedback(data: {
-  userId: string;
   username: string;
   category: string;
   content: string;
@@ -331,7 +390,10 @@ export async function submitTextFeedback(data: {
 }): Promise<{ success: boolean; message: string }> {
   const response = await fetch(`${API_BASE_URL}/feedback/submit`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders(),
+    },
     body: JSON.stringify(data),
   });
   return await response.json();
@@ -437,15 +499,18 @@ export async function uploadImage(token: string, file: File): Promise<{ success:
 }
 
 // 关注/取消关注用户
-export async function toggleUserFollow(followerId: string, targetId: string): Promise<{
+export async function toggleUserFollow(targetId: string): Promise<{
   success: boolean;
   isFollowing: boolean;
   message: string;
 }> {
   const response = await fetch(`${API_BASE_URL}/users/toggle-follow`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ followerId, targetId }),
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders(),
+    },
+    body: JSON.stringify({ targetId }),
   });
   if (!response.ok) throw new Error('关注操作失败');
   return await response.json();
@@ -485,7 +550,10 @@ export async function submitCommunityWork(work: Omit<CommunityWork, 'id' | 'vote
   try {
     const response = await fetch(`${API_BASE_URL}/community-works`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+      },
       body: JSON.stringify(work),
     });
     const data = await response.json();
@@ -496,12 +564,15 @@ export async function submitCommunityWork(work: Omit<CommunityWork, 'id' | 'vote
   }
 }
 
-export async function voteCommunityWork(workId: string, userId: string): Promise<{ success: boolean; data?: CommunityWork }> {
+export async function voteCommunityWork(workId: string): Promise<{ success: boolean; data?: CommunityWork }> {
   try {
     const response = await fetch(`${API_BASE_URL}/community-works/vote`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workId, userId }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+      },
+      body: JSON.stringify({ workId }),
     });
     const data = await response.json();
     return data;
@@ -515,6 +586,7 @@ export async function deleteCommunityWork(workId: string): Promise<{ success: bo
   try {
     const response = await fetch(`${API_BASE_URL}/community-works/${workId}`, {
       method: 'DELETE',
+      headers: authHeaders(),
     });
     const data = await response.json();
     return data;
@@ -524,12 +596,14 @@ export async function deleteCommunityWork(workId: string): Promise<{ success: bo
   }
 }
 
-export async function migrateGuestWorks(newUserId: string): Promise<{ success: boolean; message: string; migratedCount?: number }> {
+export async function migrateGuestWorks(): Promise<{ success: boolean; message: string; migratedCount?: number }> {
   try {
     const response = await fetch(`${API_BASE_URL}/community-works/migrate-guest`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ newUserId }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
+      },
     });
     const data = await response.json();
     return data;
@@ -724,11 +798,14 @@ export async function reportAiCall(data: {
   errorMsg?: string;
 }): Promise<void> {
   try {
-    await fetch(`${API_BASE_URL}/logs/ai-call`, {
+    const response = await fetch(`${API_BASE_URL}/logs/ai-call`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
+    if (!response.ok) {
+      console.error('Report AI call failed: HTTP', response.status);
+    }
   } catch (e) {
     console.error('Report AI call failed:', e);
   }
@@ -745,11 +822,14 @@ export async function reportUnsplashCall(data: {
   errorMsg?: string;
 }): Promise<void> {
   try {
-    await fetch(`${API_BASE_URL}/logs/unsplash-call`, {
+    const response = await fetch(`${API_BASE_URL}/logs/unsplash-call`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
+    if (!response.ok) {
+      console.error('Report Unsplash call failed: HTTP', response.status);
+    }
   } catch (e) {
     console.error('Report Unsplash call failed:', e);
   }
@@ -764,11 +844,14 @@ export async function reportPageVisit(data: {
   staySec?: number;
 }): Promise<void> {
   try {
-    await fetch(`${API_BASE_URL}/logs/page-visit`, {
+    const response = await fetch(`${API_BASE_URL}/logs/page-visit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
+    if (!response.ok) {
+      console.error('Report page visit failed: HTTP', response.status);
+    }
   } catch (e) {
     console.error('Report page visit failed:', e);
   }

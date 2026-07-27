@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"shotmaster-backend/middleware"
 	"shotmaster-backend/models"
 	"time"
 
@@ -10,8 +11,13 @@ import (
 
 // 用户提交文字反馈
 func SubmitTextFeedback(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	var req struct {
-		UserID   string `json:"userId" binding:"required"`
 		Username string `json:"username"`
 		Category string `json:"category"`
 		Content  string `json:"content" binding:"required"`
@@ -26,7 +32,7 @@ func SubmitTextFeedback(c *gin.Context) {
 	now := time.Now().In(feedbackShanghaiLocation)
 
 	feedback := models.UserTextFeedback{
-		UserID:   req.UserID,
+		UserID:   currentUserID,
 		Username: req.Username,
 		Category: req.Category,
 		Content:  req.Content,

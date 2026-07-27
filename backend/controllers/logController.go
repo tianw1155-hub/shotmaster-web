@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"shotmaster-backend/models"
 	"strconv"
@@ -26,7 +27,7 @@ func ReportAiCall(c *gin.Context) {
 	}
 
 	now := time.Now().In(shanghaiLocation)
-	log := models.AiCallLog{
+	logEntry := models.AiCallLog{
 		UserID:     req.UserID,
 		ApiType:    req.ApiType,
 		ImageURL:   req.ImageURL,
@@ -36,7 +37,11 @@ func ReportAiCall(c *gin.Context) {
 		ErrorMsg:   req.ErrorMsg,
 		CreatedAt:  now,
 	}
-	models.DB.Create(&log)
+	if err := models.DB.Create(&logEntry).Error; err != nil {
+		log.Printf("Failed to create AI call log: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "保存日志失败"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "上报成功"})
 }
@@ -59,7 +64,7 @@ func ReportUnsplashCall(c *gin.Context) {
 	}
 
 	now := time.Now().In(shanghaiLocation)
-	log := models.UnsplashCallLog{
+	logEntry := models.UnsplashCallLog{
 		UserID:      req.UserID,
 		Action:      req.Action,
 		Query:       req.Query,
@@ -70,7 +75,11 @@ func ReportUnsplashCall(c *gin.Context) {
 		ErrorMsg:    req.ErrorMsg,
 		CreatedAt:   now,
 	}
-	models.DB.Create(&log)
+	if err := models.DB.Create(&logEntry).Error; err != nil {
+		log.Printf("Failed to create Unsplash call log: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "保存日志失败"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "上报成功"})
 }
@@ -91,7 +100,7 @@ func ReportPageVisit(c *gin.Context) {
 	}
 
 	now := time.Now().In(shanghaiLocation)
-	log := models.PageVisitLog{
+	logEntry := models.PageVisitLog{
 		UserID:    req.UserID,
 		SessionID: req.SessionID,
 		Page:      req.Page,
@@ -100,7 +109,11 @@ func ReportPageVisit(c *gin.Context) {
 		StaySec:   req.StaySec,
 		CreatedAt: now,
 	}
-	models.DB.Create(&log)
+	if err := models.DB.Create(&logEntry).Error; err != nil {
+		log.Printf("Failed to create page visit log: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "保存日志失败"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "上报成功"})
 }

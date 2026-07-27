@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"shotmaster-backend/middleware"
 	"shotmaster-backend/models"
 	"strconv"
 	"strings"
@@ -91,11 +92,20 @@ type ScoreFeedbackSyncRequest struct {
 
 // 用户数据同步
 func SyncUserData(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	var req UserSyncRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
 		return
 	}
+
+	// 强制用 token 中的 userId，不允许前端篡改
+	req.UserID = currentUserID
 
 	var user models.User
 	result := models.DB.Where("id = ?", req.UserID).First(&user)
@@ -182,6 +192,12 @@ func SyncUserData(c *gin.Context) {
 
 // 同步反馈数据
 func SyncFeedbacks(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	var req FeedbackSyncRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
@@ -191,13 +207,13 @@ func SyncFeedbacks(c *gin.Context) {
 	for _, item := range req.Feedbacks {
 		var feedback models.ShootingPlanFeedback
 		result := models.DB.Where("user_id = ? AND image_id = ? AND dimension = ?",
-			req.UserID, item.ImageID, item.Dimension).First(&feedback)
+			currentUserID, item.ImageID, item.Dimension).First(&feedback)
 
 		now := nowInShanghai()
 
 		if result.Error != nil {
 			feedback = models.ShootingPlanFeedback{
-				UserID:     req.UserID,
+				UserID:     currentUserID,
 				ImageID:    item.ImageID,
 				ImageURL:   item.ImageURL,
 				ImageTitle: item.ImageTitle,
@@ -229,6 +245,12 @@ func SyncFeedbacks(c *gin.Context) {
 
 // 同步评分建议反馈数据
 func SyncScoreFeedbacks(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	var req ScoreFeedbackSyncRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
@@ -238,13 +260,13 @@ func SyncScoreFeedbacks(c *gin.Context) {
 	for _, item := range req.Feedbacks {
 		var feedback models.ScoreSuggestionFeedback
 		result := models.DB.Where("user_id = ? AND score_id = ? AND suggestion_key = ?",
-			req.UserID, item.ScoreID, item.SuggestionKey).First(&feedback)
+			currentUserID, item.ScoreID, item.SuggestionKey).First(&feedback)
 
 		now := nowInShanghai()
 
 		if result.Error != nil {
 			feedback = models.ScoreSuggestionFeedback{
-				UserID:          req.UserID,
+				UserID:          currentUserID,
 				ScoreID:         item.ScoreID,
 				SuggestionKey:   item.SuggestionKey,
 				SuggestionTitle: item.Title,
@@ -794,26 +816,31 @@ func SaveShootingPlanCache(c *gin.Context) {
 
 // ToggleFollowRequest 关注/取消关注请求
 type ToggleFollowRequest struct {
-	FollowerID string `json:"followerId" binding:"required"` // 发起关注的用户ID
-	TargetID   string `json:"targetId" binding:"required"`   // 被关注的用户ID
+	TargetID string `json:"targetId" binding:"required"` // 被关注的用户ID
 }
 
 // ToggleFollow 关注/取消关注用户
 func ToggleFollow(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	var req ToggleFollowRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
 		return
 	}
 
-	if req.FollowerID == req.TargetID {
+	if currentUserID == req.TargetID {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "不能关注自己"})
 		return
 	}
 
 	// 查找两个用户
 	var follower, target models.User
-	if models.DB.Where("id = ?", req.FollowerID).First(&follower).Error != nil {
+	if models.DB.Where("id = ?", currentUserID).First(&follower).Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "用户不存在"})
 		return
 	}
@@ -824,30 +851,56 @@ func ToggleFollow(c *gin.Context) {
 
 	// 查询关注记录表判断当前是否已关注
 	var followRecord models.UserFollow
-	isFollowing := models.DB.Where("follower_id = ? AND target_id = ?", req.FollowerID, req.TargetID).First(&followRecord).Error == nil
+	isFollowing := models.DB.Where("follower_id = ? AND target_id = ?", currentUserID, req.TargetID).First(&followRecord).Error == nil
 
 	now := nowInShanghai()
 
 	if isFollowing {
-		// 取消关注：删除关注记录，更新双方计数
-		models.DB.Delete(&followRecord)
-		models.DB.Model(&follower).UpdateColumn("following", follower.Following-1)
-		models.DB.Model(&target).UpdateColumn("followers", target.Followers-1)
+		tx := models.DB.Begin()
+		if err := tx.Delete(&followRecord).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+			return
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", currentUserID).UpdateColumn("following", models.DB.Raw("following - 1")).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+			return
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", req.TargetID).UpdateColumn("followers", models.DB.Raw("followers - 1")).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+			return
+		}
+		tx.Commit()
 		c.JSON(http.StatusOK, gin.H{
 			"success":     true,
 			"isFollowing": false,
 			"message":     "已取消关注",
 		})
 	} else {
-		// 新建关注：创建关注记录，更新双方计数
+		tx := models.DB.Begin()
 		newRecord := models.UserFollow{
-			FollowerID: req.FollowerID,
+			FollowerID: currentUserID,
 			TargetID:   req.TargetID,
 			CreatedAt:  now,
 		}
-		models.DB.Create(&newRecord)
-		models.DB.Model(&follower).UpdateColumn("following", follower.Following+1)
-		models.DB.Model(&target).UpdateColumn("followers", target.Followers+1)
+		if err := tx.Create(&newRecord).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+			return
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", currentUserID).UpdateColumn("following", models.DB.Raw("following + 1")).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+			return
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", req.TargetID).UpdateColumn("followers", models.DB.Raw("followers + 1")).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+			return
+		}
+		tx.Commit()
 		c.JSON(http.StatusOK, gin.H{
 			"success":     true,
 			"isFollowing": true,

@@ -23,7 +23,7 @@ export function ScorePage() {
 
   useEffect(() => {
     if (capturedImage && !score && !isScoring) {
-      compareImages(level.referenceImage.url, capturedImage, lid);
+      compareImages(level.referenceImage.url, capturedImage, lid, 'level', level.title);
     }
   }, []);
 

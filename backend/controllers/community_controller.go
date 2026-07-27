@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"shotmaster-backend/middleware"
 	"shotmaster-backend/models"
 	"strings"
 	"time"
@@ -143,12 +144,20 @@ func GetCommunityWorks(c *gin.Context) {
 }
 
 func SubmitCommunityWork(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	var work models.CommunityWork
 	if err := c.ShouldBindJSON(&work); err != nil {
 		log.Printf("SubmitCommunityWork ShouldBindJSON error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "参数错误: " + err.Error()})
 		return
 	}
+
+	work.AuthorID = currentUserID
 
 	if work.ID == "" {
 		work.ID = time.Now().Format("20060102150405") + "_" + work.AuthorID
@@ -188,18 +197,31 @@ func SubmitCommunityWork(c *gin.Context) {
 }
 
 func VoteCommunityWork(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	var req struct {
 		WorkID string `json:"workId"`
-		UserID string `json:"userId"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "参数错误"})
 		return
 	}
 
+	tx := models.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	var work models.CommunityWork
-	result := models.DB.First(&work, "id = ?", req.WorkID)
+	result := tx.Set("gorm:query_option", "FOR UPDATE").First(&work, "id = ?", req.WorkID)
 	if result.Error != nil {
+		tx.Rollback()
 		c.JSON(http.StatusNotFound, gin.H{"success": false, "message": "作品不存在"})
 		return
 	}
@@ -211,7 +233,7 @@ func VoteCommunityWork(c *gin.Context) {
 
 	hasVoted := false
 	for i, uid := range votedBy {
-		if uid == req.UserID {
+		if uid == currentUserID {
 			votedBy = append(votedBy[:i], votedBy[i+1:]...)
 			work.Votes = work.Votes - 1
 			hasVoted = true
@@ -220,7 +242,7 @@ func VoteCommunityWork(c *gin.Context) {
 	}
 
 	if !hasVoted {
-		votedBy = append(votedBy, req.UserID)
+		votedBy = append(votedBy, currentUserID)
 		work.Votes = work.Votes + 1
 	}
 
@@ -228,15 +250,39 @@ func VoteCommunityWork(c *gin.Context) {
 	work.VotedBy = string(votedByJSON)
 	work.UpdatedAt = time.Now()
 
-	models.DB.Save(&work)
+	if err := tx.Save(&work).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "投票失败"})
+		return
+	}
+
+	tx.Commit()
 
 	normalizeEmptyJSONFields(&work)
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": work})
 }
 
 func DeleteCommunityWork(c *gin.Context) {
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
+		return
+	}
+
 	workID := c.Param("id")
-	result := models.DB.Delete(&models.CommunityWork{}, "id = ?", workID)
+	var work models.CommunityWork
+	result := models.DB.First(&work, "id = ?", workID)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"success": false, "message": "作品不存在"})
+		return
+	}
+
+	if work.AuthorID != currentUserID {
+		c.JSON(http.StatusForbidden, gin.H{"success": false, "message": "无权限删除此作品"})
+		return
+	}
+
+	result = models.DB.Delete(&models.CommunityWork{}, "id = ?", workID)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "删除失败"})
 		return
@@ -244,19 +290,17 @@ func DeleteCommunityWork(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "删除成功"})
 }
 
-// MigrateGuestWorks 将游客（authorId='1'）的作品迁移到新注册用户
+// MigrateGuestWorks 将游客（authorId='1'）的作品迁移到当前登录用户
 func MigrateGuestWorks(c *gin.Context) {
-	var req struct {
-		NewUserID string `json:"newUserId" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "参数错误"})
+	currentUserID, ok := middleware.GetCurrentUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "请先登录"})
 		return
 	}
 
 	result := models.DB.Model(&models.CommunityWork{}).
 		Where("author_id = ?", "1").
-		Update("author_id", req.NewUserID)
+		Update("author_id", currentUserID)
 
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "迁移失败"})

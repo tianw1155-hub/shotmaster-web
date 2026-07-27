@@ -30,7 +30,6 @@ export const FeedbackPage: React.FC = () => {
     setSubmitting(true);
     try {
       await submitTextFeedback({
-        userId: user.id,
         username: user.name || user.phone || '',
         category,
         content: content.trim(),
