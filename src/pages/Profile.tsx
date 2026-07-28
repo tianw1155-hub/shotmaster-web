@@ -148,7 +148,7 @@ export function MyWorksPage() {
 
         {/* Tab 切换 */}
         <div className="flex gap-2 flex-wrap">
-          {(['all', 'level', 'community'] as WorkTab[]).map((tab) => (
+          {(['all', 'level', 'gallery', 'community'] as WorkTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
