@@ -206,7 +206,7 @@ export function GalleryDetailPage() {
   const {
     customGalleryImages,
     getAllGalleryImages,
-    setWeeklyChallengeImage,
+    setGalleryReferenceImage,
     toggleFavoriteImage,
     isFavoriteImage,
     recordShootCategory,
@@ -262,7 +262,7 @@ export function GalleryDetailPage() {
   const diff = difficultyLabels[image.difficulty];
 
   const handleStartChallenge = () => {
-    setWeeklyChallengeImage(image.url);
+    setGalleryReferenceImage(image.url, image.id);
     recordShootCategory(image.category);
     navigate(`/shoot/1?mode=upload&from=gallery&imageId=${image.id}`);
   };

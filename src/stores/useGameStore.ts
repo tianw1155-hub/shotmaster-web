@@ -91,6 +91,11 @@ interface GameState {
   setWeeklyChallengeImage: (url: string) => void;
   refreshWeeklyChallenge: () => Promise<void>;
 
+  // 图库参考图（点击图库图片进入挑战时使用）
+  galleryReferenceImage: string;
+  galleryReferenceImageId: string | null;
+  setGalleryReferenceImage: (url: string, imageId?: string) => void;
+
   // 通关
   completeLevel: (levelId: number, stars: Stars, score: number) => void;
   checkAchievements: () => string[];
@@ -738,6 +743,12 @@ export const useGameStore = create<GameState>((set, get) => ({
   weeklyChallengeInfo: initialWeeklyChallengeInfo,
   lastWeeklyRefresh: initialLastWeeklyRefresh,
   setWeeklyChallengeImage: (url: string) => set({ weeklyChallengeImage: url }),
+
+  // 图库参考图
+  galleryReferenceImage: '',
+  galleryReferenceImageId: null,
+  setGalleryReferenceImage: (url: string, imageId?: string) =>
+    set({ galleryReferenceImage: url, galleryReferenceImageId: imageId || null }),
   refreshWeeklyChallenge: async () => {
     const challenge = await getWeeklyChallenge();
     if (challenge) {

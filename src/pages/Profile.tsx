@@ -46,7 +46,7 @@ function getAchievementIcon(emoji: string): React.ReactNode {
 }
 
 // ==================== 我的作品页面 ====================
-type WorkTab = 'all' | 'level' | 'gallery';
+type WorkTab = 'all' | 'level' | 'community';
 type DeleteItem = { type: 'scoring'; id: string };
 
 export function MyWorksPage() {
@@ -68,10 +68,12 @@ export function MyWorksPage() {
 
   const filteredItems = activeTab === 'all'
     ? allItems
-    : allItems.filter(item => item.source === activeTab);
+    : activeTab === 'community'
+      ? allItems.filter(item => item.source === 'gallery' || item.source === 'community')
+      : allItems.filter(item => item.source === activeTab);
 
   const levelCount = scoringHistory.filter(s => s.source === 'level').length;
-  const galleryCount = scoringHistory.filter(s => s.source === 'gallery').length;
+  const communityCount = scoringHistory.filter(s => s.source === 'gallery' || s.source === 'community').length;
 
   const handleRemove = (item: DeleteItem) => {
     setItemToDelete(item);
@@ -94,12 +96,18 @@ export function MyWorksPage() {
   const sourceLabel: Record<WorkTab, string> = {
     all: '全部',
     level: '闯关',
-    gallery: '图库',
+    community: '社区作品',
   };
 
   const sourceBadgeColor: Record<string, string> = {
     level: 'bg-accent/12 text-accent',
     gallery: 'bg-gold/16 text-gold',
+    community: 'bg-gold/16 text-gold',
+  };
+
+  const getSourceBadgeLabel = (source: string): string => {
+    if (source === 'gallery' || source === 'community') return '社区作品';
+    return sourceLabel[source as WorkTab] || source;
   };
 
   return (
@@ -119,7 +127,7 @@ export function MyWorksPage() {
 
         {/* 统计 — hairline rows */}
         <motion.div
-          className="grid grid-cols-4 divide-x divide-line border border-line rounded-md overflow-hidden"
+          className="grid grid-cols-3 divide-x divide-line border border-line rounded-md overflow-hidden"
           variants={variants.fadeUp}
           initial="hidden"
           animate="show"
@@ -127,7 +135,7 @@ export function MyWorksPage() {
           {[
             { value: allItems.length, label: '作品总数', color: 'text-accent' },
             { value: levelCount, label: '闯关作品', color: 'text-ink' },
-            { value: galleryCount, label: '图库作品', color: 'text-gold' },
+            { value: communityCount, label: '社区作品', color: 'text-gold' },
           ].map((stat) => (
             <div key={stat.label} className="p-3 text-center bg-surface-card first:border-l-0">
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -138,7 +146,7 @@ export function MyWorksPage() {
 
         {/* Tab 切换 */}
         <div className="flex gap-2 flex-wrap">
-          {(['all', 'level', 'gallery'] as WorkTab[]).map((tab) => (
+          {(['all', 'level', 'community'] as WorkTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -184,7 +192,7 @@ export function MyWorksPage() {
                   <Trash2 className="w-4 h-4 text-white" strokeWidth={1.5} />
                 </button>
                 <div className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-xs font-medium ${sourceBadgeColor[item.source]}`}>
-                  {sourceLabel[item.source as WorkTab]}
+                  {getSourceBadgeLabel(item.source)}
                 </div>
                 <div className="p-3 border-t border-line">
                   <div className="flex items-center justify-between mb-1">

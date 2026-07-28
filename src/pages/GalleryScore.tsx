@@ -7,7 +7,7 @@ import { Card, Button, RingProgress } from '../components/ui/Button';
 
 export function GalleryScorePage() {
   const navigate = useNavigate();
-  const { user, capturedImage, score, isScoring, compareImages, weeklyChallengeImage, setCapturedImage, clearScore, addCommunityWork, toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
+  const { user, capturedImage, score, isScoring, compareImages, galleryReferenceImage, setCapturedImage, clearScore, addCommunityWork, toggleLikeFeedback, toggleDislikeFeedback, getFeedbackItemFeedback } = useGameStore();
   const [compareMode, setCompareMode] = useState<'split' | 'overlay'>('split');
   const [hasAddedWork, setHasAddedWork] = useState(false);
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
@@ -15,12 +15,12 @@ export function GalleryScorePage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const hasScoredRef = useRef(false);
 
-  const referenceImage = weeklyChallengeImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400';
+  const referenceImage = galleryReferenceImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400';
 
   useEffect(() => {
     if (capturedImage && !score && !isScoring && !hasScoredRef.current) {
       hasScoredRef.current = true;
-      compareImages(referenceImage, capturedImage, 1, 'gallery', '本周挑战');
+      compareImages(referenceImage, capturedImage, 1, 'gallery', '图库参考图');
     }
   }, [capturedImage, score, isScoring]);
 
