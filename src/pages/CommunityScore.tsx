@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeftRight, Sparkles, ChevronRight, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
@@ -13,12 +13,14 @@ export function CommunityScorePage() {
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const hasScoredRef = useRef(false);
 
   // 使用本周挑战图片作为参考图
   const referenceImage = weeklyChallengeImage || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400';
 
   useEffect(() => {
-    if (capturedImage && !score && !isScoring) {
+    if (capturedImage && !score && !isScoring && !hasScoredRef.current) {
+      hasScoredRef.current = true;
       compareImages(referenceImage, capturedImage, 1, 'community', '本周挑战');
     }
   }, [capturedImage, score, isScoring]);

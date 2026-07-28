@@ -1661,9 +1661,18 @@ export const useGameStore = create<GameState>((set, get) => ({
   // 评分历史
   addScoringHistory: (item) => {
     const { user } = get();
+    const now = Date.now();
+    const isDuplicate = user.scoringHistory.some(h => {
+      const sameImage = h.image === item.image;
+      const sameSource = h.source === item.source;
+      const withinWindow = now - new Date(h.createdAt).getTime() < 60000;
+      return sameImage && sameSource && withinWindow;
+    });
+    if (isDuplicate) return;
+
     const newHistoryItem = {
       ...item,
-      id: `score_${Date.now()}`,
+      id: `score_${now}`,
       createdAt: new Date().toISOString(),
       submittedToCommunity: false
     };

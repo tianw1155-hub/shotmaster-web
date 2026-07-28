@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useGameStore } from '../stores/useGameStore';
@@ -15,6 +15,7 @@ export function ScorePage() {
   const { user, capturedImage, score, isScoring, compareImages, currentLevel, checkAchievements, setCapturedImage } = useGameStore();
   const [showReward, setShowReward] = useState(false);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
+  const hasScoredRef = useRef(false);
 
   const lid = parseInt(levelId || '1');
   const fromCommunity = searchParams.get('from') === 'community';
@@ -22,7 +23,8 @@ export function ScorePage() {
   const scoreId = `level_${lid}_${Date.now()}`;
 
   useEffect(() => {
-    if (capturedImage && !score && !isScoring) {
+    if (capturedImage && !score && !isScoring && !hasScoredRef.current) {
+      hasScoredRef.current = true;
       compareImages(level.referenceImage.url, capturedImage, lid, 'level', level.title);
     }
   }, []);
