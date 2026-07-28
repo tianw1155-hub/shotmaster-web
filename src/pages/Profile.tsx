@@ -231,12 +231,28 @@ export function MyWorksPage() {
             <p className="text-ink-secondary">还没有{activeTab === 'all' ? '' : sourceLabel[activeTab]}作品</p>
             <p className="text-ink-muted text-sm mt-1">参与闯关、图库或社区挑战来创作作品</p>
             <div className="flex justify-center gap-3 mt-4">
-              <Button variant="primary" onClick={() => navigate('/')}>
-                开始闯关
-              </Button>
-              <Button variant="secondary" onClick={() => navigate('/community')}>
-                去社区看看
-              </Button>
+              {activeTab === 'gallery' ? (
+                <Button variant="primary" onClick={() => navigate('/gallery')}>
+                  去图库看看
+                </Button>
+              ) : activeTab === 'community' ? (
+                <Button variant="primary" onClick={() => navigate('/community')}>
+                  去社区挑战
+                </Button>
+              ) : activeTab === 'level' ? (
+                <Button variant="primary" onClick={() => navigate('/')}>
+                  开始闯关
+                </Button>
+              ) : (
+                <>
+                  <Button variant="primary" onClick={() => navigate('/')}>
+                    开始闯关
+                  </Button>
+                  <Button variant="secondary" onClick={() => navigate('/community')}>
+                    去社区看看
+                  </Button>
+                </>
+              )}
             </div>
           </motion.div>
         )}
