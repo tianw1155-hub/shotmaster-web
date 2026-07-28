@@ -179,7 +179,7 @@ export function CommunityScorePage() {
 
         {/* 评分详情 */}
         <section className="flex items-center justify-around animate-slide-up">
-          <RingProgress value={score.similarity} size={90} label="相似度" />
+          <RingProgress value={score.overall} size={90} label="综合分" />
           <div className="flex-1 pl-6 space-y-2">
             {scoreItems.map(item => (
               <div key={item.label}>

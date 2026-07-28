@@ -82,12 +82,12 @@ export function ScoreResultView({ score, capturedImage, referenceImage, scoreId,
     let raf = 0; const start = performance.now(); const dur = 1000;
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / dur);
-      setRingNum(Math.round(score.similarity * (1 - Math.pow(1 - p, 3))));
+      setRingNum(Math.round(score.overall * (1 - Math.pow(1 - p, 3))));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [revealed, score.similarity]);
+  }, [revealed, score.overall]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6 space-y-5">
@@ -151,7 +151,7 @@ export function ScoreResultView({ score, capturedImage, referenceImage, scoreId,
       </motion.section>
 
       <motion.section variants={variants.fadeUp} initial="hidden" animate="show" className="flex flex-wrap items-center justify-around gap-4">
-        <RingProgress value={revealed ? ringNum : 0} size={90} label="相似度" />
+        <RingProgress value={revealed ? ringNum : 0} size={90} label="综合分" />
         <div className="flex-1 min-w-[200px] pl-2 space-y-2">
           {items.map((it) => (
             <div key={it.label}>

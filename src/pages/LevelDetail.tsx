@@ -87,7 +87,7 @@ function ScoreDetailCard({
       {/* 详细分数 */}
       <div className="p-4">
         <div className="flex items-center justify-around mb-4">
-          <RingProgress value={score.similarity} size={80} label="相似度" />
+          <RingProgress value={score.overall} size={80} label="综合分" />
           <div className="flex-1 pl-4 space-y-2">
             {scoreItems.map(item => (
               <div key={item.label}>
