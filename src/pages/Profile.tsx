@@ -101,12 +101,13 @@ export function MyWorksPage() {
 
   const sourceBadgeColor: Record<string, string> = {
     level: 'bg-accent/12 text-accent',
-    gallery: 'bg-gold/16 text-gold',
+    gallery: 'bg-blue-500/12 text-blue-600',
     community: 'bg-gold/16 text-gold',
   };
 
   const getSourceBadgeLabel = (source: string): string => {
-    if (source === 'gallery' || source === 'community') return '社区作品';
+    if (source === 'gallery') return '图库';
+    if (source === 'community') return '社区作品';
     return sourceLabel[source as WorkTab] || source;
   };
 
