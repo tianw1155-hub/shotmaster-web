@@ -46,7 +46,7 @@ function getAchievementIcon(emoji: string): React.ReactNode {
 }
 
 // ==================== 我的作品页面 ====================
-type WorkTab = 'all' | 'level' | 'community';
+type WorkTab = 'all' | 'level' | 'gallery' | 'community';
 type DeleteItem = { type: 'scoring'; id: string };
 
 export function MyWorksPage() {
@@ -68,12 +68,11 @@ export function MyWorksPage() {
 
   const filteredItems = activeTab === 'all'
     ? allItems
-    : activeTab === 'community'
-      ? allItems.filter(item => item.source === 'gallery' || item.source === 'community')
-      : allItems.filter(item => item.source === activeTab);
+    : allItems.filter(item => item.source === activeTab);
 
   const levelCount = scoringHistory.filter(s => s.source === 'level').length;
-  const communityCount = scoringHistory.filter(s => s.source === 'gallery' || s.source === 'community').length;
+  const galleryCount = scoringHistory.filter(s => s.source === 'gallery').length;
+  const communityCount = scoringHistory.filter(s => s.source === 'community').length;
 
   const handleRemove = (item: DeleteItem) => {
     setItemToDelete(item);
@@ -96,12 +95,13 @@ export function MyWorksPage() {
   const sourceLabel: Record<WorkTab, string> = {
     all: '全部',
     level: '闯关',
+    gallery: '图库',
     community: '社区作品',
   };
 
   const sourceBadgeColor: Record<string, string> = {
     level: 'bg-accent/12 text-accent',
-    gallery: 'bg-blue-500/12 text-blue-600',
+    gallery: 'bg-gold/16 text-gold',
     community: 'bg-gold/16 text-gold',
   };
 
@@ -128,7 +128,7 @@ export function MyWorksPage() {
 
         {/* 统计 — hairline rows */}
         <motion.div
-          className="grid grid-cols-3 divide-x divide-line border border-line rounded-md overflow-hidden"
+          className="grid grid-cols-4 divide-x divide-line border border-line rounded-md overflow-hidden"
           variants={variants.fadeUp}
           initial="hidden"
           animate="show"
@@ -136,6 +136,7 @@ export function MyWorksPage() {
           {[
             { value: allItems.length, label: '作品总数', color: 'text-accent' },
             { value: levelCount, label: '闯关作品', color: 'text-ink' },
+            { value: galleryCount, label: '图库作品', color: 'text-gold' },
             { value: communityCount, label: '社区作品', color: 'text-gold' },
           ].map((stat) => (
             <div key={stat.label} className="p-3 text-center bg-surface-card first:border-l-0">
