@@ -46,8 +46,8 @@ function getAchievementIcon(emoji: string): React.ReactNode {
 }
 
 // ==================== 我的作品页面 ====================
-type WorkTab = 'all' | 'level' | 'gallery' | 'community';
-type DeleteItem = { type: 'community'; work: CommunityWork } | { type: 'scoring'; id: string };
+type WorkTab = 'all' | 'level' | 'gallery';
+type DeleteItem = { type: 'scoring'; id: string };
 
 export function MyWorksPage() {
   const navigate = useNavigate();
@@ -60,20 +60,11 @@ export function MyWorksPage() {
     fetchCommunityWorks();
   }, [fetchCommunityWorks]);
 
-  const myCommunityWorks = communityWorks.filter(w => {
-    const workAuthorId = String(w.authorId || '');
-    const currentUserId = String(user.id || '');
-    if (workAuthorId === currentUserId) return true;
-    if (currentUserId !== '1' && workAuthorId === '1') return true;
-    return false;
-  });
-
   const scoringHistory = user.scoringHistory || [];
 
-  const allItems = [
-    ...myCommunityWorks.map(w => ({ type: 'community' as const, id: w.id, image: w.image, score: null, source: 'community' as const, title: '社区作品', createdAt: w.createdAt, votes: w.votes })),
-    ...scoringHistory.map(s => ({ type: 'scoring' as const, id: s.id, image: s.image, score: s.score, source: s.source, title: s.levelTitle || '', createdAt: s.createdAt, votes: null })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const allItems = scoringHistory
+    .map(s => ({ type: 'scoring' as const, id: s.id, image: s.image, score: s.score, source: s.source, title: s.levelTitle || '', createdAt: s.createdAt, votes: null }))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const filteredItems = activeTab === 'all'
     ? allItems
@@ -81,7 +72,6 @@ export function MyWorksPage() {
 
   const levelCount = scoringHistory.filter(s => s.source === 'level').length;
   const galleryCount = scoringHistory.filter(s => s.source === 'gallery').length;
-  const communityCount = myCommunityWorks.length;
 
   const handleRemove = (item: DeleteItem) => {
     setItemToDelete(item);
@@ -90,11 +80,7 @@ export function MyWorksPage() {
 
   const confirmDelete = () => {
     if (itemToDelete) {
-      if (itemToDelete.type === 'community') {
-        removeCommunityWork(itemToDelete.work.id);
-      } else {
-        removeScoringHistory(itemToDelete.id);
-      }
+      removeScoringHistory(itemToDelete.id);
     }
     setShowDeleteConfirm(false);
     setItemToDelete(null);
@@ -109,13 +95,11 @@ export function MyWorksPage() {
     all: '全部',
     level: '闯关',
     gallery: '图库',
-    community: '社区',
   };
 
   const sourceBadgeColor: Record<string, string> = {
     level: 'bg-accent/12 text-accent',
     gallery: 'bg-gold/16 text-gold',
-    community: 'bg-emerald-500/12 text-emerald-600',
   };
 
   return (
@@ -144,7 +128,6 @@ export function MyWorksPage() {
             { value: allItems.length, label: '作品总数', color: 'text-accent' },
             { value: levelCount, label: '闯关作品', color: 'text-ink' },
             { value: galleryCount, label: '图库作品', color: 'text-gold' },
-            { value: communityCount, label: '社区作品', color: 'text-emerald-600' },
           ].map((stat) => (
             <div key={stat.label} className="p-3 text-center bg-surface-card first:border-l-0">
               <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
@@ -155,7 +138,7 @@ export function MyWorksPage() {
 
         {/* Tab 切换 */}
         <div className="flex gap-2 flex-wrap">
-          {(['all', 'level', 'gallery', 'community'] as WorkTab[]).map((tab) => (
+          {(['all', 'level', 'gallery'] as WorkTab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -193,9 +176,7 @@ export function MyWorksPage() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleRemove(item.type === 'community'
-                      ? { type: 'community', work: myCommunityWorks.find(w => w.id === item.id)! }
-                      : { type: 'scoring', id: item.id });
+                    handleRemove({ type: 'scoring', id: item.id });
                   }}
                   aria-label="删除作品"
                   className="absolute top-2 right-2 w-8 h-8 rounded-full bg-ink/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger"
@@ -274,9 +255,7 @@ export function MyWorksPage() {
             </div>
             <h3 className="font-display text-lg font-bold text-ink text-center mb-2">确认删除作品</h3>
             <p className="text-ink-secondary text-sm text-center mb-6">
-              {itemToDelete.type === 'community'
-                ? '删除后作品将从排行榜中移除，无法恢复。'
-                : '删除后该评分记录将被移除，无法恢复。'}
+              删除后该评分记录将被移除，无法恢复。
             </p>
             <div className="space-y-3">
               <button
@@ -667,14 +646,7 @@ export function ProfilePage() {
   const favoriteWorkCount = communityWorks.filter((work) => isFavoriteWork(work.id)).length;
   const favoriteCount = favoriteImageCount + favoriteWorkCount;
 
-  const myCommunityWorks = communityWorks.filter(w => {
-    const workAuthorId = String(w.authorId || '');
-    const currentUserId = String(user.id || '');
-    if (workAuthorId === currentUserId) return true;
-    if (currentUserId !== '1' && workAuthorId === '1') return true;
-    return false;
-  });
-  const myWorksCount = myCommunityWorks.length + (user.scoringHistory?.length || 0);
+  const myWorksCount = user.scoringHistory?.length || 0;
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
