@@ -4,7 +4,7 @@ import { mockGalleryImages, mockCourses, mockAchievements } from '../services/mo
 import type { CommunityWork } from '../types';
 import { getLevel } from '../services/levelService';
 import { aiService } from '../services/aiService';
-import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge, getCommunityWorks, submitCommunityWork, voteCommunityWork, deleteCommunityWork, migrateGuestWorks, setUserToken, clearUserToken, setAuthFailureHandler } from '../services/apiService';
+import { syncUserData, syncFeedbacks, syncScoreFeedbacks, toggleUserFollow, userRegister, userLogin, getWeeklyChallenge, getCommunityWorks, submitCommunityWork, voteCommunityWork, deleteCommunityWork, migrateGuestWorks, setUserToken, clearUserToken, getUserToken, setAuthFailureHandler } from '../services/apiService';
 import { fetchRecommendedImages, hasUnsplashAccess } from '../services/unsplashService';
 
 // 默认 Unsplash 图片（当未配置 API key 时使用）- 共50张
@@ -189,6 +189,17 @@ function getUserStorageKey(userId: string): string {
   return `shotmaster_user_${userId}`;
 }
 
+function getUserIdFromToken(): string | null {
+  try {
+    const token = getUserToken();
+    if (!token) return null;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.userId || payload.sub || payload.id || null;
+  } catch {
+    return null;
+  }
+}
+
 function loadUserFromStorage(userId?: string): GameUser | null {
   try {
     let raw: any = null;
@@ -197,8 +208,11 @@ function loadUserFromStorage(userId?: string): GameUser | null {
       if (stored) raw = JSON.parse(stored);
     }
     if (!raw) {
-      const stored = localStorage.getItem('shotmaster_user');
-      if (stored) raw = JSON.parse(stored);
+      const tokenUserId = getUserIdFromToken();
+      if (tokenUserId) {
+        const stored = localStorage.getItem(getUserStorageKey(tokenUserId));
+        if (stored) raw = JSON.parse(stored);
+      }
     }
     if (!raw) {
       const currentUserId = localStorage.getItem('shotmaster_current_user_id');
@@ -232,12 +246,8 @@ let feedbackSyncTimer: number | null = null;
 
 function saveUserToStorage(user: GameUser) {
   try {
-    // 保存到用户特定的存储
     localStorage.setItem(getUserStorageKey(user.id), JSON.stringify(user));
-    // 同时保存当前用户ID
     localStorage.setItem('shotmaster_current_user_id', user.id);
-    // 保持向后兼容
-    localStorage.setItem('shotmaster_user', JSON.stringify(user));
 
     // 防抖同步到后端
     if (syncTimer) {
@@ -641,12 +651,41 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   logout: () => {
     clearUserToken();
-    const newUser = {
-      ...defaultUser,
+    localStorage.removeItem('shotmaster_current_user_id');
+    const emptyUser: GameUser = {
       id: '1',
+      name: '摄影新手',
+      avatar: '摄',
+      level: 1,
+      xp: 0,
+      xpToNext: XP_PER_LEVEL,
+      streak: 0,
+      maxStreak: 0,
+      totalStars: 0,
+      worksCount: 0,
+      averageScore: 0,
+      achievements: mockAchievements,
+      completedLevels: [],
+      levelStars: {},
+      followers: 0,
+      following: 0,
+      followingIds: [],
+      votedWorks: [],
+      isLoggedIn: false,
+      isGuest: false,
+      preferences: [],
+      hasCompletedOnboarding: false,
+      hasSetNickname: false,
+      phone: '',
+      favoriteImageIds: [],
+      favoriteWorkIds: [],
+      imageInteractions: [],
+      shootCategories: [],
+      shootingPlanFeedbacks: [],
+      scoreFeedbacks: [],
+      scoringHistory: [],
     };
-    saveUserToStorage(newUser);
-    set({ user: newUser });
+    set({ user: emptyUser });
   },
   setPreferences: (preferences) => {
     const { user } = get();
