@@ -1584,9 +1584,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   addCommunityWork: async (work) => {
     const res = await submitCommunityWork(work);
     if (res.success && res.data) {
-      set(state => ({
-        communityWorks: [res.data, ...state.communityWorks]
-      }));
+      set(state => {
+        const alreadyExists = state.communityWorks.some(w => w.id === res.data!.id);
+        if (alreadyExists) return state;
+        return {
+          communityWorks: [res.data!, ...state.communityWorks]
+        };
+      });
     } else {
       console.error('提交社区作品失败:', res.message);
     }

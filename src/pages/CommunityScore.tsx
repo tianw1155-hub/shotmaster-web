@@ -19,10 +19,9 @@ export function CommunityScorePage() {
 
   useEffect(() => {
     if (capturedImage && !score && !isScoring) {
-      // 使用本周挑战图片进行评分
       compareImages(referenceImage, capturedImage, 1, 'community', '本周挑战');
     }
-  }, []);
+  }, [capturedImage, score, isScoring]);
 
   if (!capturedImage) {
     return (

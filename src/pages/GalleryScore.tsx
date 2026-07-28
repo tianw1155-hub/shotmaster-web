@@ -20,7 +20,7 @@ export function GalleryScorePage() {
     if (capturedImage && !score && !isScoring) {
       compareImages(referenceImage, capturedImage, 1, 'gallery', '本周挑战');
     }
-  }, []);
+  }, [capturedImage, score, isScoring]);
 
   if (!capturedImage) {
     return (

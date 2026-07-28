@@ -162,16 +162,27 @@ func SubmitCommunityWork(c *gin.Context) {
 	if work.ID == "" {
 		work.ID = time.Now().Format("20060102150405") + "_" + work.AuthorID
 	}
+
+	imageContent := work.Image
+	imageIsBase64 := strings.HasPrefix(work.Image, "data:image/")
+
+	var count int64
+	models.DB.Model(&models.CommunityWork{}).
+		Where("author_id = ? AND created_at > ?", currentUserID, time.Now().Add(-30*time.Second)).
+		Count(&count)
+	if count > 0 {
+		c.JSON(http.StatusOK, gin.H{"success": true, "message": "作品已提交，无需重复上传"})
+		return
+	}
+
 	work.Votes = 0
 	work.CreatedAt = time.Now()
 	work.UpdatedAt = time.Now()
 
-	// 将 base64 图片保存为文件，数据库存储 URL
-	if strings.HasPrefix(work.Image, "data:image/") {
-		work.Image = saveBase64Image(work.Image, "community_"+work.ID)
+	if imageIsBase64 {
+		work.Image = saveBase64Image(imageContent, "community_"+work.ID)
 	}
 
-	// 处理 topWorks 数组中的 base64 图片
 	if len(work.TopWorks) > 0 {
 		var topWorks []string
 		if err := json.Unmarshal(work.TopWorks, &topWorks); err == nil {
